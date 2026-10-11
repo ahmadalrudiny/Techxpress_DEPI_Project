@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="TechXpress.Data/TechXpress.Data.csproj" />
+  <Project Path="TechXpress.Services/TechXpress.Services.csproj" />
+  <Project Path="TechXpress.Web/TechXpress.Web.csproj" />
+</Solution>
