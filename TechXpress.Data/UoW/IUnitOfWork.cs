@@ -7,7 +7,7 @@ public interface IUnitOfWork : IDisposable
 {
     IProductRepository Products { get; }
     ICategoryRepository Categories { get; }
-    IGenericRepository<Order> Orders { get; }
+    IOrderRepository Orders { get; }
     IGenericRepository<OrderDetail> OrderDetails { get; }
 
     Task<int> SaveChangesAsync();

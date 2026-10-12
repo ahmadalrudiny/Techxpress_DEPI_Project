@@ -13,7 +13,7 @@ public class UnitOfWork : IUnitOfWork
 
     public IProductRepository Products { get; }
     public ICategoryRepository Categories { get; }
-    public IGenericRepository<Order> Orders { get; }
+    public IOrderRepository Orders { get; }
     public IGenericRepository<OrderDetail> OrderDetails { get; }
 
     public UnitOfWork(ApplicationDbContext context)
@@ -22,7 +22,7 @@ public class UnitOfWork : IUnitOfWork
 
         Products = new ProductRepository(context);
         Categories = new CategoryRepository(context);
-        Orders = new GenericRepository<Order>(context);
+        Orders = new OrderRepository(context);
         OrderDetails = new GenericRepository<OrderDetail>(context);
     }
 

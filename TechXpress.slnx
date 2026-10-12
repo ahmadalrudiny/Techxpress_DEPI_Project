@@ -1,5 +1,7 @@
 <Solution>
+  <Project Path="TechXpress.Data.Tests/TechXpress.Data.Tests.csproj" Id="64c8be93-e097-4aa7-ac78-2d129aa9bedb" />
   <Project Path="TechXpress.Data/TechXpress.Data.csproj" />
+  <Project Path="TechXpress.Services.Tests/TechXpress.Services.Tests.csproj" Id="f546f1a9-813d-4534-acf6-bbb69d00024b" />
   <Project Path="TechXpress.Services/TechXpress.Services.csproj" />
   <Project Path="TechXpress.Web/TechXpress.Web.csproj" />
 </Solution>

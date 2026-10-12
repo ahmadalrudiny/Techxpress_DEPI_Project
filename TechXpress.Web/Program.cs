@@ -46,6 +46,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+// أي صفحة مش موجودة (404) أو خطأ برمز تاني يتحول لصفحة مخصصة
+app.UseStatusCodePagesWithReExecute("/Home/HttpStatus", "?code={0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
