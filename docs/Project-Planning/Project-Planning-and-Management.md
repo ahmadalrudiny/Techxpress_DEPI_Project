@@ -29,7 +29,6 @@ Build a scalable and maintainable e-commerce platform that applies **N-Tier Arch
 | UI | Bootstrap + custom CSS, responsive, jQuery live search, Toastr notifications |
 | Deployment | Microsoft Azure (or Hostinger) |
 
-**Out of scope** (not part of the project specification): real-time features (SignalR), caching servers, SMS/email gateways, cloud blob storage, charting libraries, AI features.
 
 ### 1.4 Technology Stack
 
