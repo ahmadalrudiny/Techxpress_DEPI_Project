@@ -29,6 +29,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Product>().Property(p => p.Price).HasPrecision(18, 2);
         builder.Entity<Order>().Property(o => o.TotalAmount).HasPrecision(18, 2);
         builder.Entity<OrderDetail>().Property(d => d.UnitPrice).HasPrecision(18, 2);
+        builder.Entity<Order>().Property(o => o.DiscountAmount).HasPrecision(18, 2);
+        builder.Entity<Order>().Property(o => o.PromoCode).HasMaxLength(50);
 
         builder.Entity<Product>().Property(p => p.Name).HasMaxLength(200).IsRequired();
         builder.Entity<Category>().Property(c => c.Name).HasMaxLength(100).IsRequired();

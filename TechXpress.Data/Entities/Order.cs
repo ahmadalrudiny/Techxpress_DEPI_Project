@@ -13,6 +13,8 @@ public class Order
     public ApplicationUser User { get; set; } = null!;
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public decimal TotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }   
+    public string? PromoCode { get; set; }          
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public string? PaymentIntentId { get; set; }
     public string? ShippingAddress { get; set; }
