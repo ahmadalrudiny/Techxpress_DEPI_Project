@@ -5,10 +5,12 @@
 ```mermaid
 erDiagram
     ASPNETUSERS ||--o{ ORDERS : places
+    ASPNETUSERS ||--o| VENDORS : "has vendor profile"
     ASPNETUSERS }o--o{ ASPNETROLES : "has (AspNetUserRoles)"
     CATEGORIES ||--o{ PRODUCTS : contains
     ORDERS ||--|{ ORDERDETAILS : includes
     PRODUCTS ||--o{ ORDERDETAILS : "appears in"
+    VENDORS ||--o{ PRODUCTS : "lists and sells"
 
     ASPNETUSERS {
         string Id PK
@@ -21,7 +23,18 @@ erDiagram
     }
     ASPNETROLES {
         string Id PK
-        string Name "Admin or Customer"
+        string Name "Admin, Customer, or Vendor"
+    }
+    VENDORS {
+        int Id PK
+        string UserId FK
+        string StoreName
+        string NationalIdUrl
+        string CommercialRegisterUrl
+        string TaxCardUrl
+        int VerificationStatus "0 Pending, 1 Approved, 2 Rejected"
+        string RejectionReason
+        datetime SubmittedAt
     }
     CATEGORIES {
         int Id PK
@@ -38,6 +51,7 @@ erDiagram
         bool IsActive
         datetime CreatedAt
         int CategoryId FK
+        int VendorId FK
     }
     ORDERS {
         int Id PK
@@ -64,16 +78,32 @@ erDiagram
 ## 2. Logical Schema (Relational Model)
 
 - **Categories**(<u>Id</u>, Name, Description)
-- **Products**(<u>Id</u>, Name, Description, Price, StockQuantity, ImageUrl, IsActive, CreatedAt, *CategoryId*)
+- **Products**(<u>Id</u>, Name, Description, Price, StockQuantity, ImageUrl, IsActive, CreatedAt, CategoryId, VendorId)
 - **AspNetUsers**(<u>Id</u>, UserName, Email, PasswordHash, PhoneNumber, FullName, Address, ...)
 - **AspNetRoles**(<u>Id</u>, Name)
 - **AspNetUserRoles**(<u>*UserId*, *RoleId*</u>)
+- **Vendors**(<u>Id</u>, UserId, StoreName, NationalIdUrl, CommercialRegisterUrl, TaxCardUrl, VerificationStatus, RejectionReason, SubmittedAt)
 - **Orders**(<u>Id</u>, *UserId*, OrderDate, TotalAmount, DiscountAmount, PromoCode, Status, PaymentIntentId, ShippingAddress)
 - **OrderDetails**(<u>Id</u>, *OrderId*, *ProductId*, Quantity, UnitPrice)
 
 (Underlined = primary key, italic = foreign key.)
 
 ## 3. Physical Schema (SQL Server)
+
+### Vendors
+| Column | Type | Constraints |
+|---|---|---|
+| Id | int | PK, identity |
+| UserId | nvarchar(100) | FK to AspNetUsers(Id), NOT NULL |
+| StoreName | nvarchar(150) | NULL |
+| NationalIdUrl | nvarchar(max) |NOT NULL |
+| CommercialRegisterUrl | nvarchar(max) |NOT NULL |
+| TaxCardUrl | nvarchar(max) | NOT NULL |
+| VerificationStatus | int | NOT NULL (0 = Pending, 1 = Approved, 2 = Rejected) |
+| RejectionReason | nvarchar(max) | NULL |
+| SubmittedAt | datetime2 | NOT NULL |
+
+
 
 ### Categories
 | Column | Type | Constraints |
@@ -94,6 +124,7 @@ erDiagram
 | IsActive | bit | NOT NULL, default 1 |
 | CreatedAt | datetime2 | NOT NULL |
 | CategoryId | int | FK to Categories(Id), ON DELETE RESTRICT |
+| VendorId | int | FK to Vendors(Id), NULLable (for system/admin products) |
 
 ### Orders
 | Column | Type | Constraints |
@@ -136,6 +167,17 @@ classDiagram
         +string FullName
         +string Address
     }
+    class Vendor {
+        +int Id
+        +string UserId
+        +string StoreName
+        +string NationalIdUrl
+        +string CommercialRegisterUrl
+        +string TaxCardUrl
+        +VerificationStatus Status
+        +string RejectionReason
+        +DateTime SubmittedAt
+    }
     class Category {
         +int Id
         +string Name
@@ -150,6 +192,8 @@ classDiagram
         +string ImageUrl
         +bool IsActive
         +DateTime CreatedAt
+        +int CategoryId
+        +int? VendorId
     }
     class Order {
         +int Id
@@ -174,12 +218,21 @@ classDiagram
         Delivered
         Cancelled
     }
+    class VerificationStatus {
+        <<enumeration>>
+        Pending
+        Approved
+        Rejected
+    }
 
+    ApplicationUser "1" --> "0..1" Vendor
     ApplicationUser "1" --> "*" Order
+    Vendor "1" --> "*" Product
     Category "1" --> "*" Product
     Order "1" --> "*" OrderDetail
     Product "1" --> "*" OrderDetail
     Order --> OrderStatus
+    Vendor --> VerificationStatus
 
     class IGenericRepository~T~ {
         <<interface>>
@@ -202,12 +255,19 @@ classDiagram
         <<interface>>
         +GetAllWithProductsAsync()
     }
+    class IVendorRepository {
+        <<interface>>
+        +GetPendingVendorsAsync()
+        +GetByUserIdAsync(string userId)
+    }
     class ProductRepository
     class CategoryRepository
+    class VendorRepository
     class IUnitOfWork {
         <<interface>>
         +IProductRepository Products
         +ICategoryRepository Categories
+        +IVendorRepository Vendors
         +IGenericRepository~Order~ Orders
         +IGenericRepository~OrderDetail~ OrderDetails
         +SaveChangesAsync()
@@ -221,10 +281,13 @@ classDiagram
     IGenericRepository~T~ <|.. GenericRepository~T~
     IGenericRepository~T~ <|-- IProductRepository
     IGenericRepository~T~ <|-- ICategoryRepository
+    IGenericRepository~T~ <|-- IVendorRepository
     GenericRepository~T~ <|-- ProductRepository
     GenericRepository~T~ <|-- CategoryRepository
+    GenericRepository~T~ <|-- VendorRepository
     IProductRepository <|.. ProductRepository
     ICategoryRepository <|.. CategoryRepository
+    IVendorRepository <|.. VendorRepository
     IUnitOfWork <|.. UnitOfWork
     UnitOfWork --> ApplicationDbContext
     GenericRepository~T~ --> ApplicationDbContext
@@ -233,6 +296,12 @@ classDiagram
         <<interface>>
         +GetProductsAsync(search, categoryId, page)
         +GetByIdAsync(id)
+    }
+    class IVendorService {
+        <<interface>>
+        +SubmitDocumentsAsync(vendorDto)
+        +GetPendingVendorsAsync()
+        +VerifyVendorAsync(vendorId, isApproved, reason)
     }
     class ICartService {
         <<interface>>
@@ -256,14 +325,17 @@ classDiagram
         +ConfirmPaymentAsync(sessionId)
     }
     class ProductService
+    class VendorService
     class CartService
     class OrderService
     class PaymentService
 
     IProductService <|.. ProductService
+    IVendorService <|.. VendorService
     ICartService <|.. CartService
     IOrderService <|.. OrderService
     IPaymentService <|.. PaymentService
     ProductService --> IUnitOfWork
+    VendorService --> IUnitOfWork
     OrderService --> IUnitOfWork
 ```
