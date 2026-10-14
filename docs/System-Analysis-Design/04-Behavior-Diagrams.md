@@ -5,14 +5,17 @@
 ```mermaid
 flowchart LR
     CUS["Customer"]
+    VEN["Vendor"]
     ADM["Admin"]
     STR["Stripe"]
     SYS(("TechXpress<br/>System"))
 
     CUS -->|registration, login, search, cart actions, order details| SYS
     SYS -->|products, cart, order confirmation, order history| CUS
-    ADM -->|product, category, order management| SYS
-    SYS -->|reports of products, categories, orders| ADM
+    VEN -->|"verification docs (ID, Commercial Register, Tax Card)"| SYS
+    SYS -->|verification status, product management| VEN
+    ADM -->|product, category, order, vendor management| SYS
+    SYS -->|reports, pending vendor verification list| ADM
     SYS -->|payment session request| STR
     STR -->|payment result| SYS
 ```
@@ -22,6 +25,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     CUS["Customer"]
+    VEN["Vendor"]
     ADM["Admin"]
     STR["Stripe"]
 
@@ -30,15 +34,16 @@ flowchart LR
     P3(("3.0<br/>Manage Cart"))
     P4(("4.0<br/>Place Order"))
     P5(("5.0<br/>Process Payment"))
-    P6(("6.0<br/>Manage Store - Admin"))
-    P7(("7.0<br/>Manage Profile"))
+    P6(("6.0<br/>Manage Store & Verification - Admin"))
+    P7(("7.0<br/>Manage Profile & Vendor Onboarding"))
 
-    D1[("D1 Users and Roles")]
+    D1[("D1 Users, Roles, Vendors")]
     D2[("D2 Products and Categories")]
     D3[("D3 Orders and OrderDetails")]
     D4[("D4 Session Cart")]
 
     CUS -->|credentials| P1
+    VEN -->|credentials| P1
     P1 <-->|verify, create| D1
     P1 -->|auth result| CUS
     ADM -->|credentials| P1
@@ -63,8 +68,13 @@ flowchart LR
     P5 -->|status Paid, payment reference| D3
     P5 -->|confirmation| CUS
 
+    VEN -->|upload ID, Commercial Register, Tax Card| P7
+    P7 <-->|save pending documents| D1
+
     ADM -->|CRUD products, categories| P6
+    ADM -->|review & approve/reject vendors| P6
     ADM -->|change order status| P6
+    P6 <-->|read, write| D1
     P6 <-->|read, write| D2
     P6 <-->|read, write| D3
 
@@ -76,7 +86,54 @@ flowchart LR
 
 ## 3. Sequence Diagrams
 
-### 3.1 Login
+### 3.1 Vendor Onboarding & Verification Flow
+
+```mermaid
+sequenceDiagram
+    actor V as Vendor
+    participant VC as VendorController
+    participant VS as VendorService
+    participant UOW as UnitOfWork
+    actor A as Admin
+    participant AC as Admin VendorsController
+    participant DB as Database
+
+    V->>VC: POST /Vendor/SubmitDocuments (National ID, Register, Tax Card)
+    VC->>VS: SubmitDocumentsAsync(vendorDto)
+    VS->>VS: Save documents to wwwroot/uploads
+    VS->>UOW: Vendors.AddAsync(vendor with status Pending)
+    VS->>UOW: SaveChangesAsync()
+    UOW->>DB: INSERT into Vendors
+    VS-->>VC: Success
+    VC-->>V: Display "Pending Verification" message
+
+    A->>AC: GET /Admin/Vendors/Pending
+    AC->>VS: GetPendingVendorsAsync()
+    VS->>UOW: Vendors.GetPendingVendorsAsync()
+    UOW->>DB: SELECT Vendors WHERE Status = Pending
+    DB-->>AC: List of pending vendors
+    AC-->>A: Display pending vendors with document previews
+
+    alt Admin Approves Vendor
+        A->>AC: POST /Admin/Vendors/Approve (vendorId)
+        AC->>VS: VerifyVendorAsync(vendorId, isApproved: true)
+        VS->>UOW: Vendors.GetByIdAsync(vendorId)
+        VS->>VS: Update Status = Approved
+        VS->>UOW: SaveChangesAsync()
+        UOW->>DB: UPDATE Vendors SET Status = Approved
+        AC-->>A: Toastr success message
+    else Admin Rejects Vendor
+        A->>AC: POST /Admin/Vendors/Reject (vendorId, reason)
+        AC->>VS: VerifyVendorAsync(vendorId, isApproved: false, reason)
+        VS->>UOW: Vendors.GetByIdAsync(vendorId)
+        VS->>VS: Update Status = Rejected, set RejectionReason
+        VS->>UOW: SaveChangesAsync()
+        UOW->>DB: UPDATE Vendors SET Status = Rejected
+        AC-->>A: Toastr rejection notice sent
+    end
+```
+
+### 3.2 Login
 
 ```mermaid
 sequenceDiagram
@@ -98,7 +155,7 @@ sequenceDiagram
     end
 ```
 
-### 3.2 Add to Cart
+### 3.3 Add to Cart
 
 ```mermaid
 sequenceDiagram
@@ -122,7 +179,7 @@ sequenceDiagram
     end
 ```
 
-### 3.3 Checkout and Payment
+### 3.4 Checkout and Payment
 
 ```mermaid
 sequenceDiagram
@@ -168,7 +225,7 @@ sequenceDiagram
     end
 ```
 
-### 3.4 Admin: Update Order Status
+### 3.5 Admin: Update Order Status
 
 ```mermaid
 sequenceDiagram
@@ -219,7 +276,18 @@ flowchart TD
     T --> Z
 ```
 
-## 5. State Diagram: Order Status
+## 5. State Diagram: Vendor Verification Status
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Submit legal docs (ID, Commercial Register, Tax Card)
+    Pending --> Approved : Admin verifies documents
+    Pending --> Rejected : Admin rejects documents (provides reason)
+    Rejected --> Pending : Vendor updates & resubmits documents
+    Approved --> [*]
+```
+
+## 6. State Diagram: Order Status
 
 ```mermaid
 stateDiagram-v2
