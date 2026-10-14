@@ -13,9 +13,10 @@ flowchart LR
     CUS -->|registration, login, search, cart actions, order details| SYS
     SYS -->|products, cart, order confirmation, order history| CUS
     VEN -->|"verification docs (ID, Commercial Register, Tax Card)"| SYS
-    SYS -->|verification status, product management| VEN
-    ADM -->|product, category, order, vendor management| SYS
-    SYS -->|reports, pending vendor verification list| ADM
+    VEN -->|payout request, product catalog management| SYS
+    SYS -->|verification status, wallet balance, payout history| VEN
+    ADM -->|product, category, order, vendor & payout management| SYS
+    SYS -->|reports, pending vendor list, pending payout requests| ADM
     SYS -->|payment session request| STR
     STR -->|payment result| SYS
 ```
@@ -33,20 +34,21 @@ flowchart LR
     P2(("2.0<br/>Browse Catalog"))
     P3(("3.0<br/>Manage Cart"))
     P4(("4.0<br/>Place Order"))
-    P5(("5.0<br/>Process Payment"))
-    P6(("6.0<br/>Manage Store & Verification - Admin"))
-    P7(("7.0<br/>Manage Profile & Vendor Onboarding"))
+    P5(("5.0<br/>Process Payment & Wallet Distribution"))
+    P6(("6.0<br/>Manage Store, Verification & Payouts - Admin"))
+    P7(("7.0<br/>Vendor Onboarding, Store & Payout Request"))
 
     D1[("D1 Users, Roles, Vendors")]
     D2[("D2 Products and Categories")]
     D3[("D3 Orders and OrderDetails")]
     D4[("D4 Session Cart")]
+    D5[("D5 WalletTransactions")]
 
     CUS -->|credentials| P1
     VEN -->|credentials| P1
+    ADM -->|credentials| P1
     P1 <-->|verify, create| D1
     P1 -->|auth result| CUS
-    ADM -->|credentials| P1
 
     CUS -->|search, filter| P2
     P2 <-->|read| D2
@@ -66,17 +68,23 @@ flowchart LR
     P5 -->|session request| STR
     STR -->|payment result| P5
     P5 -->|status Paid, payment reference| D3
+    P5 -->|credit net vendor earnings, platform commission| D1
+    P5 -->|create Deposit transaction| D5
     P5 -->|confirmation| CUS
 
     VEN -->|upload ID, Commercial Register, Tax Card| P7
-    P7 <-->|save pending documents| D1
+    VEN -->|request payout| P7
+    P7 <-->|save pending documents, check balance| D1
+    P7 -->|create Withdrawal transaction| D5
 
     ADM -->|CRUD products, categories| P6
     ADM -->|review & approve/reject vendors| P6
+    ADM -->|approve/reject payout requests| P6
     ADM -->|change order status| P6
     P6 <-->|read, write| D1
     P6 <-->|read, write| D2
     P6 <-->|read, write| D3
+    P6 <-->|update transaction status| D5
 
     CUS -->|update details| P7
     P7 <-->|read, write| D1
@@ -179,7 +187,7 @@ sequenceDiagram
     end
 ```
 
-### 3.4 Checkout and Payment
+### 3.4 Checkout and Payment, and Commission Allocation
 
 ```mermaid
 sequenceDiagram
@@ -188,6 +196,7 @@ sequenceDiagram
     participant OS as OrderService
     participant UOW as UnitOfWork
     participant PS as PaymentService
+    participant WS as WalletService
     participant ST as Stripe
     participant DB as Database
 
@@ -197,11 +206,11 @@ sequenceDiagram
     loop each cart item
         OS->>UOW: Products.GetByIdAsync(productId)
         UOW->>DB: SELECT product
-        OS->>OS: Check stock, reduce StockQuantity
+        OS->>OS: Check stock, reduce StockQuantity, attach VendorId
     end
-    OS->>UOW: Orders.AddAsync(order with details)
+    OS->>UOW: Orders.AddAsync(order with details & VendorIds)
     OS->>UOW: CommitAsync()
-    UOW->>DB: INSERT order, UPDATE stock (single transaction)
+    UOW->>DB: INSERT order, ORDERDETAILS, UPDATE stock
     alt Any step fails
         OS->>UOW: RollbackAsync()
         OS-->>OC: Error
@@ -218,9 +227,19 @@ sequenceDiagram
         C->>OC: GET /Checkout/Success?session_id
         OC->>PS: ConfirmPaymentAsync(sessionId)
         PS->>ST: Retrieve session (verify paid)
-        ST-->>PS: Payment status
+        ST-->>PS: Payment status Paid
         PS->>OS: Mark order Paid, store PaymentIntentId
-        OS->>UOW: Update order, SaveChangesAsync()
+        
+        Note over OS,WS: Distribute Net Profit to Vendor Wallets
+        OS->>WS: ProcessOrderCommissionAsync(orderId)
+        loop each order detail with VendorId
+            WS->>WS: Calculate Net Amount = (UnitPrice * Qty) - PlatformCommission
+            WS->>UOW: Vendors.GetByIdAsync(vendorId)
+            WS->>WS: Vendor.WalletBalance += Net Amount
+            WS->>UOW: Wallets.AddAsync(WalletTransaction Type=Deposit)
+        end
+        OS->>UOW: SaveChangesAsync()
+        UOW->>DB: UPDATE Orders, Vendors, INSERT WalletTransactions
         OC-->>C: Order confirmation page, cart cleared
     end
 ```
@@ -247,7 +266,60 @@ sequenceDiagram
     OC-->>A: JSON result (Toastr message, DataTable reload)
 ```
 
-## 4. Activity Diagram: Shopping and Checkout
+### 3.6 Vendor Payout Request & Admin Settlement Flow
+
+```mermaid
+sequenceDiagram
+    actor V as Vendor
+    actor A as Admin
+    participant VPC as VendorProductController
+    participant APC as AdminPayoutController
+    participant WS as WalletService
+    participant UOW as UnitOfWork
+    participant DB as Database
+
+    V->>VPC: POST /Vendor/RequestPayout (amount)
+    VPC->>WS: RequestPayoutAsync(vendorId, amount)
+    WS->>UOW: Vendors.GetByIdAsync(vendorId)
+    alt Requested Amount > WalletBalance or Amount <= 0
+        WS-->>VPC: Error ("Insufficient funds")
+        VPC-->>V: Toastr error message
+    else Balance Sufficient
+        WS->>UOW: Wallets.AddAsync(Transaction Type=Withdrawal, Status=Pending)
+        WS->>UOW: SaveChangesAsync()
+        UOW->>DB: INSERT into WalletTransactions
+        WS-->>VPC: Success
+        VPC-->>V: Toastr "Payout request submitted"
+    end
+
+    A->>APC: GET /Admin/Payouts (Pending Requests)
+    APC->>WS: GetPendingPayoutsAsync()
+    WS->>UOW: Wallets.GetPendingPayoutsAsync()
+    UOW->>DB: SELECT WalletTransactions WHERE Status = Pending
+    DB-->>APC: List of pending payouts
+    APC-->>A: Display pending payout table
+
+    alt Admin Approves Payout
+        A->>APC: POST /Admin/Payouts/Approve (transactionId, referenceNumber)
+        APC->>WS: ProcessPayoutAsync(transactionId, approve: true)
+        WS->>UOW: Wallets.GetByIdAsync(transactionId)
+        WS->>UOW: Vendors.GetByIdAsync(vendorId)
+        WS->>WS: Deduct Vendor.WalletBalance -= Amount
+        WS->>WS: Update Transaction Status = Completed
+        WS->>UOW: SaveChangesAsync()
+        UOW->>DB: UPDATE Vendors, WalletTransactions
+        APC-->>A: Toastr "Payout approved & settled"
+    else Admin Rejects Payout
+        A->>APC: POST /Admin/Payouts/Reject (transactionId, reason)
+        APC->>WS: ProcessPayoutAsync(transactionId, approve: false, reason)
+        WS->>UOW: Wallets.GetByIdAsync(transactionId)
+        WS->>WS: Update Transaction Status = Rejected
+        WS->>UOW: SaveChangesAsync()
+        UOW->>DB: UPDATE WalletTransactions
+        APC-->>A: Toastr "Payout request rejected"
+    end
+```
+## 4. Activity Diagram: Shopping and Checkout, and Wallet Settlement
 
 ```mermaid
 flowchart TD
@@ -265,13 +337,16 @@ flowchart TD
     I --> J["System checks stock"]
     J --> K{"Stock sufficient?"}
     K -- No --> L["Show message, return to cart"] --> F
-    K -- Yes --> M["Begin transaction: save order and reduce stock"]
+    K -- Yes --> M["Begin transaction: save order & details with VendorId, reduce stock"]
     M --> N{"Saved successfully?"}
     N -- No --> O["Rollback, show error"] --> F
     N -- Yes --> P["Redirect to Stripe"]
     P --> Q{"Payment successful?"}
     Q -- No --> R["Order stays Pending / user can retry or cancel"]
-    Q -- Yes --> T["Mark order Paid, clear cart, show confirmation"]
+    Q -- Yes --> S1["Mark order Paid, clear cart"]
+    S1 --> S2["Calculate net vendor earnings after platform commission"]
+    S2 --> S3["Credit Vendor WalletBalance & insert Deposit WalletTransaction"]
+    S3 --> T["Show order confirmation page"]
     R --> Z((End))
     T --> Z
 ```
@@ -309,3 +384,21 @@ stateDiagram-v2
 | Shipped | Delivered | Admin | None |
 
 Transitions not in the table are rejected by `OrderService`.
+
+## 7. State Diagram: Wallet Transaction & Payout Status
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Vendor submits payout request
+    Pending --> Completed : Admin approves payout & confirms bank transfer
+    Pending --> Rejected : Admin rejects payout request
+    Completed --> [*]
+    Rejected --> [*]
+```
+
+| From | To | Triggered by | Side effect |
+|---|---|---|---|
+| [*] | Deposit (Completed) | Order payment confirmed | `Vendor.WalletBalance` credited immediately |
+| [*] | Pending (Withdrawal) | Vendor requests payout |  Payout request queued for admin review |
+| Pending | Completed | Admin approves payout | `Vendor.WalletBalance` debited by requested amount |
+| Pending | Rejected | Admin rejects payout | Request marked rejected, wallet balance remains untouched |
