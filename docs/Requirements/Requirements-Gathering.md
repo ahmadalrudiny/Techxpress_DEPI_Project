@@ -9,8 +9,9 @@
 | Stakeholder | Description | Needs / Expectations | Influence |
 |---|---|---|---|
 | **Customer** | Visitor or registered user buying electronics | Easy browsing and search, simple cart, secure payment, order tracking | High |
-| **Administrator** | Store staff managing the catalog and orders | Fast product/category/order management, restricted access | High |
-| **Store Owner** | Business owner | Reliable sales, accurate stock, no lost orders | High |
+| **Vendor** | Seller offering products on the platform | Easy onboarding, document upload, ability to manage catalog after verification | High |
+| **Administrator** | Store staff managing the catalog, orders, and vendors | Fast product/category/order management, secure vendor document verification | High |
+| **Store Owner** | Business owner | Reliable sales, accurate stock, trusted vendors, legally compliant marketplace | High |
 | **Payment Provider (Stripe)** | External service | Correct API usage, secure handling of payment data | Medium |
 | **Development Team** | 5 students | Clear scope, maintainable code | High |
 | **Lecturer / Evaluators** | DEPI supervisors | Compliance with specification, documentation, working deployment | High |
@@ -38,6 +39,14 @@
 | US-11 | As a customer, I want to see my order history and statuses. | High |
 | US-12 | As a customer, I want to update my personal details and password. | Medium |
 
+**Vendor**
+
+| ID | Story | Priority |
+|---|---|---|
+| US-18 | As a vendor, I want to submit my National ID, Commercial Register, and Tax Card so that my account can be verified. | High |
+| US-19 | As a vendor, I want to track my verification status (Pending, Approved, Rejected) and see rejection reasons if any. | High |
+| US-20 | As an approved vendor, I want to list and manage my products on the platform. | High |
+
 **Administrator**
 
 | ID | Story | Priority |
@@ -47,6 +56,7 @@
 | US-15 | As an admin, I want to manage categories. | High |
 | US-16 | As an admin, I want to view all orders and change their status (Shipped, Delivered, Cancelled). | High |
 | US-17 | As an admin, I want sortable, searchable, paginated tables to manage data quickly. | Medium |
+| US-21 | As an admin, I want to review submitted vendor legal documents and approve or reject their store requests. | High |
 
 ### 2.2 Main Use Cases
 
@@ -54,27 +64,18 @@
 |---|---|---|---|
 | UC-01 | Browse and Search Products | Visitor, Customer | View the product list, search by name, filter by category |
 | UC-02 | View Product Details | Visitor, Customer | Open a product page |
-| UC-03 | Register | Visitor | Create a customer account (role Customer assigned) |
-| UC-04 | Login / Logout | Customer, Admin | Authenticate with email and password |
+| UC-03 | Register | Visitor | Create a customer or vendor account |
+| UC-04 | Login / Logout | Customer, Vendor, Admin | Authenticate with email and password |
 | UC-05 | Manage Cart | Customer | Add, update quantity, remove items, apply promo code |
 | UC-06 | Checkout and Place Order | Customer | Enter shipping details and confirm the order |
 | UC-07 | Pay with Stripe | Customer, Stripe | Pay for the order; transaction details are stored |
 | UC-08 | View Order History | Customer | List past orders and their details |
 | UC-09 | Manage Profile | Customer | Update details and change password |
-| UC-10 | Manage Products | Admin | Create, read, update, delete products |
+| UC-10 | Manage Products | Admin, Approved Vendor | Create, read, update, delete products |
 | UC-11 | Manage Categories | Admin | Create, read, update, delete categories |
 | UC-12 | Manage Orders | Admin | View orders and update their status |
-
-### 2.3 Use Case Description: UC-06 Checkout and Place Order
-
-| Field | Description |
-|---|---|
-| Actor | Customer |
-| Precondition | Customer is logged in and the cart contains at least one item |
-| Main flow | 1. Customer opens checkout. 2. System shows order summary and total. 3. Customer enters shipping address. 4. System checks stock for every item. 5. System creates the order and reduces stock in one transaction. 6. System redirects to payment (UC-07). |
-| Alternative flow | 4a. Insufficient stock: system shows a message and returns to the cart. |
-| Exception | Failure while saving: transaction is rolled back, no order is created, user sees an error message. |
-| Postcondition | Order exists with status Pending (then Paid after successful payment); stock updated. |
+| UC-13 | Submit Verification Documents | Vendor | Upload National ID, Commercial Register, and Tax Card |
+| UC-14 | Review & Verify Vendor Status | Admin | Inspect documents and approve/reject vendor requests |
 
 ---
 
@@ -84,10 +85,10 @@
 | ID | Requirement |
 |---|---|
 | FR-01 | The system shall allow users to register with name, email, and password. |
-| FR-02 | The system shall assign the role **Customer** to every new registered user. |
+| FR-02 | The system shall assign the role **Customer** or **Vendor** upon registration. |
 | FR-03 | The system shall allow users to log in and log out. |
-| FR-04 | The system shall support two roles: Customer and Admin. |
-| FR-05 | The system shall restrict the Admin Panel and product management to the Admin role. |
+| FR-04 | The system shall support roles: Customer, Vendor, and Admin. |
+| FR-05 | The system shall restrict the Admin Panel and vendor approvals to the Admin role. |
 | FR-06 | The system shall show an "Access Denied" page for unauthorized access. |
 
 ### 3.2 Product Catalog
@@ -135,9 +136,17 @@
 | FR-30 | The system shall let admins create, edit, and delete products, including image upload. |
 | FR-31 | The system shall let admins create, edit, and delete categories. |
 | FR-32 | The system shall let admins view all orders and update order status. |
-| FR-33 | The system shall present products, categories, and orders in DataTables with sorting, filtering, and pagination. |
+| FR-33 | The system shall present products, categories, orders, and vendors in DataTables with sorting, filtering, and pagination. |
 | FR-34 | The system shall show success/failure notifications using Toastr. |
 | FR-35 | The system shall prevent deleting a category that contains products, and a product that appears in past orders. |
+
+### 3.7 Vendor Verification & Management
+| ID | Requirement |
+|---|---|
+| FR-36 | The system shall allow vendors to submit store details and upload legal documents (National ID, Commercial Register, Tax Card). |
+| FR-37 | The system shall set a new vendor's status to Pending upon submission, preventing product listing until approved. |
+| FR-38 | The admin panel shall display a list of pending vendor requests and allow secure preview of uploaded documents. |
+| FR-39 | The admin shall be able to approve a vendor (activating their store) or reject them with a specified reason. |
 
 ---
 
@@ -159,40 +168,41 @@
 | NFR-07 | Data access shall use EF Core parameterized queries to prevent SQL injection. |
 | NFR-08 | Card data shall never be stored or processed by the application; Stripe handles it. |
 | NFR-09 | Secrets (Stripe keys, connection strings) shall not be committed to source control. |
-| NFR-10 | The site shall be served over HTTPS in production. |
+| NFR-10 | Vendor legal document uploads shall be stored in secure, non-public storage directories or restricted endpoints. |
+| NFR-11 | The site shall be served over HTTPS in production. |
 
 ### 4.3 Usability
 | ID | Requirement |
 |---|---|
-| NFR-11 | The UI shall be responsive on mobile, tablet, and desktop (Bootstrap). |
-| NFR-12 | Users shall receive clear feedback messages for actions and errors. |
-| NFR-13 | Navigation shall be consistent across the store and the admin panel. |
+| NFR-12 | The UI shall be responsive on mobile, tablet, and desktop (Bootstrap). |
+| NFR-13 | Users shall receive clear feedback messages for actions and errors. |
+| NFR-14 | Navigation shall be consistent across the store, vendor portal, and admin panel. |
 
 ### 4.4 Reliability
 | ID | Requirement |
 |---|---|
-| NFR-14 | Order placement shall be atomic: either the order and stock update both succeed or neither does. |
-| NFR-15 | The system shall log errors using the built-in `ILogger`. |
-| NFR-16 | The deployed system shall target at least 99% availability. |
+| NFR-15 | Order placement shall be atomic: either the order and stock update both succeed or neither does. |
+| NFR-16 | The system shall log errors using the built-in `ILogger`. |
+| NFR-17 | The deployed system shall target at least 99% availability. |
 
 ### 4.5 Maintainability
 | ID | Requirement |
 |---|---|
-| NFR-17 | The solution shall follow N-Tier Architecture (Web / Services / Data). |
-| NFR-18 | Data access shall go through the Repository and Unit of Work patterns. |
-| NFR-19 | Dependencies shall be injected (Dependency Injection); controllers shall not access the database directly. |
-| NFR-20 | Code shall follow SOLID principles and consistent naming conventions. |
-| NFR-21 | Public APIs shall have XML documentation. |
+| NFR-18 | The solution shall follow N-Tier Architecture (Web / Services / Data). |
+| NFR-19 | Data access shall go through the Repository and Unit of Work patterns. |
+| NFR-20 | Dependencies shall be injected (Dependency Injection); controllers shall not access the database directly. |
+| NFR-21 | Code shall follow SOLID principles and consistent naming conventions. |
+| NFR-22 | Public APIs shall have XML documentation. |
 
 ### 4.6 Testability
 | ID | Requirement |
 |---|---|
-| NFR-22 | Business logic shall be covered by unit tests. |
-| NFR-23 | Repositories shall be covered by integration tests. |
-| NFR-24 | Critical user paths shall be covered by basic UI testing. |
+| NFR-23 | Business logic shall be covered by unit tests. |
+| NFR-24 | Repositories shall be covered by integration tests. |
+| NFR-25 | Critical user paths shall be covered by basic UI testing. |
 
 ### 4.7 Portability & Deployment
 | ID | Requirement |
 |---|---|
-| NFR-25 | The application shall run on .NET 8 and SQL Server. |
-| NFR-26 | The application shall be deployable to Microsoft Azure (or Hostinger). |
+| NFR-26 | The application shall run on .NET 8 and SQL Server. |
+| NFR-27 | The application shall be deployable to Microsoft Azure (or Hostinger). |
