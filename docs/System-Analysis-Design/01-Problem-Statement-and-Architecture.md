@@ -1,15 +1,16 @@
 # TechXpress: Problem Statement, Architecture & Deployment
 
 ## 1. Problem Statement
-Small and medium electronics sellers often rely on social media or manual processes to sell products. This leads to unmanaged stock, lost or duplicated orders, no payment tracking, and no central place to manage the catalog. Customers cannot easily browse, compare, and pay online.
+Small and medium electronics sellers often rely on social media or manual processes to sell products. This leads to unmanaged stock, lost or duplicated orders, no payment tracking, and no central place to manage the catalog. Furthermore, platforms lack a secure verification process to authenticate vendors (verifying National ID, Commercial Register, and Tax Card) before allowing them to list electronics. Customers cannot easily browse, compare, and pay online with confidence in vendor credibility.
 
 ## 2. Objectives
 1. Provide an online store where customers can browse, search, and filter electronics.
-2. Let customers manage a shopping cart and place orders with secure online payment (Stripe).
-3. Guarantee data consistency: an order and its stock reduction are saved atomically.
-4. Give administrators a protected panel to manage products, categories, and orders.
-5. Apply N-Tier Architecture, Repository, Unit of Work, and Dependency Injection for a maintainable code base.
-6. Deploy the system on Microsoft Azure.
+2. Enable vendor onboarding with mandatory document verification (National ID, Commercial Register, Tax Card) and admin approval.
+3. Let customers manage a shopping cart and place orders with secure online payment (Stripe).
+4. Guarantee data consistency: an order and its stock reduction are saved atomically.
+5. Give administrators a protected panel to manage products, categories, orders, and vendor approvals.
+6. Apply N-Tier Architecture, Repository, Unit of Work, and Dependency Injection for a maintainable code base.
+7. Deploy the system on Microsoft Azure.
 
 ## 3. Software Architecture (N-Tier, MVC)
 
@@ -29,11 +30,12 @@ flowchart TB
         CART["CartService"]
         OS["OrderService"]
         PAY["PaymentService"]
+        VS["VendorService"]
     end
 
     subgraph DATA["TechXpress.Data - Data Access Layer"]
         UOW["UnitOfWork"]
-        REPO["Generic, Product and Category Repositories"]
+        REPO["Generic, Product, Category, and Vendor Repositories"]
         CTX["ApplicationDbContext - EF Core"]
     end
 
@@ -42,8 +44,8 @@ flowchart TB
 
     U -->|HTTP request| MW --> C
     C --> V
-    C --> PS & CS & CART & OS & PAY
-    PS & CS & OS --> UOW
+    C --> PS & CS & CART & OS & PAY & VS
+    PS & CS & OS & VS --> UOW
     UOW --> REPO --> CTX --> DB
     PAY -->|create session / verify payment| STRIPE
 ```
@@ -54,8 +56,8 @@ Controllers never access the database directly; each layer only knows the layer 
 | Layer | Project | Responsibility |
 |---|---|---|
 | Presentation | `TechXpress.Web` | Controllers, Views, ViewModels, client-side scripts, authentication middleware |
-| Business Logic | `TechXpress.Services` | Business rules: cart totals, discounts, stock checks, order placement, payment orchestration |
-| Data Access | `TechXpress.Data` | Entities, `DbContext`, migrations, repositories, Unit of Work, seed data |
+| Business Logic | `TechXpress.Services` | Business rules: cart totals, discounts, stock checks, order placement, vendor verification, payment orchestration |
+| Data Access | `TechXpress.Data` | Entities, DbContext, migrations, repositories, Unit of Work, seed data |
 
 ## 4. Component Diagram
 
@@ -68,6 +70,7 @@ flowchart LR
         CC["CartController"]
         OC["CheckoutController"]
         PRC["ProfileController"]
+        VC["VendorController"]
         ADM["Admin Area Controllers"]
     end
 
@@ -77,12 +80,14 @@ flowchart LR
         ICART["ICartService"]
         IOS["IOrderService"]
         IPAY["IPaymentService"]
+        IVS["IVendorService"]
     end
 
     subgraph Data
         IUOW["IUnitOfWork"]
         IPR["IProductRepository"]
         ICR["ICategoryRepository"]
+        IVR["IVendorRepository"]
         IGR["IGenericRepository of T"]
         CTX["ApplicationDbContext"]
     end
@@ -100,12 +105,13 @@ flowchart LR
     CC --> ICART
     OC --> IOS & IPAY
     PRC --> IOS
-    ADM --> IPS & ICS & IOS
+    VC --> IVS
+    ADM --> IPS & ICS & IOS & IVS
     AC --> IDN
     ICART --> SES
-    IPS & ICS & IOS --> IUOW
-    IUOW --> IPR & ICR & IGR
-    IPR & ICR & IGR --> CTX --> SQL
+    IPS & ICS & IOS & IVS --> IUOW
+    IUOW --> IPR & ICR & IVR & IGR
+    IPR & ICR & IVR & IGR --> CTX --> SQL
     IPAY --> STR
     IDN --> CTX
 ```
@@ -121,7 +127,7 @@ flowchart LR
     subgraph Azure["Microsoft Azure"]
         subgraph APP["App Service (Windows/Linux, .NET 8)"]
             WEBAPP["TechXpress ASP.NET Core MVC App<br/>(Web + Services + Data assemblies)"]
-            IMG["wwwroot/images<br/>(product images)"]
+            IMG["wwwroot/images & uploads<br/>(product images & vendor verification documents)"]
             ENV["Application Settings<br/>(connection string, Stripe keys)"]
         end
         SQL[("Azure SQL Database<br/>TechXpressDb")]
