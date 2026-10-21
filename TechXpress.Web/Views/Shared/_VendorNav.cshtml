@@ -1,0 +1,21 @@
+@{
+    var currentController = (string?)ViewContext.RouteData.Values["controller"];
+
+    string Active(string controller) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+
+<nav class="vendor-subnav mb-4" aria-label="تنقّل لوحة البائع">
+    <a class="vnav-link @Active("VendorDashboard")" asp-controller="VendorDashboard" asp-action="Index">
+        <i class="fas fa-gauge-high"></i><span>لوحة التحكم</span>
+    </a>
+    <a class="vnav-link @Active("VendorProduct")" asp-controller="VendorProduct" asp-action="Index">
+        <i class="fas fa-box-open"></i><span>منتجاتي</span>
+    </a>
+    <a class="vnav-link @Active("VendorOrder")" asp-controller="VendorOrder" asp-action="Index">
+        <i class="fas fa-truck-fast"></i><span>طلبات متجري</span>
+    </a>
+    <a class="vnav-link @Active("VendorWallet")" asp-controller="VendorWallet" asp-action="Index">
+        <i class="fas fa-wallet"></i><span>محفظتي والأرباح</span>
+    </a>
+</nav>

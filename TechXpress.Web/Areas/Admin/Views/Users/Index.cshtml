@@ -1,0 +1,131 @@
+@model IReadOnlyList<AdminUserDto>
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "إدارة المستخدمين - TechXpress Admin";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+}
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-users"></i></div>
+    <div class="page-head-text">
+        <h1>إدارة المستخدمين</h1>
+        <p>إدارة الحسابات والأدوار وحالة التفعيل</p>
+    </div>
+    <div class="page-head-actions">
+        <span class="chip chip-gold"><i class="fas fa-user"></i> @Model.Count مستخدم مسجّل</span>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card border-secondary shadow-sm">
+    <div class="card-header bg-dark border-secondary py-3">
+        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-users me-2"></i>قائمة المستخدمين</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model == null || Model.Count == 0)
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <p class="text-muted">لا يوجد مستخدمون.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table id="usersTable" class="table table-hover align-middle mb-0">
+                    <thead class="bg-secondary text-white">
+                        <tr>
+                            <th>الاسم</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الهاتف</th>
+                            <th>المدينة</th>
+                            <th class="text-center">الأدوار</th>
+                            <th class="text-center">تاريخ التسجيل</th>
+                            <th class="text-center">الحالة</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td><span class="fw-bold text-dark">@user.FullName</span></td>
+                                <td><span class="text-muted small">@user.Email</span></td>
+                                <td>@(string.IsNullOrWhiteSpace(user.PhoneNumber) ? "—" : user.PhoneNumber)</td>
+                                <td>@(string.IsNullOrWhiteSpace(user.City) ? "—" : user.City)</td>
+                                <td class="text-center">
+                                    @if (user.Roles.Count == 0)
+                                    {
+                                        <span class="text-muted small">بدون دور</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var role in user.Roles)
+                                        {
+                                            var cls = role == "Admin" ? "bg-danger"
+                                                    : role == "Vendor" ? "bg-warning text-dark"
+                                                    : "bg-primary";
+                                            <span class="badge @cls me-1">@role</span>
+                                        }
+                                    }
+                                </td>
+                                <td class="text-center text-muted small">@user.CreatedAt.ToString("yyyy/MM/dd")</td>
+                                <td class="text-center">
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">نشط</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">معلّق</span>
+                                    }
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    @if (user.IsActive)
+                                    {
+                                        <form asp-area="Admin" asp-controller="Users" asp-action="Suspend" method="post" class="d-inline"
+                                              onsubmit="return confirm('هل أنت متأكد من تعليق هذا الحساب؟ سيُمنع من تسجيل الدخول.');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-user-slash"></i> تعليق
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-area="Admin" asp-controller="Users" asp-action="Activate" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-user-check"></i> تفعيل
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#usersTable').DataTable({
+                responsive: true,
+                language: { url: '/lib/datatables/i18n/ar.json' },
+                columnDefs: [{ orderable: false, targets: [4, 7] }]
+            });
+        });
+    </script>
+}

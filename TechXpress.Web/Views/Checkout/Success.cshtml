@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "نجاح الدفع - TechXpress";
+    int? orderId = ViewData["OrderId"] as int?;
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <div class="result-icon result-success mb-4">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h1 class="h2 fw-bold mb-3">تم الدفع بنجاح!</h1>
+                        <p class="text-muted mb-4">
+                            شكراً لك على شرائك. تم تأكيد طلبك وسيتم معالجته وإرساله لك قريباً.
+                        </p>
+
+                        <div class="d-grid gap-2">
+                            @if (orderId.HasValue)
+                            {
+                                <a asp-controller="Profile" asp-action="OrderDetails" asp-route-id="@orderId.Value"
+                                   class="btn btn-warning btn-lg fw-bold py-3 shadow-sm">
+                                    <i class="fas fa-receipt me-2"></i>تفاصيل الطلب #@orderId.Value
+                                </a>
+                            }
+                            <a asp-controller="Profile" asp-action="Orders" asp-area=""
+                               class="btn @(orderId.HasValue ? "btn-outline-warning" : "btn-warning") btn-lg fw-bold py-3">
+                                <i class="fas fa-shopping-bag me-2"></i>عرض طلباتي
+                            </a>
+                            <a asp-controller="Products" asp-action="Index" asp-area=""
+                               class="btn btn-outline-secondary btn-lg fw-bold py-3">
+                                <i class="fas fa-box me-2"></i>مواصلة التسوق
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

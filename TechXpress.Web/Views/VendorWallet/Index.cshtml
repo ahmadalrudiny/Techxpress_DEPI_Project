@@ -1,0 +1,164 @@
+@model VendorWalletViewModel
+@{
+    ViewData["Title"] = "محفظتي والأرباح - TechXpress";
+
+    string TypeText(string t) => t switch
+    {
+        "Deposit" => "إيداع أرباح",
+        "Withdrawal" => "طلب سحب",
+        "Refund" => "استرداد",
+        _ => t
+    };
+
+    string TypeBadge(string t) => t switch
+    {
+        "Deposit" => "bg-success",
+        "Withdrawal" => "bg-info text-dark",
+        "Refund" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+
+    string StatusText(string s) => s switch
+    {
+        "Pending" => "قيد الانتظار",
+        "Completed" => "مكتمل",
+        "Rejected" => "مرفوض",
+        _ => s
+    };
+
+    string StatusBadge(string s) => s switch
+    {
+        "Pending" => "bg-warning text-dark",
+        "Completed" => "bg-success",
+        "Rejected" => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+
+<partial name="_VendorNav" />
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-wallet"></i></div>
+            <div class="page-head-text">
+                <h1>محفظتي والأرباح</h1>
+                <p>@Model.StoreName — رصيدك ومعاملاتك المالية وطلبات السحب وحالتها</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="Index" asp-controller="VendorDashboard" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-gauge-high me-1"></i>لوحة التحكم
+                </a>
+                <a asp-action="Index" asp-controller="VendorOrder" class="btn btn-outline-info btn-sm fw-bold">
+                    <i class="fas fa-truck-fast me-1"></i>طلبات متجري
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="stat-card bg-dark border-secondary p-4 rounded-3 shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">الرصيد المتاح</p>
+                            <h2 class="fw-bold text-warning mb-0">$@Model.Balance.ToString("N2")</h2>
+                        </div>
+                        <i class="fas fa-sack-dollar fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card border-secondary shadow-sm h-100">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-money-bill-transfer me-2"></i>طلب سحب أرباح</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="RequestPayout" method="post" class="row g-3 align-items-end" novalidate>
+                            @Html.AntiForgeryToken()
+                            <div class="col-md-4">
+                                <label class="form-label" for="Amount">المبلغ المطلوب سحبه</label>
+                                <input class="form-control" id="Amount" name="Amount" type="number" step="0.01" min="1" required placeholder="0.00" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="PayoutDetails">رقم المحفظة / بيانات الاستلام</label>
+                                <input class="form-control" id="PayoutDetails" name="PayoutDetails" maxlength="100" required placeholder="مثال: 010xxxxxxxx" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="Note">ملاحظة (اختياري)</label>
+                                <input class="form-control" id="Note" name="Note" maxlength="200" />
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-warning fw-bold px-4">
+                                    <i class="fas fa-paper-plane me-1"></i>إرسال طلب السحب
+                                </button>
+                                <span class="text-muted small ms-2">تتم مراجعة الطلب من الإدارة قبل التحويل.</span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-secondary shadow-sm">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-clock-rotate-left me-2"></i>سجل المعاملات</h2>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Transactions == null || !Model.Transactions.Any())
+                {
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-receipt fa-3x mb-3"></i>
+                        <p class="mb-0">لا توجد معاملات مالية حتى الآن.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-secondary text-white">
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>النوع</th>
+                                    <th class="text-center">الحالة</th>
+                                    <th class="text-center">المبلغ</th>
+                                    <th class="text-center">الرصيد بعد</th>
+                                    <th>الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in Model.Transactions)
+                                {
+                                    <tr>
+                                        <td class="text-muted small">@t.Date.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                                        <td><span class="badge @TypeBadge(t.Type)">@TypeText(t.Type)</span></td>
+                                        <td class="text-center"><span class="badge @StatusBadge(t.Status)">@StatusText(t.Status)</span></td>
+                                        <td class="text-center fw-bold @(t.Type == "Withdrawal" ? "text-danger" : "text-success")">
+                                            @(t.Type == "Withdrawal" ? "-" : "+")$@t.Amount.ToString("N2")
+                                        </td>
+                                        <td class="text-center text-dark">$@t.BalanceAfter.ToString("N2")</td>
+                                        <td>
+                                            <span class="text-muted small">@(string.IsNullOrEmpty(t.Description) ? "-" : t.Description)</span>
+                                            @if (!string.IsNullOrEmpty(t.RejectionReason))
+                                            {
+                                                <div class="text-danger small mt-1">
+                                                    <i class="fas fa-circle-xmark me-1"></i>سبب الرفض: @t.RejectionReason
+                                                </div>
+                                            }
+                                            else if (t.ProcessedAt.HasValue)
+                                            {
+                                                <div class="text-success small mt-1">
+                                                    <i class="fas fa-circle-check me-1"></i>تمت المراجعة: @t.ProcessedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                                                </div>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

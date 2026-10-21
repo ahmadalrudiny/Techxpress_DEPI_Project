@@ -1,0 +1,213 @@
+@model ProductListViewModel
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "المنتجات - TechXpress";
+}
+
+<!-- Page Header -->
+<section class="page-header text-center text-white py-5">
+    <div class="container">
+        <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill mb-3">
+            <i class="fas fa-store me-1"></i>متجر TechXpress
+        </span>
+        <h1 class="display-5 fw-bold mb-2">كل المنتجات</h1>
+        <p class="text-white-50 mb-0">ابحث مباشرة واختر من بين أحدث الأجهزة الإلكترونية</p>
+    </div>
+</section>
+
+<!-- Filters -->
+<section class="py-4 filter-section">
+    <div class="container">
+        <form asp-action="Index" method="get" id="filterForm" class="card border-secondary shadow-sm filter-card p-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold" for="liveSearchInput">
+                        <i class="fas fa-magnifying-glass me-1 text-gold-dark"></i>البحث باسم المنتج
+                    </label>
+                    <div class="search-field">
+                        <input type="text" name="search" class="form-control" id="liveSearchInput"
+                               value="@Model.Search" placeholder="اكتب اسم المنتج..." autocomplete="off" />
+                        <button type="button" class="search-clear" id="clearSearch" title="مسح البحث"
+                                style="display:@(string.IsNullOrEmpty(Model.Search) ? "none" : "block")">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold" for="categorySelect">
+                        <i class="fas fa-tags me-1 text-gold-dark"></i>الفئة
+                    </label>
+                    <select name="categoryId" id="categorySelect" class="form-select">
+                        <option value="">كل الفئات</option>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            if (Model.CategoryId == cat.Id)
+                            {
+                                <option value="@cat.Id" selected>@cat.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-6">
+                    <label class="form-label fw-semibold" for="minPriceInput">السعر من</label>
+                    <input type="number" name="minPrice" id="minPriceInput" class="form-control"
+                           value="@Model.MinPrice" step="0.01" min="0" placeholder="0" />
+                </div>
+
+                <div class="col-lg-2 col-6">
+                    <label class="form-label fw-semibold" for="maxPriceInput">السعر إلى</label>
+                    <input type="number" name="maxPrice" id="maxPriceInput" class="form-control"
+                           value="@Model.MaxPrice" step="0.01" min="0" placeholder="0" />
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label fw-semibold" for="sortSelect">الترتيب</label>
+                    <select name="sort" id="sortSelect" class="form-select">
+                        @if (Model.Sort == "newest")
+                        {
+                            <option value="newest" selected>الأحدث</option>
+                        }
+                        else
+                        {
+                            <option value="newest">الأحدث</option>
+                        }
+                        @if (Model.Sort == "priceAsc")
+                        {
+                            <option value="priceAsc" selected>الأرخص</option>
+                        }
+                        else
+                        {
+                            <option value="priceAsc">الأرخص</option>
+                        }
+                        @if (Model.Sort == "priceDesc")
+                        {
+                            <option value="priceDesc" selected>الأغلى</option>
+                        }
+                        else
+                        {
+                            <option value="priceDesc">الأغلى</option>
+                        }
+                        @if (Model.Sort == "nameAsc")
+                        {
+                            <option value="nameAsc" selected>الاسم</option>
+                        }
+                        else
+                        {
+                            <option value="nameAsc">الاسم</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="btn btn-warning fw-bold px-4">
+                        <i class="fas fa-filter me-1"></i>تصفية
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary px-4" id="resetFilters">
+                        <i class="fas fa-rotate-left me-1"></i>إعادة تعيين
+                    </button>
+                    <span class="ms-auto align-self-center text-muted small" id="searchStatus"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Products Grid -->
+<section class="py-4">
+    <div class="container">
+        <div id="productResults" class="position-relative">
+            <partial name="_ProductResultsPartial" model="Model" />
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var $results = $("#productResults");
+            var $status = $("#searchStatus");
+            var timer = null;
+            var currentRequest = null;
+
+            function buildParams() {
+                return {
+                    search: $("#liveSearchInput").val(),
+                    categoryId: $("#categorySelect").val(),
+                    minPrice: $("#minPriceInput").val(),
+                    maxPrice: $("#maxPriceInput").val(),
+                    sort: $("#sortSelect").val(),
+                    page: 1
+                };
+            }
+
+            // تحميل النتائج بالبحث الحي بدون إعادة تحميل الصفحة
+            function loadResults(pushUrl) {
+                var params = buildParams();
+
+                if (currentRequest) { currentRequest.abort(); }
+
+                $results.addClass("is-loading");
+                $status.html('<i class="fas fa-spinner fa-spin me-1"></i>جارٍ البحث...');
+
+                currentRequest = $.get("@Url.Action("SearchPartial", "Products")", params)
+                    .done(function (html) {
+                        $results.html(html);
+                        if (pushUrl !== false) {
+                            var qs = $.param(params);
+                            window.history.replaceState(null, "", "@Url.Action("Index", "Products")?" + qs);
+                        }
+                        $status.html('<i class="fas fa-circle-check text-success me-1"></i>تم تحديث النتائج');
+                        setTimeout(function () { $status.text(""); }, 2000);
+                    })
+                    .fail(function (xhr, textStatus) {
+                        if (textStatus === "abort") { return; }
+                        $status.html('<i class="fas fa-triangle-exclamation text-danger me-1"></i>تعذّر تحميل النتائج');
+                    })
+                    .always(function () {
+                        $results.removeClass("is-loading");
+                        currentRequest = null;
+                    });
+            }
+
+            function debouncedLoad(delay) {
+                clearTimeout(timer);
+                timer = setTimeout(function () { loadResults(); }, delay);
+            }
+
+            $("#liveSearchInput").on("input", function () {
+                $("#clearSearch").toggle(!!$(this).val());
+                debouncedLoad(350);
+            });
+
+            $("#categorySelect, #sortSelect").on("change", function () { loadResults(); });
+            $("#minPriceInput, #maxPriceInput").on("input", function () { debouncedLoad(550); });
+
+            // منع إعادة تحميل الصفحة عند الضغط على "تصفية"
+            $("#filterForm").on("submit", function (e) {
+                e.preventDefault();
+                loadResults();
+            });
+
+            $("#clearSearch").on("click", function () {
+                $("#liveSearchInput").val("").trigger("input");
+            });
+
+            $("#resetFilters").on("click", function () {
+                $("#liveSearchInput").val("");
+                $("#categorySelect").val("");
+                $("#minPriceInput").val("");
+                $("#maxPriceInput").val("");
+                $("#sortSelect").val("newest");
+                $("#clearSearch").hide();
+                loadResults();
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,84 @@
+@model EditProfileViewModel
+@using TechXpress.Web.Models
+@{
+    ViewData["Title"] = "تعديل الملف الشخصي - TechXpress";
+}
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-user-edit"></i></div>
+            <div class="page-head-text">
+                <h1>تعديل الملف الشخصي</h1>
+                <p>حدّث بياناتك وعنوان الشحن الخاص بك</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="Index" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-arrow-right me-1"></i>ملفي الشخصي
+                </a>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-user-edit me-2 text-warning"></i>بيانات الحساب</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="Edit" method="post" novalidate>
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-dark">الاسم بالكامل</label>
+                                <input asp-for="FullName" class="form-control" required />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-dark">البريد الإلكتروني</label>
+                                <input asp-for="Email" class="form-control" type="email" required readonly />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-dark">العنوان</label>
+                                <input asp-for="Address" class="form-control" />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-dark">رقم الهاتف</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-7">
+                                    <label class="form-label fw-semibold text-dark">المدينة</label>
+                                    <input asp-for="City" class="form-control" />
+                                    <span asp-validation-for="City" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold text-dark">الرمز البريدي</label>
+                                    <input asp-for="PostalCode" class="form-control" />
+                                    <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-warning btn-lg fw-bold py-3">
+                                    <i class="fas fa-save me-2"></i>حفظ التغييرات
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    إلغاء
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

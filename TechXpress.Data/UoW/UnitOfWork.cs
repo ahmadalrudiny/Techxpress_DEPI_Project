@@ -15,6 +15,12 @@ public class UnitOfWork : IUnitOfWork
     public ICategoryRepository Categories { get; }
     public IOrderRepository Orders { get; }
     public IGenericRepository<OrderDetail> OrderDetails { get; }
+    public IVendorRepository Vendors { get; }
+    public IWalletRepository Wallets { get; }
+    public IWishlistRepository Wishlists { get; }
+    public IReviewRepository Reviews { get; }
+    public IGenericRepository<ContactMessage> ContactMessages { get; }
+    public IPersistentCartRepository PersistentCarts { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -24,6 +30,12 @@ public class UnitOfWork : IUnitOfWork
         Categories = new CategoryRepository(context);
         Orders = new OrderRepository(context);
         OrderDetails = new GenericRepository<OrderDetail>(context);
+        Vendors = new VendorRepository(context);
+        Wallets = new WalletRepository(context);
+        Wishlists = new WishlistRepository(context);
+        Reviews = new ReviewRepository(context);
+        ContactMessages = new GenericRepository<ContactMessage>(context);
+        PersistentCarts = new PersistentCartRepository(context);
     }
 
     public async Task<int> SaveChangesAsync()

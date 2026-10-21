@@ -1,0 +1,104 @@
+@model ProfileViewModel
+@using TechXpress.Web.Models
+@{
+    ViewData["Title"] = "ملفي الشخصي - TechXpress";
+}
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-user"></i></div>
+            <div class="page-head-text">
+                <h1>ملفي الشخصي</h1>
+                <p>بياناتك، طلباتك وإعدادات الأمان في مكان واحد</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="Orders" class="btn btn-warning btn-sm fw-bold">
+                    <i class="fas fa-shopping-bag me-1"></i>طلباتي
+                </a>
+                <a asp-action="ChangePassword" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-key me-1"></i>كلمة المرور
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Profile Info -->
+            <div class="col-lg-4">
+                <div class="card border-secondary shadow-sm mb-4">
+                    <div class="card-body text-center p-4">
+                        <div class="avatar-wrapper mb-3">
+                            <i class="fas fa-user-circle fa-5x text-muted"></i>
+                        </div>
+                        <h2 class="h5 fw-bold text-dark">@Model.FullName</h2>
+                        <p class="text-muted small">@Model.Email</p>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span class="badge bg-danger fs-6 fw-bold mt-2">مدير النظام</span>
+                        }
+                        else if (User.IsInRole("Vendor"))
+                        {
+                            <span class="badge bg-warning text-dark fs-6 fw-bold mt-2">بائع</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark fs-6 fw-bold mt-2">عميل</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.City))
+                        {
+                            <p class="text-muted small mt-2 mb-0"><i class="fas fa-city me-1"></i>@Model.City</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    <a asp-action="Edit" class="list-group-item list-group-item-action bg-dark text-white border-0 d-flex align-items-center">
+                        <i class="fas fa-user me-3 text-warning"></i>
+                        <span class="fw-bold">تعديل الملف الشخصي</span>
+                    </a>
+                    <a asp-action="ChangePassword" class="list-group-item list-group-item-action bg-dark text-white border-0 d-flex align-items-center mt-2">
+                        <i class="fas fa-lock me-3 text-warning"></i>
+                        <span class="fw-bold">تغيير كلمة المرور</span>
+                    </a>
+                    <a asp-action="Orders" class="list-group-item list-group-item-action bg-dark text-white border-0 d-flex align-items-center mt-2">
+                        <i class="fas fa-shopping-bag me-3 text-warning"></i>
+                        <span class="fw-bold">طلباتي</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="col-lg-8">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-rocket me-2 text-warning"></i>إجراءات سريعة</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <a asp-action="Edit" class="btn btn-outline-warning w-100 py-3 fw-bold">
+                                    <i class="fas fa-edit me-2"></i>تعديل الملف
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a asp-action="ChangePassword" class="btn btn-outline-secondary w-100 py-3 fw-bold">
+                                    <i class="fas fa-key me-2"></i>تغيير كلمة المرور
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a asp-action="Orders" class="btn btn-outline-warning w-100 py-3 fw-bold">
+                                    <i class="fas fa-history me-2"></i>طلباتي
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary w-100 py-3 fw-bold">
+                                    <i class="fas fa-home me-2"></i>الرئيسية
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

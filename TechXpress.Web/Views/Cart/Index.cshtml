@@ -1,0 +1,164 @@
+@model CartSummaryDto
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "سلة التسوق - TechXpress";
+}
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-cart-shopping"></i></div>
+            <div class="page-head-text">
+                <h1>سلة التسوق</h1>
+                <p>راجع المنتجات وطبّق كود الخصم قبل إتمام الدفع</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="Index" asp-controller="Products" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-box me-1"></i>متابعة التسوق
+                </a>
+            </div>
+        </div>
+
+        @if (Model == null || !Model.Items.Any())
+        {
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-shopping-cart fa-4x mb-4"></i>
+                <h2 class="h3 fw-bold mb-2">سلة التسوق فارغة</h2>
+                <p class="mb-4">لم تقم بإضافة أي منتجات إلى سلتك بعد.</p>
+                <a asp-action="Index" asp-controller="Products" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm">
+                    <i class="fas fa-box me-2"></i>تصفح المنتجات
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card border-secondary shadow-sm mb-4">
+                        <div class="card-header bg-dark border-secondary py-3">
+                            <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-shopping-basket me-2 text-warning"></i>عناصر السلة</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            @foreach (var item in Model.Items)
+                            {
+                                <div class="row align-items-center py-4 border-bottom">
+                                    <div class="col-md-3 col-lg-2 text-center">
+                                        <img src="@item.ImageUrl" class="img-fluid rounded shadow-sm" alt="@item.Name" style="max-height: 100px;" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h3 class="h6 fw-bold text-dark mb-1">@item.Name</h3>
+                                        <small class="text-muted">$@item.Price.ToString("F2") للوحدة</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control text-center qty-input" data-product-id="@item.ProductId" value="@item.Quantity" min="1" max="@item.StockQuantity"
+                                                   aria-label="كمية @item.Name" />
+                                            <button class="btn btn-outline-secondary update-qty" data-product-id="@item.ProductId"
+                                                    title="تحديث الكمية" aria-label="تحديث كمية @item.Name"><i class="fas fa-sync-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong class="item-total text-dark" data-product-id="@item.ProductId">$@((item.Price * item.Quantity).ToString("F2"))</strong>
+                                    </div>
+                                    <div class="col-md-1 text-end">
+                                        <button class="btn btn-sm btn-outline-danger remove-item" data-product-id="@item.ProductId"
+                                                title="حذف من السلة" aria-label="حذف @item.Name من السلة"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card border-secondary shadow-sm sticky-top" style="top: 100px;">
+                        <div class="card-header bg-dark border-secondary py-3">
+                            <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-file-invoice me-2 text-warning"></i>ملخص الطلب</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">المجموع الفرعي</span>
+                                <span class="fw-bold">$@Model.Subtotal.ToString("F2")</span>
+                            </div>
+                            @if (Model.Discount > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-3 text-success">
+                                    <span class="text-muted">الخصم</span>
+                                    <span class="fw-bold">- $@Model.Discount.ToString("F2")</span>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between mb-4 fw-bold fs-5">
+                                <span class="text-dark">المجموع الكلي</span>
+                                <span class="price-tag">$@Model.Total.ToString("F2")</span>
+                            </div>
+
+                            <form id="promoForm" method="get" asp-action="Index">
+                                <div class="input-group mb-4">
+                                    <input type="text" name="promoCode" class="form-control" placeholder="كود الخصم (مثل SAVE10)" />
+                                    <button class="btn btn-outline-warning" type="submit">تطبيق</button>
+                                </div>
+                            </form>
+
+                            <a asp-controller="Checkout" asp-action="Checkout" class="btn btn-warning btn-lg w-100 fw-bold shadow-sm mb-3">
+                                <i class="fas fa-credit-card me-2"></i>انتقل إلى الدفع
+                            </a>
+
+                            <div class="alert alert-info small">
+                                <i class="fas fa-info-circle me-2"></i>سيتم توجيهك إلى Stripe لإتمام الدفع بشكل آمن.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function updateLine(productId, quantity) {
+            $.post("@Url.Action("Update", "Cart")", { id: productId, quantity: quantity })
+                .done(function (data) {
+                    if (data && data.success) {
+                        refreshCartCount();
+                        location.reload();
+                    } else {
+                        if (typeof toastr !== "undefined") { toastr.warning((data && data.message) || "تعذّر تحديث الكمية", "تنبيه"); }
+                        setTimeout(function () { location.reload(); }, 800);
+                    }
+                })
+                .fail(function () {
+                    if (typeof toastr !== "undefined") { toastr.error("حدث خطأ أثناء تحديث الكمية", "خطأ"); }
+                });
+        }
+
+        $(".update-qty").on("click", function () {
+            var productId = $(this).data("productId");
+            var quantity = $(this).closest(".input-group").find(".qty-input").val();
+            updateLine(productId, quantity);
+        });
+
+        $(".qty-input").on("change", function () {
+            updateLine($(this).data("productId"), $(this).val());
+        });
+
+        $(".remove-item").on("click", function () {
+            var productId = $(this).data("productId");
+            if (!confirm("هل تريد إزالة هذا المنتج من السلة؟")) { return; }
+
+            $.post("@Url.Action("Remove", "Cart")", { id: productId })
+                .done(function (data) {
+                    if (data && data.success) {
+                        refreshCartCount();
+                        if (typeof toastr !== "undefined") { toastr.success("تم حذف المنتج من السلة", "نجاح"); }
+                        setTimeout(function () { location.reload(); }, 500);
+                    } else {
+                        if (typeof toastr !== "undefined") { toastr.warning("تعذّر حذف المنتج", "تنبيه"); }
+                    }
+                })
+                .fail(function () {
+                    if (typeof toastr !== "undefined") { toastr.error("حدث خطأ أثناء حذف المنتج", "خطأ"); }
+                });
+        });
+    </script>
+}

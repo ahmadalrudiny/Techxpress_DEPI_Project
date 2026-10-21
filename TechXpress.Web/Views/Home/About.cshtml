@@ -1,0 +1,126 @@
+@{
+    ViewData["Title"] = "من نحن - TechXpress";
+}
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-circle-info"></i></div>
+            <div class="page-head-text">
+                <h1>من نحن</h1>
+                <p>تعرّف على منصة TechXpress ورؤيتنا في تجارة الإلكترونيات</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-controller="Products" asp-action="Index" class="btn btn-warning fw-bold px-4">
+                    <i class="fas fa-box me-1"></i>تصفّح المنتجات
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-7">
+                <div class="card border-secondary shadow-sm h-100">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-microchip text-warning me-2"></i>قصتنا</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted mb-3">
+                            <strong class="text-dark">TechXpress</strong> سوق إلكتروني متكامل متخصص في أحدث أجهزة الكمبيوتر
+                            والهواتف الذكية والكاميرات والملحقات، يجمع بين أفضل البائعين المعتمدين في مكان واحد.
+                        </p>
+                        <p class="text-muted mb-3">
+                            نؤمن بأن شراء جهاز إلكتروني يجب أن يكون تجربة بسيطة وآمنة، لذلك بنينا المنصة على ثلاثة أعمدة:
+                            <strong class="text-dark">منتجات أصلية</strong>، و<strong class="text-dark">دفع آمن</strong>،
+                            و<strong class="text-dark">دعم سريع</strong> لكل عميل وبائع.
+                        </p>
+                        <p class="text-muted mb-0">
+                            كل بائع يخضع لمراجعة مستنداته (البطاقة الشخصية والسجل التجاري والبطاقة الضريبية) قبل اعتماده،
+                            وكل تقييم على المنتجات مكتوب من عميل <strong class="text-dark">أكمل شراء المنتج فعلياً</strong> فقط.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border-secondary shadow-sm h-100">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-bullseye text-warning me-2"></i>رؤيتنا ورسالتنا</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <h3 class="h6 fw-bold text-gold-dark mb-1"><i class="fas fa-eye me-2"></i>الرؤية</h3>
+                            <p class="text-muted small mb-0">
+                                أن نكون الوجهة الأولى في مصر والشرق الأوسط لشراء الأجهزة الإلكترونية بثقة وشفافية.
+                            </p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="h6 fw-bold text-gold-dark mb-1"><i class="fas fa-bullhorn me-2"></i>الرسالة</h3>
+                            <p class="text-muted small mb-0">
+                                تمكين البائعين الصغار والمتوسطين من الوصول لعملائهم مع تجربة شراء سلسة وآمنة للجميع.
+                            </p>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="chip chip-gold"><i class="fas fa-shield-halved"></i> دفع آمن</span>
+                            <span class="chip chip-gold"><i class="fas fa-certificate"></i> بائعون معتمدون</span>
+                            <span class="chip chip-gold"><i class="fas fa-truck-fast"></i> توصيل سريع</span>
+                            <span class="chip chip-gold"><i class="fas fa-headset"></i> دعم متواصل</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card border-secondary shadow-sm h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-credit-card"></i></div>
+                        <h2 class="h5 fw-bold mb-2">دفع إلكتروني آمن</h2>
+                        <p class="text-muted small mb-0">
+                            نعتمد على بوابة دفع عالمية (Stripe) لمعالجة المدفوعات، ولا نحتفظ ببيانات بطاقتك على السيرفر.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-secondary shadow-sm h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-store"></i></div>
+                        <h2 class="h5 fw-bold mb-2">بائعون موثّقون</h2>
+                        <p class="text-muted small mb-0">
+                            كل متجر يمر بمراجعة إدارية لمستنداته الرسمية قبل نشر منتجاته على المنصة.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-secondary shadow-sm h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-star"></i></div>
+                        <h2 class="h5 fw-bold mb-2">تقييمات موثوقة</h2>
+                        <p class="text-muted small mb-0">
+                            التقييمات مقصورة على المشترين الفعليين، لتضمن قراءة رأي حقيقي قبل الشراء.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-secondary shadow-sm">
+            <div class="card-body p-4 p-lg-5 text-center">
+                <h2 class="h4 fw-bold mb-2">هل أنت بائع؟</h2>
+                <p class="text-muted mb-4">
+                    انضم إلى TechXpress واعرض منتجاتك أمام آلاف العملاء، مع لوحة تحكم كاملة لإدارة منتجاتك وأرباحك.
+                </p>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    <a asp-controller="VendorApply" asp-action="Apply" class="btn btn-warning fw-bold px-4">
+                        <i class="fas fa-store me-1"></i>كن بائعاً
+                    </a>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-warning fw-bold px-4">
+                        <i class="fas fa-envelope me-1"></i>تواصل معنا
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

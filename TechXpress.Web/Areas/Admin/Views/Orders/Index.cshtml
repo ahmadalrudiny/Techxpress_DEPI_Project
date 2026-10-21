@@ -1,0 +1,154 @@
+@model IEnumerable<OrderDto>
+@using TechXpress.Services.Models
+@using TechXpress.Data.Entities
+@{
+    ViewData["Title"] = "إدارة الطلبات - TechXpress Admin";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+}
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-shopping-cart"></i></div>
+    <div class="page-head-text">
+        <h1>إدارة الطلبات</h1>
+        <p>إدارة جميع طلبات العملاء</p>
+    </div>
+    <div class="page-head-actions">
+        <a asp-action="Index" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="fas fa-sync-alt me-1"></i>تحديث
+        </a>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card border-secondary shadow-sm">
+    <div class="card-header bg-dark border-secondary py-3">
+        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-shopping-cart me-2"></i>قائمة الطلبات (@Model.Count() طلب)</h2>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="ordersTable" class="table table-hover align-middle mb-0">
+                <thead class="bg-secondary text-white">
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>العميل</th>
+                        <th>التاريخ</th>
+                        <th class="text-center">المبلغ</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-end">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Model.OrderByDescending(o => o.OrderDate))
+                    {
+                        <tr>
+                            <td>
+                                <span class="fw-bold text-dark">#@o.Id</span>
+                            </td>
+                            <td>
+                                <span class="text-dark fw-semibold d-block">@(string.IsNullOrWhiteSpace(o.CustomerName) ? "غير محدد" : o.CustomerName)</span>
+                                <small class="text-muted">@o.CustomerEmail</small>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@o.OrderDate.ToString("yyyy/MM/dd HH:mm")</span>
+                            </td>
+                            <td class="text-center fw-bold">$@o.TotalAmount.ToString("F2")</td>
+                            <td class="text-center">
+                                @switch (o.Status)
+                                {
+                                    case OrderStatus.Pending:
+                                        <span class="badge bg-warning text-dark fs-6">قيد الانتظار</span>
+                                        break;
+                                    case OrderStatus.Paid:
+                                        <span class="badge bg-primary fs-6">تم الدفع</span>
+                                        break;
+                                    case OrderStatus.Shipped:
+                                        <span class="badge bg-info fs-6">تم الشحن</span>
+                                        break;
+                                    case OrderStatus.Delivered:
+                                        <span class="badge bg-success fs-6">تم التوصيل</span>
+                                        break;
+                                    case OrderStatus.Cancelled:
+                                        <span class="badge bg-danger fs-6">ملغي</span>
+                                        break;
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-info me-1">
+                                    <i class="fas fa-eye"></i>تفاصيل
+                                </a>
+                                <form asp-action="UpdateStatus" asp-route-id="@o.Id" method="post" class="d-inline me-1">
+                                    @Html.AntiForgeryToken()
+                                    <select name="newStatus" class="form-select form-select-sm status-select" data-order-id="@o.Id"
+                                            aria-label="تغيير حالة الطلب رقم @o.Id">
+                                        @foreach (var status in Enum.GetValues<OrderStatus>())
+                                        {
+                                            var isSelected = o.Status == status;
+                                            var statusLabel = status switch
+                                            {
+                                                OrderStatus.Pending => "قيد الانتظار",
+                                                OrderStatus.Paid => "تم الدفع",
+                                                OrderStatus.Shipped => "تم الشحن",
+                                                OrderStatus.Delivered => "تم التوصيل",
+                                                OrderStatus.Cancelled => "ملغي",
+                                                _ => status.ToString()
+                                            };
+                                            <option value="@status" selected="@isSelected">@statusLabel</option>
+                                        }
+                                    </select>
+                                </form>
+                                <form asp-action="Cancel" asp-route-id="@o.Id" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استعادة المخزون.');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-times"></i>إلغاء
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#ordersTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '/lib/datatables/i18n/ar.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [5] }
+                ]
+            });
+
+            // Status change with AJAX
+            $('.status-select').on('change', function () {
+                var orderId = $(this).data('order-id');
+                var newStatus = $(this).val();
+                var form = $(this).closest('form');
+
+                $.post(form.attr('action'), form.serialize(), function (data) {
+                    if (data.success) {
+                        toastr.success(data.message, 'تم التحديث');
+                        location.reload();
+                    } else {
+                        toastr.error(data.message, 'فشل');
+                        location.reload();
+                    }
+                }).fail(function () {
+                    toastr.error('حدث خطأ أثناء تحديث الحالة', 'خطأ');
+                    location.reload();
+                });
+            });
+        });
+    </script>
+}

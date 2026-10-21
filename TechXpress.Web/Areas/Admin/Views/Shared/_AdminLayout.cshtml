@@ -1,0 +1,171 @@
+@{
+    var adminPageTitle = ViewData["Title"] as string;
+    var adminDocumentTitle = string.IsNullOrWhiteSpace(adminPageTitle)
+        ? "TechXpress Admin"
+        : adminPageTitle.Contains("TechXpress", StringComparison.OrdinalIgnoreCase)
+            ? adminPageTitle
+            : adminPageTitle + " - TechXpress Admin";
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string Active(string controller) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@adminDocumentTitle</title>
+    <meta name="description" content="لوحة تحكم إدارة متجر TechXpress — إدارة المنتجات والفئات والطلبات والبائعين وطلبات السحب." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css" />
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="theme-dark admin-shell">
+    <div class="admin-layout">
+        <!-- الشريط الجانبي -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <a class="admin-brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                <span class="brand-badge"><i class="fas fa-shield-halved"></i></span>
+                <span class="brand-text">
+                    <strong>TechXpress</strong>
+                    <small>لوحة الإدارة</small>
+                </span>
+            </a>
+
+            <nav class="admin-nav" aria-label="قائمة الإدارة">
+                <span class="admin-nav-label">نظرة عامة</span>
+                <a class="admin-nav-link @Active("Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                    <i class="fas fa-gauge-high"></i><span>لوحة التحكم</span>
+                </a>
+
+                <span class="admin-nav-label">الكتالوج</span>
+                <a class="admin-nav-link @Active("Products")" asp-area="Admin" asp-controller="Products" asp-action="Index">
+                    <i class="fas fa-box"></i><span>المنتجات</span>
+                </a>
+                <a class="admin-nav-link @Active("Categories")" asp-area="Admin" asp-controller="Categories" asp-action="Index">
+                    <i class="fas fa-tags"></i><span>الفئات</span>
+                </a>
+
+                <span class="admin-nav-label">العمليات</span>
+                <a class="admin-nav-link @Active("Orders")" asp-area="Admin" asp-controller="Orders" asp-action="Index">
+                    <i class="fas fa-cart-shopping"></i><span>الطلبات</span>
+                </a>
+                <a class="admin-nav-link @Active("VendorRequests")" asp-area="Admin" asp-controller="VendorRequests" asp-action="Index">
+                    <i class="fas fa-user-plus"></i><span>طلبات البائعين</span>
+                </a>
+                <a class="admin-nav-link @Active("AdminPayout")" asp-area="Admin" asp-controller="AdminPayout" asp-action="Index">
+                    <i class="fas fa-wallet"></i><span>طلبات السحب</span>
+                </a>
+
+                <span class="admin-nav-label">المستخدمون</span>
+                <a class="admin-nav-link @Active("Users")" asp-area="Admin" asp-controller="Users" asp-action="Index">
+                    <i class="fas fa-users"></i><span>المستخدمون</span>
+                </a>
+                <a class="admin-nav-link @Active("ContactMessages")" asp-area="Admin" asp-controller="ContactMessages" asp-action="Index">
+                    <i class="fas fa-envelope-open-text"></i><span>رسائل التواصل</span>
+                </a>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <a class="admin-nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-store"></i><span>زيارة المتجر</span>
+                </a>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="admin-nav-link admin-logout">
+                        <i class="fas fa-right-from-bracket"></i><span>تسجيل الخروج</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="admin-backdrop" id="adminBackdrop" hidden></div>
+
+        <!-- المحتوى -->
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <button type="button" class="admin-burger" id="adminBurger" aria-label="فتح قائمة الإدارة" aria-controls="adminSidebar" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="admin-topbar-title">
+                    <strong>@(string.IsNullOrWhiteSpace(adminPageTitle) ? "لوحة الإدارة" : adminPageTitle)</strong>
+                </div>
+                <div class="admin-topbar-actions">
+                    <a class="btn btn-outline-warning btn-sm fw-bold d-none d-sm-inline-flex" asp-area="" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-store me-1"></i> المتجر
+                    </a>
+                    <span class="navbar-user">
+                        <i class="fas fa-circle-user"></i>
+                        <strong>@(User.Identity?.Name ?? "مدير")</strong>
+                        <span class="badge bg-danger ms-1">أدمن</span>
+                    </span>
+                </div>
+            </header>
+
+            <main role="main" class="admin-content">
+                @RenderBody()
+            </main>
+
+            <footer class="admin-footer">
+                <small>&copy; @DateTime.Now.Year - TechXpress Admin - جميع الحقوق محفوظة.</small>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/toastr/toastr.min.js"></script>
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+
+    @* Anti-forgery token available to every admin page so AJAX POSTs are always accepted *@
+    @Html.AntiForgeryToken()
+
+    <script>
+        if (typeof toastr !== "undefined") {
+            toastr.options.positionClass = "toast-top-right";
+            toastr.options.closeButton = true;
+            toastr.options.progressBar = true;
+            toastr.options.newestOnTop = true;
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    var token = $('input[name="__RequestVerificationToken"]').first().val();
+                    if (token) {
+                        xhr.setRequestHeader("RequestVerificationToken", token);
+                    }
+                }
+            }
+        });
+
+        // القائمة الجانبية على الشاشات الصغيرة
+        (function () {
+            var sidebar = document.getElementById("adminSidebar");
+            var burger = document.getElementById("adminBurger");
+            var backdrop = document.getElementById("adminBackdrop");
+            if (!sidebar || !burger || !backdrop) { return; }
+
+            function close() {
+                sidebar.classList.remove("open");
+                backdrop.hidden = true;
+                burger.setAttribute("aria-expanded", "false");
+            }
+
+            burger.addEventListener("click", function () {
+                var open = sidebar.classList.toggle("open");
+                backdrop.hidden = !open;
+                burger.setAttribute("aria-expanded", open ? "true" : "false");
+            });
+            backdrop.addEventListener("click", close);
+        })();
+    </script>
+    @await Html.PartialAsync("_ToastrNotifications")
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,251 @@
+@model TechXpress.Web.Models.RegisterViewModel
+@inject TechXpress.Web.Options.ExternalAuthOptions ExternalAuth
+@{
+    ViewData["Title"] = "إنشاء حساب جديد - TechXpress";
+    Layout = null;
+    var isVendor = Model != null && string.Equals(Model.Role, "Vendor", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="أنشئ حساباً جديداً في TechXpress كعميل أو بائع وابدأ التسوق أو البيع بأمان." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+</head>
+<body class="auth-shell">
+    <!-- لوحة الهوية -->
+    <aside class="auth-aside">
+        <div class="aside-brand"><i class="fas fa-microchip"></i>TechXpress</div>
+        <h1>انضم إلى <span>TechXpress</span> اليوم</h1>
+        <p>
+            أنشئ حسابك كعميل للتسوق فوراً، أو قدّم كبائع معتمد وابدأ في عرض منتجاتك
+            لعملائنا مع إدارة كاملة لمتجرك ومحفظتك.
+        </p>
+        <ul class="auth-features">
+            <li><i class="fas fa-user-check"></i> حساب عميل جاهز في أقل من دقيقة</li>
+            <li><i class="fas fa-file-shield"></i> توثيق رسمي للبائعين قبل الاعتماد</li>
+            <li><i class="fas fa-wallet"></i> محفظة أرباح وتقارير مبيعات للبائع</li>
+            <li><i class="fas fa-lock"></i> حماية كاملة للبيانات وكلمات المرور</li>
+        </ul>
+    </aside>
+
+    <!-- لوحة النموذج -->
+    <main class="auth-panel">
+        <div class="auth-card">
+            <div class="auth-brand-compact">
+                <span class="logo-badge"><i class="fas fa-microchip"></i></span>
+            </div>
+
+            <div class="text-center mb-4">
+                <h2 class="h3 fw-bold mb-1">إنشاء حساب جديد</h2>
+                <p class="auth-lead mb-0">ابدأ رحلتك في التسوق الإلكتروني</p>
+            </div>
+
+            <form asp-action="Register" method="post" enctype="multipart/form-data" novalidate id="registerForm">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All"></div>
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="auth-label"><i class="fas fa-user"></i>الاسم بالكامل</label>
+                    <input asp-for="FullName" class="auth-input" placeholder="أحمد علي" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="auth-label"><i class="fas fa-envelope"></i>البريد الإلكتروني</label>
+                    <input asp-for="Email" class="auth-input" placeholder="you@example.com" autocomplete="username" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Password" class="auth-label"><i class="fas fa-lock"></i>كلمة المرور</label>
+                        <div class="input-with-toggle">
+                            <input asp-for="Password" class="auth-input" placeholder="••••••••" autocomplete="new-password" />
+                            <button type="button" class="toggle-password" title="إظهار/إخفاء كلمة المرور">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="ConfirmPassword" class="auth-label"><i class="fas fa-lock"></i>تأكيد كلمة المرور</label>
+                        <div class="input-with-toggle">
+                            <input asp-for="ConfirmPassword" class="auth-input" placeholder="••••••••" autocomplete="new-password" />
+                            <button type="button" class="toggle-password" title="إظهار/إخفاء كلمة المرور">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <span class="auth-label"><i class="fas fa-user-tag"></i>نوع الحساب</span>
+                    <div class="role-switch">
+                        <label class="role-option @(!isVendor ? "is-active" : "")" data-role="Customer" for="roleCustomer">
+                            <input type="radio" name="Role" id="roleCustomer" value="Customer" @(!isVendor ? "checked" : "") />
+                            <span class="role-title"><i class="fas fa-bag-shopping"></i>عميل</span>
+                            <span class="role-sub">تسوّق واشتري فوراً</span>
+                        </label>
+                        <label class="role-option @(isVendor ? "is-active" : "")" data-role="Vendor" for="roleVendor">
+                            <input type="radio" name="Role" id="roleVendor" value="Vendor" @(isVendor ? "checked" : "") />
+                            <span class="role-title"><i class="fas fa-store"></i>بائع</span>
+                            <span class="role-sub">ارفع مستنداتك للاعتماد</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- بيانات ومستندات البائع -->
+                <div class="doc-block mb-4" id="vendorBlock" style="display:@(isVendor ? "block" : "none");">
+                    <div class="doc-block-title">
+                        <i class="fas fa-file-signature"></i>بيانات المتجر ومستندات التوثيق
+                    </div>
+
+                    <div class="alert alert-danger py-2 small" id="vendorError" style="display:none;"></div>
+
+                    <div class="doc-upload">
+                        <label for="StoreName"><i class="fas fa-store"></i>اسم المتجر</label>
+                        <input asp-for="StoreName" class="auth-input" id="StoreName" placeholder="مثال: متجر التقنية"
+                               disabled="@(isVendor ? null : "disabled")" />
+                        <span asp-validation-for="StoreName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="doc-upload" id="docNationalId">
+                        <label for="NationalId"><i class="fas fa-id-card"></i>صورة البطاقة الشخصية / الرقم القومي</label>
+                        <input asp-for="NationalId" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                               disabled="@(isVendor ? null : "disabled")" />
+                        <div class="doc-note">صيغة PDF أو JPG أو PNG — بحد أقصى 5 ميجابايت</div>
+                        <span asp-validation-for="NationalId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="doc-upload" id="docCommercialRegister">
+                        <label for="CommercialRegister"><i class="fas fa-file-contract"></i>السجل التجاري</label>
+                        <input asp-for="CommercialRegister" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                               disabled="@(isVendor ? null : "disabled")" />
+                        <div class="doc-note">صيغة PDF أو JPG أو PNG — بحد أقصى 5 ميجابايت</div>
+                        <span asp-validation-for="CommercialRegister" class="text-danger small"></span>
+                    </div>
+
+                    <div class="doc-upload" id="docTaxCard">
+                        <label for="TaxCard"><i class="fas fa-file-invoice"></i>البطاقة الضريبية</label>
+                        <input asp-for="TaxCard" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                               disabled="@(isVendor ? null : "disabled")" />
+                        <div class="doc-note">صيغة PDF أو JPG أو PNG — بحد أقصى 5 ميجابايت</div>
+                        <span asp-validation-for="TaxCard" class="text-danger small"></span>
+                    </div>
+
+                    <div class="auth-hint mt-2 mb-0">
+                        <i class="fas fa-circle-info me-1" style="color:#c98f00;"></i>
+                        يتم مراجعة طلبك من فريق الإدارة قبل تفعيل صلاحية البيع، وستظهر لك حالة الطلب بعد التسجيل.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn auth-btn w-100" id="submitBtn">
+                    <i class="fas fa-user-plus me-2"></i>تسجيل الحساب
+                </button>
+            </form>
+
+            <div class="auth-divider"><span>أو</span></div>
+
+            <form asp-action="ExternalLogin" method="post" class="mb-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="provider" value="Google" />
+                <button type="submit" class="btn btn-google w-100">
+                        <svg class="google-logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                        </svg>
+                        إنشاء حساب باستخدام Google
+                    </button>
+                    <p class="auth-lead text-center mt-2 mb-0" style="font-size:.78rem;">
+                        يُنشأ حساب Google كـ«عميل»، ويمكنك التقدّم للانضمام كمورد بعد ذلك من صفحة «كن بائعاً».
+                    </p>
+                    @if (!ExternalAuth.GoogleEnabled)
+                    {
+                        <p class="auth-lead text-center mt-1 mb-0" style="font-size:.78rem;">
+                            <i class="fas fa-circle-info me-1"></i>
+                            Google غير مُفعّل في هذه البيئة — أضف Client ID و Secret لتفعيله.
+                        </p>
+                    }
+                </form>
+
+            <div class="text-center">
+                <p class="auth-lead mb-3">لديك حساب بالفعل؟</p>
+                <a asp-action="Login" class="btn btn-outline-gold w-100">
+                    <i class="fas fa-right-to-bracket me-2"></i>تسجيل الدخول
+                </a>
+            </div>
+        </div>
+
+        <p class="auth-footer-note">&copy; @DateTime.Now.Year TechXpress — جميع الحقوق محفوظة.</p>
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+    <script>
+        $(function () {
+            var $block = $("#vendorBlock");
+            var $vendorInputs = $block.find("input");
+
+            function applyRole(isVendor) {
+                if (isVendor) {
+                    $block.stop(true, true).slideDown(180);
+                } else {
+                    $block.stop(true, true).slideUp(140);
+                    $vendorInputs.val("");
+                    $(".doc-upload").removeClass("is-picked");
+                    $("#vendorError").hide().empty();
+                }
+                $vendorInputs.prop("disabled", !isVendor);
+            }
+
+            $("input[name='Role']").on("change", function () {
+                var isVendor = $(this).val() === "Vendor";
+                $(".role-option").removeClass("is-active");
+                $(this).closest(".role-option").addClass("is-active");
+                applyRole(isVendor);
+            });
+
+            // تمييز الحقل بعد اختيار الملف
+            $(".doc-upload input[type=file]").on("change", function () {
+                $(this).closest(".doc-upload").toggleClass("is-picked", this.files.length > 0);
+            });
+
+            // تحقق فوري من مستندات البائع
+            $("#registerForm").on("submit", function (e) {
+                $("#vendorError").hide().empty();
+
+                if ($("#roleVendor").is(":checked")) {
+                    var missing = [];
+                    if (!$("#StoreName").val()) { missing.push("اسم المتجر"); }
+                    $("#vendorBlock input[type=file]").each(function () {
+                        if (!this.files.length) { missing.push($(this).closest(".doc-upload").find("label").text().trim()); }
+                    });
+
+                    if (missing.length) {
+                        e.preventDefault();
+                        $("#vendorError").html(
+                            '<i class="fas fa-triangle-exclamation me-1"></i>من فضلك أكمل: <strong>' +
+                            missing.join("</strong>، <strong>") + "</strong>").show();
+                        $("#vendorBlock")[0].scrollIntoView({ behavior: "smooth", block: "center" });
+                        return false;
+                    }
+                }
+            });
+
+            // مزامنة الحالة عند فتح الصفحة (مهم بعد أخطاء التحقق)
+            applyRole($("#roleVendor").is(":checked"));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+@model PayoutHistoryViewModel
+@using TechXpress.Data.Entities
+@{
+    ViewData["Title"] = "سجل طلبات السحب - TechXpress Admin";
+    Layout = "_AdminLayout";
+
+    string StatusText(WalletTransactionStatus s) => s switch
+    {
+        WalletTransactionStatus.Pending => "قيد المراجعة",
+        WalletTransactionStatus.Completed => "تم الاعتماد",
+        WalletTransactionStatus.Rejected => "مرفوض",
+        _ => s.ToString()
+    };
+
+    string StatusBadge(WalletTransactionStatus s) => s switch
+    {
+        WalletTransactionStatus.Pending => "bg-warning text-dark",
+        WalletTransactionStatus.Completed => "bg-success",
+        WalletTransactionStatus.Rejected => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    // الشرائح: (النص، قيمة الفلتر، العدد)
+    var tabs = new (string Label, WalletTransactionStatus? Value, int Count)[]
+    {
+        ("الكل", null, Model.Counts.Total),
+        ("قيد المراجعة", WalletTransactionStatus.Pending, Model.Counts.Pending),
+        ("تم الاعتماد", WalletTransactionStatus.Completed, Model.Counts.Approved),
+        ("مرفوضة", WalletTransactionStatus.Rejected, Model.Counts.Rejected)
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+}
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-money-check-dollar"></i></div>
+    <div class="page-head-text">
+        <h1>سجل طلبات السحب</h1>
+        <p>كل طلبات سحب أرباح البائعين وحالتها — مراجعة، اعتماد أو رفض</p>
+    </div>
+    <div class="page-head-actions">
+        <a asp-action="Index" asp-route-status="@Model.StatusFilter" class="btn btn-outline-warning btn-sm">
+            <i class="fas fa-sync-alt me-1"></i>تحديث
+        </a>
+    </div>
+</div>
+
+<!-- Counters -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card bg-dark border-secondary p-4 rounded-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">طلبات قيد المراجعة</p>
+                    <h2 class="fw-bold text-warning mb-0">@Model.Counts.Pending</h2>
+                    @if (Model.StatusFilter == null && Model.PendingTotal > 0)
+                    {
+                        <span class="small text-muted">بإجمالي $@Model.PendingTotal.ToString("N2") محجوز</span>
+                    }
+                </div>
+                <i class="fas fa-hourglass-half fa-2x text-warning opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card bg-dark border-secondary p-4 rounded-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">طلبات تم اعتمادها</p>
+                    <h2 class="fw-bold text-success mb-0">@Model.Counts.Approved</h2>
+                    @if (Model.StatusFilter == null && Model.ApprovedTotal > 0)
+                    {
+                        <span class="small text-muted">بإجمالي $@Model.ApprovedTotal.ToString("N2") تم صرفها</span>
+                    }
+                </div>
+                <i class="fas fa-circle-check fa-2x text-success opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card bg-dark border-secondary p-4 rounded-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">طلبات مرفوضة</p>
+                    <h2 class="fw-bold text-danger mb-0">@Model.Counts.Rejected</h2>
+                    <span class="small text-muted">أُعيد مبلغها إلى محفظة البائع</span>
+                </div>
+                <i class="fas fa-ban fa-2x text-danger opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Tabs -->
+<ul class="nav nav-pills payout-tabs mb-3">
+    @foreach (var tab in tabs)
+    {
+        var isActive = Model.StatusFilter == tab.Value;
+        <li class="nav-item">
+            <a class="nav-link @(isActive ? "active" : "")"
+               asp-action="Index" asp-route-status="@tab.Value">
+                @tab.Label
+                <span class="badge @(isActive ? "bg-dark text-white" : "bg-secondary") ms-1">@tab.Count</span>
+            </a>
+        </li>
+    }
+</ul>
+
+<!-- Payout Requests Table -->
+<div class="card border-secondary shadow-sm">
+    <div class="card-header bg-dark border-secondary py-3">
+        <h2 class="h5 fw-bold text-white mb-0">
+            <i class="fas fa-clock-rotate-left me-2"></i>
+            @(Model.StatusFilter == null ? "كل الطلبات" : StatusText(Model.StatusFilter.Value))
+            (@Model.Requests.Count طلب)
+        </h2>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Requests.Any())
+        {
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-credit-card fa-3x mb-3"></i>
+                <h2 class="h5 fw-bold mb-2">لا توجد طلبات في هذه الحالة</h2>
+                <p class="text-muted mb-0">سيظهر هنا أي طلب سحب جديد يقدّمه البائعون.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table id="payoutTable" class="table table-hover align-middle mb-0">
+                    <thead class="bg-secondary text-white">
+                        <tr>
+                            <th>المتجر</th>
+                            <th class="text-center">المبلغ</th>
+                            <th>تفاصيل الدفع</th>
+                            <th class="text-center">الحالة</th>
+                            <th class="text-center">تاريخ الطلب</th>
+                            <th class="text-center">تاريخ المعالجة</th>
+                            <th class="text-center">بواسطة</th>
+                            <th>ملاحظات</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Requests)
+                        {
+                            <tr>
+                                <td><span class="fw-bold">@r.StoreName</span></td>
+                                <td class="text-center fw-bold">
+                                    <span class="price-tag">$@r.Amount.ToString("N2")</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@(string.IsNullOrEmpty(r.PayoutDetails) ? "-" : r.PayoutDetails)</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @StatusBadge(r.Status)">@StatusText(r.Status)</span>
+                                </td>
+                                <td class="text-center text-muted small">@r.RequestedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td class="text-center text-muted small">
+                                    @(r.ProcessedAt.HasValue ? r.ProcessedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm") : "-")
+                                </td>
+                                <td class="text-center text-muted small">@(string.IsNullOrEmpty(r.ProcessedByName) ? "-" : r.ProcessedByName)</td>
+                                <td>
+                                    @if (r.Status == WalletTransactionStatus.Rejected && !string.IsNullOrEmpty(r.RejectionReason))
+                                    {
+                                        <span class="text-danger small">
+                                            <i class="fas fa-circle-xmark me-1"></i>@r.RejectionReason
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">@(string.IsNullOrEmpty(r.Note) ? "-" : r.Note)</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (r.IsPending)
+                                    {
+                                        <form asp-action="ApprovePayout" method="post" class="d-inline me-1"
+                                              onsubmit="return confirm('هل أنت متأكد من اعتماد طلب السحب بمبلغ $@r.Amount.ToString("N2")؟');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="transactionId" value="@r.TransactionId" />
+                                            <input type="hidden" name="status" value="@Model.StatusFilter" />
+                                            <button type="submit" class="btn btn-sm btn-success shadow-sm">
+                                                <i class="fas fa-check me-1"></i>اعتماد
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger reject-payout-btn"
+                                                data-id="@r.TransactionId" data-amount="@r.Amount" data-store="@r.StoreName">
+                                            <i class="fas fa-times me-1"></i>رفض
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">
+                                            <i class="fas fa-lock me-1"></i>تمت المعالجة
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Reject Payout Modal -->
+<div class="modal fade" id="rejectPayoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h2 class="h5 modal-title text-white"><i class="fas fa-circle-xmark me-2 text-danger"></i>رفض طلب السحب</h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="RejectPayout" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="rejectPayoutTransactionId" name="transactionId" />
+                <input type="hidden" name="status" value="@Model.StatusFilter" />
+                <div class="modal-body">
+                    <p class="text-muted small" id="rejectPayoutSummary"></p>
+                    <div class="mb-3">
+                        <label class="form-label text-white" for="rejectReason">سبب الرفض</label>
+                        <textarea id="rejectReason" name="reason" class="form-control bg-secondary text-white" rows="4" required maxlength="500"
+                                  placeholder="مثال: بيانات الاستلام غير صحيحة"></textarea>
+                    </div>
+                    <div class="alert alert-info small mb-0">
+                        <i class="fas fa-circle-info me-2"></i>سيتم إعادة المبلغ المحجوز إلى محفظة البائع تلقائياً.
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">تأكيد الرفض</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var hasTable = $('#payoutTable').length > 0;
+            if (hasTable) {
+                $('#payoutTable').DataTable({
+                    responsive: true,
+                    order: [],
+                    language: { url: '/lib/datatables/i18n/ar.json' },
+                    columnDefs: [
+                        { orderable: false, targets: [8] },
+                        { className: 'text-nowrap', targets: [4, 5] }
+                    ]
+                });
+            }
+
+            // فتح مودال الرفض مع بيانات الطلب
+            $('.reject-payout-btn').on('click', function () {
+                var transactionId = $(this).data('id');
+                var amount = $(this).data('amount');
+                var store = $(this).data('store');
+
+                $('#rejectPayoutTransactionId').val(transactionId);
+                $('#rejectPayoutSummary').html(
+                    'المتجر: <strong>' + store + '</strong> — المبلغ: <strong>$' +
+                    Number(amount).toFixed(2) + '</strong>');
+                $('#rejectReason').val('');
+                $('#rejectPayoutModal').modal('show');
+            });
+        });
+    </script>
+}

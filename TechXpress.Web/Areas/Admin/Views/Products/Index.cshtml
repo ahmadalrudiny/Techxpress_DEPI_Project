@@ -1,0 +1,148 @@
+@model AdminProductListViewModel
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "إدارة المنتجات - TechXpress Admin";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+}
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-box"></i></div>
+    <div class="page-head-text">
+        <h1>إدارة المنتجات</h1>
+        <p>إدارة جميع منتجات المتجر</p>
+    </div>
+    <div class="page-head-actions">
+        <a asp-action="Create" class="btn btn-warning px-4 fw-bold shadow-sm">
+            <i class="fas fa-plus me-1"></i>إضافة منتج جديد
+        </a>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card border-secondary shadow-sm">
+    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-box me-2"></i>قائمة المنتجات (@Model.TotalCount منتج)</h2>
+        <div class="text-muted small">
+           عرض المنتجات حسب الصفحات
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="productsTable" class="table table-hover align-middle mb-0">
+                <thead class="bg-secondary text-white">
+                    <tr>
+                        <th>الصورة</th>
+                        <th>اسم المنتج</th>
+                        <th>الفئة</th>
+                        <th>البائع</th>
+                        <th class="text-center">السعر</th>
+                        <th class="text-center">المخزون</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-end">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Products)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(p.ImageUrl))
+                                {
+                                    <img src="@p.ImageUrl" class="rounded shadow-sm" alt="@p.Name" style="width: 50px; height: 50px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary d-flex align-items-center justify-content-center text-muted rounded" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark">@p.Name</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark fs-7">@p.CategoryName</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@(p.VendorStoreName ?? "متجر TechXpress")</span>
+                            </td>
+                            <td class="text-center fw-bold">$@p.Price.ToString("F2")</td>
+                            <td class="text-center">
+                                <span class="@(p.StockQuantity <= 0 ? "badge bg-danger" : "badge bg-success") fs-7">
+                                    @p.StockQuantity
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(p.IsActive ? "bg-success" : "bg-danger") fs-6 fw-bold">
+                                    @(p.IsActive ? "نشط" : "غير نشط")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-warning me-1">
+                                    <i class="fas fa-edit"></i>تعديل
+                                </a>
+                                @if (p.IsActive)
+                                {
+                                    <form asp-action="Deactivate" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من إلغاء تفعيل هذا المنتج؟');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-ban"></i>إلغاء تفعيل
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Restore" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من إعادة تفعيل هذا المنتج؟');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-check-circle"></i>تفعيل
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.Page ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i"
+                       asp-route-pageSize="@Model.PageSize" asp-route-search="@Model.Search"
+                       asp-route-categoryId="@Model.CategoryId">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@section Scripts {
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#productsTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '/lib/datatables/i18n/ar.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [0, 7] }
+                ]
+            });
+        });
+    </script>
+}

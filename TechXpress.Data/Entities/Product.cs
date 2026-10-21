@@ -19,4 +19,9 @@ public class Product
 
     public int CategoryId { get; set; }
     public Category Category { get; set; } = null!;
+    public int? VendorId { get; set; }          // null = منتج المتجر نفسه
+    public Vendor? Vendor { get; set; }
+
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<WishlistItem> WishlistItems { get; set; } = new List<WishlistItem>();
 }

@@ -1,0 +1,367 @@
+@model VendorDashboardViewModel
+@{
+    ViewData["Title"] = "لوحة تحكم البائع";
+    var stats = Model.Stats;
+
+    string ShippingText(TechXpress.Data.Entities.ShippingStatus s) => s switch
+    {
+        TechXpress.Data.Entities.ShippingStatus.Pending => "بانتظار التجهيز",
+        TechXpress.Data.Entities.ShippingStatus.Preparing => "قيد التجهيز",
+        TechXpress.Data.Entities.ShippingStatus.Shipped => "تم الشحن",
+        TechXpress.Data.Entities.ShippingStatus.Delivered => "تم التوصيل",
+        _ => s.ToString()
+    };
+
+    string ShippingBadge(TechXpress.Data.Entities.ShippingStatus s) => s switch
+    {
+        TechXpress.Data.Entities.ShippingStatus.Pending => "bg-warning text-dark",
+        TechXpress.Data.Entities.ShippingStatus.Preparing => "bg-secondary",
+        TechXpress.Data.Entities.ShippingStatus.Shipped => "bg-info text-dark",
+        TechXpress.Data.Entities.ShippingStatus.Delivered => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    string TypeText(string t) => t switch
+    {
+        "Deposit" => "إيداع أرباح",
+        "Withdrawal" => "طلب سحب",
+        "Refund" => "استرداد",
+        _ => t
+    };
+
+    string StatusText(string s) => s switch
+    {
+        "Pending" => "قيد الانتظار",
+        "Completed" => "مكتمل",
+        "Rejected" => "مرفوض",
+        _ => s
+    };
+}
+
+<partial name="_VendorNav" />
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-store"></i></div>
+    <div class="page-head-text">
+        <h1>@Model.StoreName</h1>
+        <p>
+            مرحباً @(User.Identity?.Name) — هذه لوحة إدارة متجرك: المنتجات، الطلبات والأرباح في مكان واحد.
+        </p>
+    </div>
+    <div class="page-head-actions">
+        @if (Model.Status == "Approved")
+        {
+            <span class="chip chip-gold"><i class="fas fa-circle-check"></i> متجر معتمد</span>
+        }
+        else if (Model.Status == "Pending")
+        {
+            <span class="chip" style="background: rgba(245,179,1,.14); border-color: rgba(245,179,1,.4); color: var(--tx-gold-2);">
+                <i class="fas fa-hourglass-half"></i> قيد المراجعة
+            </span>
+        }
+        else
+        {
+            <span class="chip" style="background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.4); color: #ff9a9a;">
+                <i class="fas fa-circle-xmark"></i> مرفوض
+            </span>
+        }
+        <a asp-controller="VendorProduct" asp-action="Create" class="btn btn-warning btn-sm fw-bold">
+            <i class="fas fa-plus me-1"></i>منتج جديد
+        </a>
+    </div>
+</div>
+
+@if (!Model.IsApproved)
+{
+    <div class="alert alert-warning mb-4 d-flex align-items-start" role="alert">
+        <i class="fas fa-triangle-exclamation fa-lg me-3 mt-1"></i>
+        <div>
+            @if (Model.Status == "Pending")
+            {
+                <strong>طلب انضمامك لا يزال قيد المراجعة.</strong>
+                <div class="small mt-1">
+                    يمكنك تصفّح اللوحة الآن، وبعد موافقة الإدارة ستتمكن من إضافة المنتجات واستقبال الطلبات.
+                </div>
+            }
+            else
+            {
+                <strong>تم رفض طلب انضمامك.</strong>
+                @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+                {
+                    <div class="small mt-1">السبب: @Model.RejectionReason</div>
+                }
+                <div class="small mt-1">
+                    يمكنك تحديث المستندات وإعادة التقديم من
+                    <a asp-controller="VendorApply" asp-action="Apply" class="fw-bold">صفحة التقديم</a>.
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Stats -->
+<div class="row g-3 g-lg-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">رصيد المحفظة</p>
+                    <h2 class="fw-bold text-warning mb-0">$@Model.Balance.ToString("N2")</h2>
+                </div>
+                <i class="fas fa-wallet fa-2x text-warning opacity-50"></i>
+            </div>
+            <a asp-controller="VendorWallet" asp-action="Index" class="small text-warning d-inline-block mt-2">
+                إدارة الأرباح والسحب <i class="fas fa-arrow-left ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">إجمالي المبيعات</p>
+                    <h2 class="fw-bold text-success mb-0">$@stats.TotalSales.ToString("N2")</h2>
+                </div>
+                <i class="fas fa-chart-line fa-2x text-success opacity-50"></i>
+            </div>
+            <span class="small text-muted d-inline-block mt-2">
+                من @(stats.AwaitingShipment + stats.ShippedOrders + stats.DeliveredOrders) طلب مدفوع — غير المدفوع والملغي لا يُحتسب
+            </span>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">منتجاتي</p>
+                    <h2 class="fw-bold text-dark mb-0">@stats.TotalProducts</h2>
+                </div>
+                <i class="fas fa-box fa-2x text-info opacity-50"></i>
+            </div>
+            <span class="small text-muted d-inline-block mt-2">
+                @stats.ActiveProducts نشط • @stats.InactiveProducts غير نشط
+            </span>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-muted small mb-1">طلبات تحتاج شحن</p>
+                    <h2 class="fw-bold text-warning mb-0">@stats.AwaitingShipment</h2>
+                </div>
+                <i class="fas fa-truck-fast fa-2x text-warning opacity-50"></i>
+            </div>
+            <span class="small text-muted d-inline-block mt-2">
+                @stats.ShippedOrders مشحون • @stats.DeliveredOrders مُسلّم
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Quick actions -->
+<div class="row g-3 g-lg-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <a asp-controller="VendorProduct" asp-action="Index" class="card p-3 h-100 hover-lift text-decoration-none">
+            <div class="d-flex align-items-center gap-3">
+                <span class="bg-warning text-dark rounded-circle p-3"><i class="fas fa-box fa-lg"></i></span>
+                <div>
+                    <h3 class="h6 fw-bold mb-0">إدارة المنتجات</h3>
+                    <p class="text-muted small mb-0">إضافة وتعديل منتجاتك</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a asp-controller="VendorOrder" asp-action="Index" class="card p-3 h-100 hover-lift text-decoration-none">
+            <div class="d-flex align-items-center gap-3">
+                <span class="bg-info text-dark rounded-circle p-3"><i class="fas fa-receipt fa-lg"></i></span>
+                <div>
+                    <h3 class="h6 fw-bold mb-0">طلبات متجري</h3>
+                    <p class="text-muted small mb-0">متابعة طلبات عملائك</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a asp-controller="VendorWallet" asp-action="Index" class="card p-3 h-100 hover-lift text-decoration-none">
+            <div class="d-flex align-items-center gap-3">
+                <span class="bg-success text-white rounded-circle p-3"><i class="fas fa-wallet fa-lg"></i></span>
+                <div>
+                    <h3 class="h6 fw-bold mb-0">المحفظة والأرباح</h3>
+                    <p class="text-muted small mb-0">السحب وكشف الحساب</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a asp-controller="VendorProduct" asp-action="Create" class="card p-3 h-100 hover-lift text-decoration-none">
+            <div class="d-flex align-items-center gap-3">
+                <span class="bg-secondary text-white rounded-circle p-3"><i class="fas fa-plus fa-lg"></i></span>
+                <div>
+                    <h3 class="h6 fw-bold mb-0">إضافة منتج</h3>
+                    <p class="text-muted small mb-0">اعرض منتجاً جديداً للبيع</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Recent orders -->
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-secondary shadow-sm h-100">
+            <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-clock-rotate-left me-2"></i>آخر الطلبات</h2>
+                <a asp-controller="VendorOrder" asp-action="Index" class="btn btn-sm btn-outline-warning">
+                    كل الطلبات <i class="fas fa-arrow-left ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentOrders.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-secondary text-white">
+                                <tr>
+                                    <th>الطلب</th>
+                                    <th class="text-center">عدد القطع</th>
+                                    <th class="text-center">قيمة طلبك</th>
+                                    <th class="text-center">حالة الشحن</th>
+                                    <th class="text-center">التاريخ</th>
+                                    <th class="text-end">تفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders)
+                                {
+                                    <tr>
+                                        <td><span class="fw-bold text-dark">#@order.OrderId</span></td>
+                                        <td class="text-center">@order.ItemsCount</td>
+                                        <td class="text-center fw-bold">$@order.VendorTotal.ToString("N2")</td>
+                                        <td class="text-center">
+                                            <span class="badge @ShippingBadge(order.ShippingStatus)">@ShippingText(order.ShippingStatus)</span>
+                                        </td>
+                                        <td class="text-center text-muted small">@order.OrderDate.ToLocalTime().ToString("yyyy/MM/dd")</td>
+                                        <td class="text-end">
+                                            <a asp-controller="VendorOrder" asp-action="Details" asp-route-id="@order.OrderId"
+                                               class="btn btn-sm btn-outline-warning" title="عرض تفاصيل الطلب" aria-label="عرض تفاصيل الطلب">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <h3 class="h6 fw-bold mb-1">لا توجد طلبات بعد</h3>
+                        <p class="small mb-0">عند شراء العملاء لمنتجاتك ستظهر الطلبات هنا.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Recent products -->
+        <div class="card border-secondary shadow-sm mb-4">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-box me-2"></i>أحدث منتجاتي</h2>
+            </div>
+            <div class="card-body p-3">
+                @if (Model.RecentProducts.Any())
+                {
+                    foreach (var p in Model.RecentProducts)
+                    {
+                        <div class="d-flex align-items-center gap-3 py-2 border-bottom" style="border-color: rgba(15,23,42,.07) !important;">
+                            @if (!string.IsNullOrEmpty(p.ImageUrl))
+                            {
+                                <img src="@p.ImageUrl" alt="@p.Name" class="rounded"
+                                     style="width: 46px; height: 46px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <span class="bg-secondary rounded d-inline-flex align-items-center justify-content-center text-muted"
+                                      style="width: 46px; height: 46px;"><i class="fas fa-box"></i></span>
+                            }
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-bold text-truncate" title="@p.Name">@p.Name</div>
+                                <div class="small text-muted">
+                                    <span class="price-tag">$@p.Price.ToString("N2")</span>
+                                    <span class="mx-1">•</span>
+                                    <span class="@(p.StockQuantity > 0 ? "text-success" : "text-danger")">
+                                        @(p.StockQuantity > 0 ? $"مخزون {p.StockQuantity}" : "نفد المخزون")
+                                    </span>
+                                </div>
+                            </div>
+                            @if (!p.IsActive)
+                            {
+                                <span class="badge bg-secondary">غير نشط</span>
+                            }
+                        </div>
+                    }
+                    <a asp-controller="VendorProduct" asp-action="Index" class="btn btn-outline-warning btn-sm w-100 mt-3">
+                        كل منتجاتي <i class="fas fa-arrow-left ms-1"></i>
+                    </a>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                        <p class="small text-muted mb-3">لم تُضف منتجات بعد.</p>
+                        <a asp-controller="VendorProduct" asp-action="Create" class="btn btn-warning btn-sm">
+                            <i class="fas fa-plus me-1"></i>إضافة أول منتج
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Recent wallet activity -->
+        <div class="card border-secondary shadow-sm">
+            <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-receipt me-2"></i>آخر الحركات</h2>
+                @if (stats.PendingPayouts > 0)
+                {
+                    <span class="badge bg-warning text-dark">@stats.PendingPayouts قيد المراجعة</span>
+                }
+            </div>
+            <div class="card-body p-3">
+                @if (Model.RecentTransactions.Any())
+                {
+                    foreach (var t in Model.RecentTransactions)
+                    {
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom"
+                             style="border-color: rgba(15,23,42,.07) !important;">
+                            <div>
+                                <div class="fw-bold small">@TypeText(t.Type)</div>
+                                <div class="text-muted" style="font-size: .75rem;">
+                                    @t.Date.ToLocalTime().ToString("yyyy/MM/dd HH:mm") • @StatusText(t.Status)
+                                </div>
+                            </div>
+                            <span class="fw-bold @(t.Type == "Withdrawal" ? "text-danger" : "text-success")">
+                                @(t.Type == "Withdrawal" ? "-" : "+")$@t.Amount.ToString("N2")
+                            </span>
+                        </div>
+                    }
+                    <a asp-controller="VendorWallet" asp-action="Index" class="btn btn-outline-warning btn-sm w-100 mt-3">
+                        كشف الحساب الكامل
+                    </a>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-wallet fa-2x text-muted mb-2"></i>
+                        <p class="small text-muted mb-0">لا توجد حركات على المحفظة بعد.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

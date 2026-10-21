@@ -1,49 +1,443 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@inject TechXpress.Services.Interfaces.ICartService CartService
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    var isAdmin = User.IsInRole("Admin");
+    var isVendor = User.IsInRole("Vendor");
+
+    var pageTitle = ViewData["Title"] as string;
+    var documentTitle = string.IsNullOrWhiteSpace(pageTitle)
+        ? "TechXpress - متجر الإلكترونيات الأول"
+        : pageTitle.Contains("TechXpress", StringComparison.OrdinalIgnoreCase)
+            ? pageTitle
+            : pageTitle + " - TechXpress";
+
+    // وصف الصفحة لمحركات البحث — يمكن لأي صفحة تجاوزه عبر ViewData["Description"]
+    var metaDescription = ViewData["Description"] as string
+        ?? "TechXpress — سوق إلكتروني متكامل للأجهزة الإلكترونية: لابتوبات وهواتف ذكية وكاميرات وملحقات من بائعين معتمدين، مع دفع إلكتروني آمن وتقييمات موثوقة وتوصيل سريع.";
+
+    // عدد عناصر السلة يُرسم من السيرفر لمنع ظهور الصفر لحظياً قبل تحديث الـ AJAX
+    var cartJsonForBadge = Context.Session.GetString(CartSession.Key);
+    var initialCartCount = string.IsNullOrWhiteSpace(cartJsonForBadge)
+        ? 0
+        : CartService.GetItemCount(cartJsonForBadge);
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TechXpress.Web</title>
+    <title>@documentTitle</title>
+    <meta name="description" content="@metaDescription" />
+    <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    <!-- Toastr -->
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css" />
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TechXpress.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+<body class="app-body d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TechXpress.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg navbar-light app-navbar sticky-top">
+            <div class="container">
+                <!-- Brand Logo -->
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-badge"><i class="fas fa-bolt"></i></span>
+                    <span class="brand-text">
+                        <strong>TechXpress</strong>
+                        <small>متجر الإلكترونيات</small>
+                    </span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="فتح القائمة">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <!-- الروابط الرئيسية العامة والخاصة بالصلاحيات -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link px-3" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-house me-1"></i> الرئيسة
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        @* المتجر لا يظهر للمدير ولا للبائع (كلاهما يعمل من لوحة التحكم) *@
+                        @if (!isAdmin && !isVendor)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link px-3" asp-area="" asp-controller="Products" asp-action="Index">
+                                    <i class="fas fa-box me-1"></i> المنتجات
+                                </a>
+                            </li>
+                        }
+
+                        @* 1. لوحة البائع: نقطة الدخول الوحيدة لواجهة الإدارة *@
+                        @if (isVendor)
+                        {
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-warning btn-sm px-3 fw-bold text-dark" asp-area="" asp-controller="VendorDashboard" asp-action="Index">
+                                    <i class="fas fa-gauge-high me-1"></i> لوحة تحكم متجري
+                                </a>
+                            </li>
+                        }
+
+                        @* 2. روابط المدير (Admin) *@
+                        @if (isAdmin)
+                        {
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-warning btn-sm px-3 fw-bold text-dark" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="fas fa-gauge-high me-1"></i> لوحة التحكم
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    @* بحث حي مع اقتراحات فورية (لا يظهر للمدير ولا للبائع) *@
+                    @if (!isAdmin && !isVendor)
+                    {
+                        <div class="navbar-search-wrap my-3 my-lg-0 ms-lg-3">
+                            <div class="search-field">
+                                <i class="fas fa-magnifying-glass search-icon"></i>
+                                <input type="text" id="globalSearchInput" class="form-control search-input"
+                                       placeholder="ابحث عن منتج..." autocomplete="off"
+                                       role="combobox" aria-controls="globalSearchResults" aria-autocomplete="list"
+                                       aria-label="البحث عن منتج" aria-expanded="false" />
+                                <div id="globalSearchResults" class="search-suggest d-none" role="listbox" aria-label="نتائج البحث"></div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- أزرار تسجيل الدخول وحالة المستخدم -->
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        @if (isAuthenticated && !isAdmin && !isVendor)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-icon-link" asp-area="" asp-controller="Wishlist" asp-action="Index"
+                                   title="المفضلة" aria-label="المفضلة">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item me-lg-2">
+                                <a class="nav-link nav-icon-link position-relative" asp-area="" asp-controller="Cart" asp-action="Index"
+                                   title="سلة التسوق">
+                                    <i class="fas fa-cart-shopping" aria-hidden="true"></i>
+                                    <span class="visually-hidden">سلة التسوق</span>
+                                    <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark small" aria-hidden="true">@initialCartCount</span>
+                                </a>
+                            </li>
+                        }
+                        @if (isAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="avatar-circle">
+                                        @(string.IsNullOrWhiteSpace(User.Identity!.Name) ? "؟" : User.Identity.Name!.Substring(0, 1).ToUpper())
+                                    </span>
+                                    <span class="d-none d-xl-inline text-truncate" style="max-width: 140px;">@User.Identity!.Name</span>
+                                    @if (isAdmin)
+                                    {
+                                        <span class="badge bg-danger">أدمن</span>
+                                    }
+                                    else if (isVendor)
+                                    {
+                                        <span class="badge bg-warning text-dark">مورد</span>
+                                    }
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                    <li class="px-3 pt-2 pb-1">
+                                        <div class="fw-bold text-truncate" style="max-width: 230px;">@User.Identity!.Name</div>
+                                        <small class="text-muted">@(isAdmin ? "مدير النظام" : isVendor ? "بائع معتمد" : "عميل")</small>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    @if (!isAdmin && !isVendor)
+                                    {
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Index"><i class="fas fa-user me-2"></i>ملفي الشخصي</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Orders"><i class="fas fa-box me-2"></i>طلباتي</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Wishlist" asp-action="Index"><i class="fas fa-heart me-2"></i>المفضلة</a></li>
+                                    }
+                                    else if (isVendor)
+                                    {
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="VendorDashboard" asp-action="Index"><i class="fas fa-gauge-high me-2"></i>لوحة تحكم متجري</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="VendorWallet" asp-action="Index"><i class="fas fa-wallet me-2"></i>محفظتي</a></li>
+                                    }
+                                    else
+                                    {
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="fas fa-gauge-high me-2"></i>لوحة التحكم</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Index"><i class="fas fa-store me-2"></i>زيارة المتجر</a></li>
+                                    }
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-right-from-bracket me-2"></i>تسجيل الخروج
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item me-2">
+                                <a class="btn btn-outline-dark btn-sm px-3" asp-area="" asp-controller="Account" asp-action="Login">
+                                    <i class="fas fa-right-to-bracket me-1"></i> دخول
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-warning btn-sm px-3 fw-bold text-dark" asp-area="" asp-controller="Account" asp-action="Register">
+                                    <i class="fas fa-user-plus me-1"></i> حساب جديد
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
+
+    <div class="container flex-grow-1 my-4">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="app-footer mt-auto pt-5 pb-4">
         <div class="container">
-            &copy; 2026 - TechXpress.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row g-4 g-lg-5">
+                <div class="col-lg-5">
+                    <a class="footer-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                        <span class="brand-badge"><i class="fas fa-bolt"></i></span>
+                        <span class="brand-text">
+                            <strong>TechXpress</strong>
+                            <small>متجر الإلكترونيات</small>
+                        </span>
+                    </a>
+                    <p class="text-muted small mt-3 mb-4" style="max-width: 380px;">
+                        سوق إلكتروني متكامل لأحدث أجهزة الكمبيوتر والهواتف الذكية والكاميرات والملحقات،
+                        بأسعار تنافسية ودفع آمن وتوصيل سريع.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="فيسبوك"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="إكس"><i class="fab fa-x-twitter"></i></a>
+                        <a href="#" aria-label="إنستجرام"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="لينكد إن"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <h2 class="footer-title">روابط سريعة</h2>
+                    <ul class="list-unstyled small footer-links mb-0">
+                        <li><a asp-area="" asp-controller="Home" asp-action="Index">الرئيسة</a></li>
+                        @if (!isAdmin && !isVendor)
+                        {
+                            <li><a asp-area="" asp-controller="Products" asp-action="Index">المنتجات</a></li>
+                            <li><a asp-area="" asp-controller="Cart" asp-action="Index">سلة التسوق</a></li>
+                        }
+                        else if (isVendor)
+                        {
+                            <li><a asp-area="" asp-controller="VendorDashboard" asp-action="Index">لوحة تحكم متجري</a></li>
+                            <li><a asp-area="" asp-controller="VendorProduct" asp-action="Index">منتجاتي</a></li>
+                        }
+                        <li><a asp-area="" asp-controller="Home" asp-action="About">من نحن</a></li>
+                        <li><a asp-area="" asp-controller="Home" asp-action="Contact">تواصل معنا</a></li>
+                        <li><a asp-area="" asp-controller="Home" asp-action="Privacy">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-4">
+                    <h2 class="footer-title">تواصل معنا</h2>
+                    <ul class="list-unstyled small text-muted footer-links mb-0">
+                        <li><i class="fas fa-envelope text-warning me-2"></i>support@techxpress.com</li>
+                        <li><i class="fas fa-phone text-warning me-2"></i>+20 100 000 0000</li>
+                        <li><i class="fas fa-location-dot text-warning me-2"></i>القاهرة، مصر</li>
+                    </ul>
+                    <div class="footer-pay mt-3">
+                        <span class="chip"><i class="fas fa-lock me-1"></i> دفع آمن ومشفّر</span>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary my-4" />
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 text-muted small">
+                <span>&copy; @DateTime.Now.Year - <strong class="text-white">TechXpress</strong> - جميع الحقوق محفوظة.</span>
+                <span><i class="fas fa-shield-halved me-1"></i> بياناتك محمية بأعلى معايير الأمان</span>
+            </div>
         </div>
     </footer>
+
+    <button type="button" class="back-to-top" id="backToTop" aria-label="العودة إلى أعلى الصفحة" title="العودة إلى أعلى الصفحة">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/toastr/toastr.min.js"></script>
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+
+    @* Anti-forgery token available to every page so AJAX POSTs are always accepted *@
+    @Html.AntiForgeryToken()
+
+    <script>
+        // Global toastr defaults
+        if (typeof toastr !== "undefined") {
+            toastr.options.positionClass = "toast-top-right";
+            toastr.options.closeButton = true;
+            toastr.options.progressBar = true;
+            toastr.options.newestOnTop = true;
+        }
+
+        // Automatically attach the anti-forgery token to every AJAX write request
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    var token = $('input[name="__RequestVerificationToken"]').first().val();
+                    if (token) {
+                        xhr.setRequestHeader("RequestVerificationToken", token);
+                    }
+                }
+            }
+        });
+
+        function refreshCartCount() {
+            $.get("@Url.Action("Count", "Cart")", function (data) {
+                if (data && typeof data.cartCount !== "undefined") {
+                    $("#cartCount").text(data.cartCount);
+                }
+            });
+        }
+
+        // Add a product to the session cart, then refresh the badge.
+        function addToCart(productId, quantity, button) {
+            quantity = quantity || 1;
+            var $btn = button ? $(button) : null;
+            if ($btn) { $btn.prop("disabled", true); }
+
+            $.post("@Url.Action("Add", "Cart")", { id: productId, quantity: quantity })
+                .done(function (res) {
+                    if (res && res.success) {
+                        if (typeof toastr !== "undefined") { toastr.success(res.message || "تمت إضافة المنتج إلى السلة", "نجاح"); }
+                        refreshCartCount();
+                    } else {
+                        if (typeof toastr !== "undefined") { toastr.warning((res && res.message) || "تعذّر إضافة المنتج", "تنبيه"); }
+                    }
+                })
+                .fail(function () {
+                    if (typeof toastr !== "undefined") { toastr.error("حدث خطأ أثناء إضافة المنتج. حاول مرة أخرى.", "خطأ"); }
+                })
+                .always(function () {
+                    if ($btn) { $btn.prop("disabled", false); }
+                });
+        }
+
+        // ===== بحث حي في شريط التنقل مع اقتراحات فورية =====
+        (function () {
+            var $input = $("#globalSearchInput");
+            if (!$input.length) { return; }
+
+            var $box = $("#globalSearchResults");
+            var timer = null;
+            var request = null;
+            var lastQuery = "";
+
+            function escapeHtml(value) {
+                return $("<div>").text(value == null ? "" : value).html();
+            }
+
+            function closeBox() {
+                $box.addClass("d-none").empty();
+                $input.attr("aria-expanded", "false");
+            }
+
+            function render(items, term) {
+                if (!items || !items.length) {
+                    $box.html('<div class="search-suggest-empty"><i class="fas fa-circle-info me-2"></i>لا توجد نتائج لـ "' +
+                        escapeHtml(term) + '"</div>').removeClass("d-none");
+                    $input.attr("aria-expanded", "true");
+                    return;
+                }
+
+                var html = "";
+                items.forEach(function (p) {
+                    var img = p.image
+                        ? '<img src="' + escapeHtml(p.image) + '" alt="" />'
+                        : '<span class="suggest-placeholder"><i class="fas fa-box"></i></span>';
+                    var stock = p.inStock
+                        ? '<span class="text-success">متوفر</span>'
+                        : '<span class="text-danger">غير متوفر</span>';
+
+                    html += '<a class="suggest-item" role="option" href="@Url.Action("Details", "Products")/' + p.id + '">' +
+                        '<span class="suggest-thumb">' + img + '</span>' +
+                        '<span class="suggest-body">' +
+                            '<span class="suggest-name">' + escapeHtml(p.name) + '</span>' +
+                            '<span class="suggest-meta">' + escapeHtml(p.category || "") + ' • ' + stock + '</span>' +
+                        '</span>' +
+                        '<span class="suggest-price">$' + Number(p.price).toFixed(2) + '</span>' +
+                    '</a>';
+                });
+
+                html += '<a class="suggest-all" href="@Url.Action("Index", "Products")?search=' +
+                    encodeURIComponent(term) + '">عرض كل النتائج <i class="fas fa-arrow-left ms-1"></i></a>';
+
+                $box.html(html).removeClass("d-none");
+                $input.attr("aria-expanded", "true");
+            }
+
+            function search(term) {
+                if (request) { request.abort(); }
+                request = $.get("@Url.Action("Suggest", "Products")", { term: term })
+                    .done(function (items) { render(items, term); })
+                    .fail(function (xhr, status) {
+                        if (status !== "abort") { closeBox(); }
+                    })
+                    .always(function () { request = null; });
+            }
+
+            $input.on("input", function () {
+                var term = $.trim($input.val());
+                clearTimeout(timer);
+                if (term.length < 2) { lastQuery = ""; closeBox(); return; }
+                if (term === lastQuery) { return; }
+                lastQuery = term;
+                timer = setTimeout(function () { search(term); }, 250);
+            });
+
+            // Enter => صفحة نتائج البحث الكاملة
+            $input.on("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    var term = $.trim($input.val());
+                    window.location.href = "@Url.Action("Index", "Products")?search=" + encodeURIComponent(term);
+                } else if (e.key === "Escape") {
+                    closeBox();
+                }
+            });
+
+            // إغلاق القائمة عند الفقد/النقر خارجها
+            $input.on("blur", function () { setTimeout(closeBox, 200); });
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest(".navbar-search-wrap").length) { closeBox(); }
+            });
+        })();
+
+        $(document).ready(function () {
+            refreshCartCount();
+
+            // زر العودة إلى أعلى الصفحة
+            var $top = $("#backToTop");
+            $(window).on("scroll", function () {
+                $top.toggleClass("show", $(window).scrollTop() > 420);
+            });
+            $top.on("click", function () {
+                $("html, body").animate({ scrollTop: 0 }, 280);
+            });
+        });
+    </script>
+    @await Html.PartialAsync("_ToastrNotifications")
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

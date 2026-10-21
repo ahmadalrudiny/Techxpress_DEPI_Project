@@ -9,6 +9,12 @@ public interface IUnitOfWork : IDisposable
     ICategoryRepository Categories { get; }
     IOrderRepository Orders { get; }
     IGenericRepository<OrderDetail> OrderDetails { get; }
+    IVendorRepository Vendors { get; }
+    IWalletRepository Wallets { get; }
+    IWishlistRepository Wishlists { get; }
+    IReviewRepository Reviews { get; }
+    IGenericRepository<ContactMessage> ContactMessages { get; }
+    IPersistentCartRepository PersistentCarts { get; }
 
     Task<int> SaveChangesAsync();
 

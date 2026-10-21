@@ -21,4 +21,10 @@ public class ProductRepository : GenericRepository<Product>, IProductRepository
         => await _dbSet.Include(p => p.Category)
                        .Where(p => p.CategoryId == categoryId)
                        .ToListAsync();
+
+    public async Task<IEnumerable<Product>> GetByVendorIdAsync(int vendorId)
+        => await _dbSet.AsNoTracking().Include(p => p.Category)
+                       .Where(p => p.VendorId == vendorId)
+                       .OrderByDescending(p => p.CreatedAt)
+                       .ToListAsync();
 }

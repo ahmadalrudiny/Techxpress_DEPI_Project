@@ -1,0 +1,127 @@
+@model IReadOnlyList<TechXpress.Services.Models.ContactMessageDto>
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "رسائل التواصل - TechXpress Admin";
+    Layout = "_AdminLayout";
+    var unread = Model.Count(m => !m.IsRead);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+}
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-envelope-open-text"></i></div>
+    <div class="page-head-text">
+        <h1>رسائل التواصل</h1>
+        <p>الرسائل الواردة من الزوار والعملاء عبر صفحة «تواصل معنا»</p>
+    </div>
+    <div class="page-head-actions">
+        @if (unread > 0)
+        {
+            <span class="chip chip-gold"><i class="fas fa-bell"></i> @unread غير مقروءة</span>
+        }
+        <span class="chip"><i class="fas fa-envelope"></i> @Model.Count رسالة</span>
+    </div>
+</div>
+
+<div class="card border-secondary shadow-sm">
+    <div class="card-header bg-dark border-secondary py-3">
+        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-inbox me-2 text-warning"></i>صندوق الوارد</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-inbox"></i></div>
+                <h2 class="h5 fw-bold mb-2">لا توجد رسائل بعد</h2>
+                <p class="text-muted mb-0">ستظهر هنا أي رسالة جديدة يرسلها زائر من صفحة «تواصل معنا».</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table id="messagesTable" class="table table-hover align-middle mb-0">
+                    <thead class="bg-secondary text-white">
+                        <tr>
+                            <th scope="col" class="text-center">الحالة</th>
+                            <th scope="col">المرسل</th>
+                            <th scope="col">الموضوع</th>
+                            <th scope="col">الرسالة</th>
+                            <th scope="col" class="text-center">التاريخ</th>
+                            <th scope="col" class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var m in Model)
+                        {
+                            <tr class="@(m.IsRead ? "" : "table-warning")">
+                                <td class="text-center">
+                                    @if (m.IsRead)
+                                    {
+                                        <span class="badge bg-secondary">مقروءة</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">جديدة</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="fw-bold d-block">@m.FullName</span>
+                                    <a href="mailto:@m.Email" class="small text-muted" dir="ltr">@m.Email</a>
+                                    @if (!string.IsNullOrWhiteSpace(m.Phone))
+                                    {
+                                        <span class="small text-muted d-block" dir="ltr">@m.Phone</span>
+                                    }
+                                </td>
+                                <td class="fw-semibold">@m.Subject</td>
+                                <td class="text-muted small" style="max-width: 380px;">@m.Message</td>
+                                <td class="text-center text-muted small text-nowrap">@m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                                <td class="text-center text-nowrap">
+                                    <div class="d-inline-flex gap-1">
+                                        @if (!m.IsRead)
+                                        {
+                                            <form asp-action="MarkAsRead" asp-route-id="@m.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-success btn-sm" title="تعليم كمقروءة">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        <form asp-action="Delete" asp-route-id="@m.Id" method="post" class="d-inline"
+                                              onsubmit="return confirm('هل أنت متأكد من حذف هذه الرسالة؟');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="حذف">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var $table = $('#messagesTable');
+            if ($table.length) {
+                $table.DataTable({
+                    responsive: true,
+                    order: [],
+                    language: { url: '/lib/datatables/i18n/ar.json' },
+                    columnDefs: [
+                        { orderable: false, targets: [5] }
+                    ]
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,103 @@
+@model ProductEditViewModel
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "تعديل منتج - TechXpress Admin";
+}
+
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-pen-to-square"></i></div>
+    <div class="page-head-text">
+        <h1>تعديل المنتج</h1>
+        <p>تحديث بيانات المنتج «@Model.Name»</p>
+    </div>
+    <div class="page-head-actions">
+        <a asp-action="Index" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="fas fa-arrow-right me-1"></i>الرجوع للمنتجات
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-secondary shadow-sm">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-box me-2"></i>@Model.Name</h2>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" novalidate>
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">اسم المنتج</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">الوصف</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Price" class="form-label">السعر (بالدولار)</label>
+                            <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StockQuantity" class="form-label">الكمية في المخزون</label>
+                            <input asp-for="StockQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CategoryId" class="form-label">الفئة</label>
+                        <select asp-for="CategoryId" class="form-select"
+                                asp-items="@(new SelectList(Model.Categories, nameof(CategoryDto.Id), nameof(CategoryDto.Name)))">
+                            <option value="">— اختر الفئة —</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label class="form-check-label" asp-for="IsActive">المنتج مفعّل ومعروض في المتجر</label>
+                    </div>
+
+                    <div class="row align-items-end mb-4">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label class="form-label d-block">الصورة الحالية</label>
+                            @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
+                            {
+                                <img src="@Model.CurrentImageUrl" class="rounded shadow-sm" style="max-width:100px;height:100px;object-fit:cover;" alt="Current" />
+                            }
+                            else
+                            {
+                                <span class="text-muted small">لا توجد صورة</span>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">تغيير الصورة</label>
+                            <input asp-for="Image" class="form-control" type="file" accept="image/*" />
+                            <span class="form-text text-muted">اتركه فارغاً للاحتفاظ بالصورة الحالية.</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning fw-bold px-4">
+                            <i class="fas fa-save me-1"></i>حفظ التعديلات
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

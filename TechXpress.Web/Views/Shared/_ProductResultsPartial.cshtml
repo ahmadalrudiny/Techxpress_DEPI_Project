@@ -1,0 +1,47 @@
+@model ProductListViewModel
+@using TechXpress.Services.Models
+
+@* لوحة نتائج المنتجات (تُحدَّث بالبحث الحي بدون إعادة تحميل الصفحة) *@
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h2 class="h5 fw-bold text-white mb-0">
+        <i class="fas fa-layer-group text-warning me-2"></i>
+        النتائج
+        <span class="badge bg-warning text-dark ms-1">@Model.TotalCount</span>
+    </h2>
+    <div class="text-muted small">
+        <i class="fas fa-arrow-down-wide-short me-1"></i>@Model.SortLabel
+    </div>
+</div>
+
+@if (!Model.Products.Any())
+{
+    <div class="card border-0 shadow-sm empty-state text-center">
+        <div class="card-body py-5">
+            <i class="fas fa-magnifying-glass-minus fa-3x text-muted mb-3"></i>
+            <h3 class="h5 fw-bold mb-2">لا توجد نتائج مطابقة</h3>
+            <p class="text-muted mb-0">جرّب تغيير كلمة البحث أو توسيع نطاق الفئة والسعر.</p>
+        </div>
+    </div>
+}
+else
+{
+    <partial name="_ProductCardsPartial" model="Model.Products" />
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Pagination" class="mt-5">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i"
+                           asp-route-search="@Model.Search" asp-route-categoryId="@Model.CategoryId"
+                           asp-route-minPrice="@Model.MinPrice" asp-route-maxPrice="@Model.MaxPrice"
+                           asp-route-sort="@Model.Sort">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

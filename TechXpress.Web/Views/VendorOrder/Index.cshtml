@@ -1,0 +1,112 @@
+@model IReadOnlyList<VendorOrderSummaryDto>
+@using TechXpress.Services.Models
+@using TechXpress.Data.Entities
+@{
+    ViewData["Title"] = "طلبات متجري - TechXpress";
+
+    string ShipText(ShippingStatus s) => s switch
+    {
+        ShippingStatus.Pending => "بانتظار التجهيز",
+        ShippingStatus.Preparing => "قيد التجهيز",
+        ShippingStatus.Shipped => "تم الشحن",
+        ShippingStatus.Delivered => "تم التوصيل",
+        _ => s.ToString()
+    };
+
+    string ShipBadge(ShippingStatus s) => s switch
+    {
+        ShippingStatus.Pending => "bg-warning text-dark",
+        ShippingStatus.Preparing => "bg-secondary",
+        ShippingStatus.Shipped => "bg-info text-dark",
+        ShippingStatus.Delivered => "bg-success",
+        _ => "bg-secondary"
+    };
+}
+
+<partial name="_VendorNav" />
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-truck-fast"></i></div>
+            <div class="page-head-text">
+                <h1>طلبات متجري</h1>
+                <p>الطلبات التي تحتوي على منتجاتك</p>
+            </div>
+            <div class="page-head-actions">
+                <span class="chip chip-gold"><i class="fas fa-receipt"></i> @Model.Count طلب</span>
+                <a asp-action="Index" asp-controller="VendorProduct" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-box me-1"></i>منتجاتي
+                </a>
+            </div>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-truck fa-4x mb-3"></i>
+                <h2 class="h4 fw-bold mb-1">لا توجد طلبات بعد</h2>
+                <p class="mb-4">ستظهر هنا الطلبات التي تتضمن منتجاتك.</p>
+                <a asp-action="Index" asp-controller="VendorProduct" class="btn btn-warning fw-bold">
+                    <i class="fas fa-box me-1"></i>إدارة منتجاتي
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="card border-secondary shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-secondary text-white">
+                                <tr>
+                                    <th>رقم الطلب</th>
+                                    <th class="text-center">التاريخ</th>
+                                    <th class="text-center">عدد القطع</th>
+                                    <th class="text-center">إجمالي منتجاتك</th>
+                                    <th class="text-center">حالة الشحن</th>
+                                    <th class="text-end">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var o in Model)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">#@o.OrderId</td>
+                                        <td class="text-center text-muted small">@o.OrderDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                        <td class="text-center">@o.ItemsCount</td>
+                                        <td class="text-center fw-bold"><span class="price-tag">$@o.VendorTotal.ToString("F2")</span></td>
+                                        <td class="text-center">
+                                            <span class="badge @ShipBadge(o.ShippingStatus)">@ShipText(o.ShippingStatus)</span>
+                                            @if (o.Status == OrderStatus.Pending)
+                                            {
+                                                <small class="d-block text-muted mt-1">بانتظار دفع العميل</small>
+                                            }
+                                            else if (o.Status == OrderStatus.Cancelled)
+                                            {
+                                                <small class="d-block text-danger mt-1">الطلب ملغي</small>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a asp-action="Details" asp-route-id="@o.OrderId" class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-eye"></i> تفاصيل
+                                            </a>
+                                            @if (o.Status is OrderStatus.Paid or OrderStatus.Shipped
+                                                 && o.ShippingStatus is ShippingStatus.Pending or ShippingStatus.Preparing)
+                                            {
+                                                <a asp-action="Details" asp-route-id="@o.OrderId" asp-fragment="shipping"
+                                                   class="btn btn-sm btn-warning fw-bold">
+                                                    <i class="fas fa-truck-fast"></i> شحن
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>

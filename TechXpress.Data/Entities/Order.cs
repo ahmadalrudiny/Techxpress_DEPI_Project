@@ -17,6 +17,10 @@ public class Order
     public string? PromoCode { get; set; }          
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public string? PaymentIntentId { get; set; }
+
+    /// <summary>معرّف جلسة Stripe Checkout الأخيرة — يُستخدم لاستئناف الدفع أو تأكيده عند إعادة المحاولة.</summary>
+    public string? StripeSessionId { get; set; }
+
     public string? ShippingAddress { get; set; }
 
     public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

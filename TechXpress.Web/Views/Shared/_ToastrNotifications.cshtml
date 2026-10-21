@@ -1,0 +1,25 @@
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        toastr.success(@Json.Serialize(TempData["SuccessMessage"]), "نجاح", {
+            timeOut: 5000,
+            positionClass: "toast-top-right",
+            closeButton: true,
+            newestOnTop: true,
+            progressBar: true
+        });
+    </script>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        toastr.error(@Json.Serialize(TempData["ErrorMessage"]), "خطأ", {
+            timeOut: 6000,
+            positionClass: "toast-top-right",
+            closeButton: true,
+            newestOnTop: true,
+            progressBar: true
+        });
+    </script>
+}

@@ -1,25 +1,74 @@
-﻿@model ErrorViewModel
+@model TechXpress.Web.Models.ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = "حدث خطأ غير متوقع";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var hasDetails = ViewBag.ErrorMessage != null;
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="page-head mb-4">
+                <div class="page-head-icon" style="background: linear-gradient(135deg, #f87171, #b91c1c); color: #fff;">
+                    <i class="fas fa-triangle-exclamation"></i>
+                </div>
+                <div class="page-head-text">
+                    <h1>@(hasDetails ? "تفاصيل الخطأ (بيئة التطوير)" : "حدث خطأ غير متوقع")</h1>
+                    <p>@(hasDetails ? "هذه التفاصيل تظهر في بيئة التطوير فقط." : "نعتذر عن الإزعاج، يمكنك المحاولة مرة أخرى أو العودة للرئيسة.")</p>
+                </div>
+            </div>
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+            <div class="card border-secondary shadow-sm">
+                <div class="card-body p-4">
+                    @if (hasDetails)
+                    {
+                        <div class="alert alert-danger fw-bold text-break">
+                            <i class="fas fa-bug me-2"></i>@ViewBag.ErrorMessage
+                        </div>
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+                        @if (ViewBag.InnerMessage != null)
+                        {
+                            <div class="alert alert-warning text-break text-dark fw-bold">
+                                <strong>التفاصيل الداخلية (Inner Exception):</strong><br />
+                                @ViewBag.InnerMessage
+                            </div>
+                        }
+
+                        @if (ViewBag.StackTrace != null)
+                        {
+                            <div class="mt-3">
+                                <h2 class="h6 text-muted">تتبع مسار الخطأ (Stack Trace):</h2>
+                                <pre class="bg-black text-danger p-3 rounded text-start" dir="ltr" style="max-height: 260px; overflow-y: auto; font-size: .85rem;">@ViewBag.StackTrace</pre>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-plug-circle-xmark fa-4x mb-3" style="color: #c3ccdb;"></i>
+                            <h2 class="h5 fw-bold mb-2">لم تكتمل العملية</h2>
+                            <p class="text-muted mb-4">
+                                قد يكون السبب انقطاعاً مؤقتاً في الاتصال أو محاولة الوصول لصفحة غير متاحة.
+                                برجاء إعادة المحاولة، وإذا استمرت المشكلة تواصل مع الدعم.
+                            </p>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-warning fw-bold">
+                                    <i class="fas fa-house me-1"></i>العودة للرئيسة
+                                </a>
+                                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-warning">
+                                    <i class="fas fa-box me-1"></i>تصفّح المنتجات
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (!hasDetails && Model.ShowRequestId)
+                {
+                    <div class="card-footer text-muted small">
+                        رقم البلاغ: <code>@Model.RequestId</code>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

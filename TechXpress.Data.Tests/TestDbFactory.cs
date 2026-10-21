@@ -10,7 +10,12 @@ public static class TestDbFactory
     public static (ApplicationDbContext Context, SqliteConnection Connection) Create()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
-        connection.Open();   // لازم تفضل مفتوحة طول الاختبار
+        connection.Open();   // لازم تظل مفتوحة طول الاختبار
+
+        // تعطيل قيود المفاتيح الخارجية في SQLite لسهولة الإعداد في الاختبارات
+        using var pragmaCmd = connection.CreateCommand();
+        pragmaCmd.CommandText = "PRAGMA foreign_keys = OFF";
+        pragmaCmd.ExecuteNonQuery();
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connection)

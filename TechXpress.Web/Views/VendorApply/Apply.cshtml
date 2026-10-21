@@ -1,0 +1,92 @@
+@model VendorApplyViewModel
+@{
+    ViewData["Title"] = "التقديم كمورد - TechXpress";
+}
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-store"></i></div>
+            <div class="page-head-text">
+                <h1>كن مورداً على TechXpress</h1>
+                <p>قدّم طلبك لبيع منتجاتك، وسنراجعه من فريق الإدارة في أقرب وقت.</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="Status" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-hourglass-half me-1"></i>حالة طلبي
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-file-signature me-2 text-warning"></i>طلب الانضمام</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="Apply" method="post" enctype="multipart/form-data" novalidate>
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="StoreName" class="form-label">اسم المتجر</label>
+                                <input asp-for="StoreName" class="form-control" placeholder="مثال: متجر التقنية" />
+                                <span asp-validation-for="StoreName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="NationalId" class="form-label">صورة البطاقة الشخصية / الرقم القومي</label>
+                                <input asp-for="NationalId" class="form-control" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+                                <span asp-validation-for="NationalId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="CommercialRegister" class="form-label">السجل التجاري</label>
+                                <input asp-for="CommercialRegister" class="form-control" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+                                <span asp-validation-for="CommercialRegister" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="TaxCard" class="form-label">البطاقة الضريبية</label>
+                                <input asp-for="TaxCard" class="form-control" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+                                <span asp-validation-for="TaxCard" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-warning fw-bold px-4">
+                                    <i class="fas fa-paper-plane me-1"></i>إرسال الطلب
+                                </button>
+                                <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary px-4">إلغاء</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm bg-dark text-white mb-4">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h3 class="h6 fw-bold text-warning mb-0"><i class="fas fa-folder-open me-2"></i>المستندات المطلوبة</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2"><i class="fas fa-id-card text-warning me-2"></i>البطاقة الشخصية / الرقم القومي</li>
+                            <li class="mb-2"><i class="fas fa-file-contract text-warning me-2"></i>السجل التجاري</li>
+                            <li><i class="fas fa-file-invoice text-warning me-2"></i>البطاقة الضريبية</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-info small mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    يتم مراجعة الطلب من قبل الإدارة. الصيغ المقبولة: JPG, PNG, PDF.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

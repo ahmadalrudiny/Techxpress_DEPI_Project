@@ -1,0 +1,230 @@
+@model OrderDto
+@using TechXpress.Services.Models
+@using TechXpress.Data.Entities
+@{
+    ViewData["Title"] = $"تفاصيل الطلب #{Model.Id} - TechXpress";
+    var subtotal = Model.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
+    var canCancel = Model.Status == OrderStatus.Pending || Model.Status == OrderStatus.Paid;
+
+    string ShipText(ShippingStatus s) => s switch
+    {
+        ShippingStatus.Pending => "بانتظار الشحن",
+        ShippingStatus.Preparing => "قيد التجهيز",
+        ShippingStatus.Shipped => "تم الشحن",
+        ShippingStatus.Delivered => "تم التوصيل",
+        _ => s.ToString()
+    };
+
+    string ShipBadge(ShippingStatus s) => s switch
+    {
+        ShippingStatus.Pending => "bg-warning text-dark",
+        ShippingStatus.Preparing => "bg-warning text-dark",
+        ShippingStatus.Shipped => "bg-info text-dark",
+        ShippingStatus.Delivered => "bg-success",
+        _ => "bg-secondary"
+    };
+}
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-receipt"></i></div>
+            <div class="page-head-text">
+                <h1>تفاصيل الطلب #@Model.Id</h1>
+                <p>@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</p>
+            </div>
+            <div class="page-head-actions">
+                @switch (Model.Status)
+                {
+                    case OrderStatus.Pending:
+                        <span class="chip"><i class="fas fa-hourglass-half"></i> بانتظار الدفع</span>
+                        break;
+                    case OrderStatus.Paid:
+                        <span class="chip"><i class="fas fa-credit-card"></i> تم الدفع</span>
+                        break;
+                    case OrderStatus.Shipped:
+                        <span class="chip"><i class="fas fa-truck-fast"></i> تم الشحن</span>
+                        break;
+                    case OrderStatus.Delivered:
+                        <span class="chip chip-gold"><i class="fas fa-circle-check"></i> تم التوصيل</span>
+                        break;
+                    case OrderStatus.Cancelled:
+                        <span class="chip" style="background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.4); color: #ff9a9a;">
+                            <i class="fas fa-circle-xmark"></i> ملغي
+                        </span>
+                        break;
+                }
+                <a asp-action="Orders" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-arrow-right me-1"></i>طلباتي
+                </a>
+            </div>
+        </div>
+
+        @if (Model.Status == OrderStatus.Pending)
+        {
+            <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 shadow-sm"
+                 role="alert">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fas fa-circle-exclamation fa-2x"></i>
+                    <div>
+                        <strong class="d-block">لم يكتمل دفع هذا الطلب بعد.</strong>
+                        <span class="small">
+                            طلبك محفوظ ويمكنك إتمام الدفع الآن في أي وقت. إذا لم ترغب في إكماله، يمكنك إلغاؤه
+                            وسيتم استرجاع الكميات إلى المخزون.
+                        </span>
+                    </div>
+                </div>
+                <a asp-area="" asp-controller="Checkout" asp-action="Payment" asp-route-orderId="@Model.Id"
+                   class="btn btn-warning fw-bold px-4 text-nowrap">
+                    <i class="fas fa-credit-card me-2"></i>ادفع الآن ($@Model.TotalAmount.ToString("F2"))
+                </a>
+            </div>
+        }
+
+        <div class="row g-4">
+            <!-- Order Info -->
+            <div class="col-lg-4">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-info-circle me-2 text-warning"></i>معلومات الطلب</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">رقم الطلب</label>
+                            <p class="form-control-plaintext fw-bold">#@Model.Id</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">تاريخ الطلب</label>
+                            <p class="form-control-plaintext">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">حالة الطلب</label>
+                            <p class="form-control-plaintext">
+                                @switch (Model.Status)
+                                {
+                                    case OrderStatus.Pending:
+                                        <span class="badge bg-warning text-dark">بانتظار الدفع</span>
+                                        break;
+                                    case OrderStatus.Paid:
+                                        <span class="badge bg-primary">تم الدفع</span>
+                                        break;
+                                    case OrderStatus.Shipped:
+                                        <span class="badge bg-info text-dark">تم الشحن</span>
+                                        break;
+                                    case OrderStatus.Delivered:
+                                        <span class="badge bg-success">تم التوصيل</span>
+                                        break;
+                                    case OrderStatus.Cancelled:
+                                        <span class="badge bg-danger">ملغي</span>
+                                        break;
+                                }
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">طريقة الدفع</label>
+                            <p class="form-control-plaintext text-warning fw-bold">
+                                @if (!string.IsNullOrEmpty(Model.PaymentIntentId))
+                                {
+                                    <text><i class="fas fa-credit-card me-1"></i> Stripe Checkout</text>
+                                }
+                                else
+                                {
+                                    <text><span class="text-muted">لم يتم الدفع بعد</span></text>
+                                }
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">عنوان الشحن</label>
+                            <p class="form-control-plaintext">@Model.ShippingAddress</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark">كود الخصم</label>
+                            <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.PromoCode) ? "لم يتم استخدام كود خصم" : Model.PromoCode)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="col-lg-8">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-box me-2 text-warning"></i>عناصر الطلب</h2>
+                        <span class="badge bg-secondary">@Model.OrderDetails.Count() عنصر</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-secondary text-white">
+                                <tr>
+                                    <th>المنتج</th>
+                                    <th class="text-center">الكمية</th>
+                                    <th class="text-end">السعر للوحدة</th>
+                                    <th class="text-end">المجموع</th>
+                                    <th class="text-center">حالة الشحن</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            <h3 class="h6 fw-bold text-dark mb-0">@detail.ProductName</h3>
+                                            <small class="text-muted">@detail.VendorStoreName</small>
+                                        </td>
+                                        <td class="text-center">@detail.Quantity</td>
+                                        <td class="text-end">$@detail.UnitPrice.ToString("F2")</td>
+                                        <td class="text-end fw-bold"><span class="price-tag">$@((detail.UnitPrice * detail.Quantity).ToString("F2"))</span></td>
+                                        <td class="text-center">
+                                            <span class="badge @ShipBadge(detail.ShippingStatus)">@ShipText(detail.ShippingStatus)</span>
+                                            @if (!string.IsNullOrWhiteSpace(detail.Carrier))
+                                            {
+                                                <small class="d-block text-muted mt-1">@detail.Carrier</small>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(detail.TrackingNumber))
+                                            {
+                                                <small class="d-block text-muted" dir="ltr">@detail.TrackingNumber</small>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer bg-dark border-secondary">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">المجموع الفرعي</span>
+                            <span class="fw-bold text-white">$@subtotal.ToString("F2")</span>
+                        </div>
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <div class="d-flex justify-content-between mb-2 text-success">
+                                <span class="text-muted">الخصم</span>
+                                <span class="fw-bold">- $@Model.DiscountAmount.ToString("F2")</span>
+                            </div>
+                        }
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span class="text-white">المجموع الكلي المدفوع</span>
+                            <span class="text-warning">$@Model.TotalAmount.ToString("F2")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-action="Orders" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>العودة إلى الطلبات
+            </a>
+            @if (canCancel)
+            {
+                <form asp-action="CancelOrder" asp-route-id="@Model.Id" method="post" class="d-inline"
+                      onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استرجاع الكميات إلى المخزون.');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="fas fa-times me-2"></i>إلغاء الطلب
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+</section>

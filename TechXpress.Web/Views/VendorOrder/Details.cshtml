@@ -1,0 +1,270 @@
+@model VendorOrderDetailsDto
+@using TechXpress.Services.Models
+@using TechXpress.Data.Entities
+@{
+    ViewData["Title"] = $"تفاصيل الطلب #{Model.OrderId} - TechXpress";
+
+    string ShipText(ShippingStatus s) => s switch
+    {
+        ShippingStatus.Pending => "بانتظار التجهيز",
+        ShippingStatus.Preparing => "قيد التجهيز",
+        ShippingStatus.Shipped => "تم الشحن",
+        ShippingStatus.Delivered => "تم التوصيل",
+        _ => s.ToString()
+    };
+
+    string ShipBadge(ShippingStatus s) => s switch
+    {
+        ShippingStatus.Pending => "bg-warning text-dark",
+        ShippingStatus.Preparing => "bg-secondary",
+        ShippingStatus.Shipped => "bg-info text-dark",
+        ShippingStatus.Delivered => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    var orderIsActive = Model.Status is OrderStatus.Paid or OrderStatus.Shipped;
+    var canPrepare = orderIsActive && Model.ShippingStatus == ShippingStatus.Pending;
+    var canShip = orderIsActive && Model.ShippingStatus is ShippingStatus.Pending or ShippingStatus.Preparing;
+    var canDeliver = Model.ShippingStatus == ShippingStatus.Shipped;
+}
+
+<partial name="_VendorNav" />
+
+<section class="pb-5">
+    <div class="container">
+        <div class="page-head mb-4">
+            <div class="page-head-icon"><i class="fas fa-receipt"></i></div>
+            <div class="page-head-text">
+                <h1>تفاصيل الطلب #@Model.OrderId</h1>
+                <p>المنتجات الخاصة بمتجرك داخل هذا الطلب — وأنت مسؤول عن شحنها</p>
+            </div>
+            <div class="page-head-actions">
+                <span class="badge @ShipBadge(Model.ShippingStatus) fs-6 px-3 py-2">@ShipText(Model.ShippingStatus)</span>
+                <a asp-action="Index" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fas fa-arrow-right me-1"></i>طلبات متجري
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-info-circle me-2 text-warning"></i>معلومات الطلب</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">رقم الطلب</label>
+                            <p class="fw-bold text-dark mb-0">#@Model.OrderId</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">التاريخ</label>
+                            <p class="mb-0 text-muted">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">حالة الطلب العامة</label>
+                            <p class="mb-0">
+                                @switch (Model.Status)
+                                {
+                                    case OrderStatus.Pending:
+                                        <span class="badge bg-warning text-dark">بانتظار الدفع</span>
+                                        break;
+                                    case OrderStatus.Paid:
+                                        <span class="badge bg-primary">تم الدفع</span>
+                                        break;
+                                    case OrderStatus.Shipped:
+                                        <span class="badge bg-info text-dark">تم الشحن</span>
+                                        break;
+                                    case OrderStatus.Delivered:
+                                        <span class="badge bg-success">تم التوصيل</span>
+                                        break;
+                                    case OrderStatus.Cancelled:
+                                        <span class="badge bg-danger">ملغي</span>
+                                        break;
+                                }
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">العميل</label>
+                            <p class="mb-0 text-dark fw-semibold">@(string.IsNullOrWhiteSpace(Model.CustomerName) ? "غير متاح" : Model.CustomerName)</p>
+                            @if (!string.IsNullOrWhiteSpace(Model.CustomerPhone))
+                            {
+                                <a href="tel:@Model.CustomerPhone" class="small text-warning" dir="ltr">@Model.CustomerPhone</a>
+                            }
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label text-muted">عنوان الشحن</label>
+                            <p class="mb-0 text-muted">@(string.IsNullOrWhiteSpace(Model.ShippingAddress) ? "غير متاح" : Model.ShippingAddress)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-secondary shadow-sm mt-4" id="shipping">
+                    <div class="card-header bg-dark border-secondary py-3">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-truck-fast me-2 text-warning"></i>شحن الطلب</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">حالة الشحن</span>
+                            <span class="badge @ShipBadge(Model.ShippingStatus)">@ShipText(Model.ShippingStatus)</span>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Carrier))
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">شركة الشحن</span>
+                                <span class="fw-bold text-dark">@Model.Carrier</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.TrackingNumber))
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">رقم التتبع</span>
+                                <span class="fw-bold text-dark" dir="ltr">@Model.TrackingNumber</span>
+                            </div>
+                        }
+                        @if (Model.ShippedAt.HasValue)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">تاريخ الشحن</span>
+                                <span class="text-dark small">@Model.ShippedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span>
+                            </div>
+                        }
+                        @if (Model.DeliveredAt.HasValue)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">تاريخ التوصيل</span>
+                                <span class="text-dark small">@Model.DeliveredAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span>
+                            </div>
+                        }
+
+                        @if (Model.Status == OrderStatus.Pending)
+                        {
+                            <div class="alert alert-warning small mb-0 mt-3" role="alert">
+                                <i class="fas fa-hourglass-half me-1"></i>
+                                سيظهر خيار الشحن بعد تأكيد دفع العميل.
+                            </div>
+                        }
+                        else if (Model.Status == OrderStatus.Cancelled)
+                        {
+                            <div class="alert alert-danger small mb-0 mt-3" role="alert">
+                                <i class="fas fa-ban me-1"></i>
+                                هذا الطلب ملغي، لا يمكن شحنه.
+                            </div>
+                        }
+                        else if (Model.ShippingStatus == ShippingStatus.Delivered)
+                        {
+                            <div class="alert alert-success small mb-0 mt-3" role="alert">
+                                <i class="fas fa-circle-check me-1"></i>
+                                تم توصيل الطلب بالكامل.
+                            </div>
+                        }
+                        else
+                        {
+                            @if (canPrepare)
+                            {
+                                <form asp-action="StartPreparing" asp-route-id="@Model.OrderId" method="post" class="mt-3">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary fw-bold w-100">
+                                        <i class="fas fa-box-open me-1"></i>بدء التجهيز
+                                    </button>
+                                </form>
+                            }
+
+                            @if (canShip)
+                            {
+                                <hr />
+                                <form asp-action="Ship" asp-route-id="@Model.OrderId" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <div class="mb-2">
+                                        <label class="form-label" for="carrier">شركة الشحن</label>
+                                        <input id="carrier" name="carrier" class="form-control" maxlength="100"
+                                               required placeholder="مثال: Aramex أو DHL" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="trackingNumber">رقم التتبع (اختياري)</label>
+                                        <input id="trackingNumber" name="trackingNumber" class="form-control"
+                                               maxlength="100" placeholder="TRK-123456" dir="ltr" />
+                                    </div>
+                                    <button type="submit" class="btn btn-warning fw-bold w-100">
+                                        <i class="fas fa-truck-fast me-1"></i>تأكيد الشحن
+                                    </button>
+                                </form>
+                            }
+
+                            @if (canDeliver)
+                            {
+                                <hr />
+                                <form asp-action="Deliver" asp-route-id="@Model.OrderId" method="post"
+                                      onsubmit="return confirm('هل تأكدت من وصول الشحنة للعميل؟');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success fw-bold w-100">
+                                        <i class="fas fa-circle-check me-1"></i>تأكيد التوصيل
+                                    </button>
+                                </form>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-box me-2 text-warning"></i>منتجاتك في هذا الطلب</h2>
+                        <span class="badge bg-secondary">@Model.Items.Count صنف</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-secondary text-white">
+                                    <tr>
+                                        <th>المنتج</th>
+                                        <th class="text-center">الكمية</th>
+                                        <th class="text-center">سعر الوحدة</th>
+                                        <th class="text-center">الإجمالي</th>
+                                        <th class="text-center">حالة الشحن</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                                    {
+                                                        <img src="@item.ImageUrl" class="rounded me-2" style="width:44px;height:44px;object-fit:cover;" alt="@item.ProductName" />
+                                                    }
+                                                    <span class="fw-bold">@item.ProductName</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-center">$@item.UnitPrice.ToString("F2")</td>
+                                            <td class="text-center fw-bold"><span class="price-tag">$@item.LineTotal.ToString("F2")</span></td>
+                                            <td class="text-center">
+                                                <span class="badge @ShipBadge(item.ShippingStatus)">@ShipText(item.ShippingStatus)</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-dark border-secondary">
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span class="text-white">إجمالي منتجاتك</span>
+                            <span class="text-warning">$@Model.VendorTotal.ToString("F2")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>العودة إلى الطلبات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

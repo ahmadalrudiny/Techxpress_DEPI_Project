@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# صفحات خاصة لا يجب فهرستها
+Disallow: /Admin/
+Disallow: /Account/
+Disallow: /Cart/
+Disallow: /Checkout/
+Disallow: /Profile/
+Disallow: /Wishlist/
+Disallow: /VendorApply/
+Disallow: /VendorDashboard/
+Disallow: /VendorOrder/
+Disallow: /VendorProduct/
+Disallow: /VendorWallet/

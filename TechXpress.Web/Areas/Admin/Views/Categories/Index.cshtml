@@ -1,0 +1,97 @@
+@model IEnumerable<CategoryDto>
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = "إدارة الفئات - TechXpress Admin";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/datatables/css/jquery.dataTables.min.css" />
+}
+
+<!-- Page Header -->
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-tags"></i></div>
+    <div class="page-head-text">
+        <h1>إدارة الفئات</h1>
+        <p>إدارة فئات المنتجات</p>
+    </div>
+    <div class="page-head-actions">
+        <a asp-action="Create" class="btn btn-warning px-4 fw-bold shadow-sm">
+            <i class="fas fa-plus me-1"></i>إضافة فئة جديدة
+        </a>
+    </div>
+</div>
+
+<!-- Categories Table -->
+<div class="card border-secondary shadow-sm">
+    <div class="card-header bg-dark border-secondary py-3">
+        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-tags me-2"></i>قائمة الفئات</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                <p class="text-muted">لا توجد فئات مضافة حاليًا.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table id="categoriesTable" class="table table-hover align-middle mb-0">
+                    <thead class="bg-secondary text-white">
+                        <tr>
+                            <th>#</th>
+                            <th>اسم الفئة</th>
+                            <th>الوصف</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">#@c.Id</td>
+                                <td>
+                                    <span class="fw-bold text-dark">@c.Name</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@c.Description</span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning me-1">
+                                        <i class="fas fa-edit"></i>تعديل
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه الفئة؟ سيؤدي ذلك إلى حذف جميع المنتجات التابعة لها أيضًا.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>حذف
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#categoriesTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '/lib/datatables/i18n/ar.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [3] }
+                ]
+            });
+        });
+    </script>
+}

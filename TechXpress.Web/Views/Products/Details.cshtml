@@ -1,0 +1,259 @@
+@model ProductDetailsViewModel
+@using TechXpress.Services.Models
+@{
+    ViewData["Title"] = Model.Product.Name + " - TechXpress";
+    var avg = Model.Reviews.AverageRating;
+    var fullStars = (int)Math.Floor(avg);
+}
+
+<section class="py-5">
+    <div class="container">
+        <nav class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Products">المنتجات</a></li>
+                <li class="breadcrumb-item active text-warning">@Model.Product.Name</li>
+            </ol>
+        </nav>
+
+        <div class="row g-5">
+            <!-- Product Image -->
+            <div class="col-lg-6">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="product-image-wrapper position-relative overflow-hidden bg-light" style="border-radius: 1rem;">
+                            @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+                            {
+                                <img src="@Model.Product.ImageUrl" class="card-img-top w-100 h-auto" alt="@Model.Product.Name" />
+                            }
+                            else
+                            {
+                                <div class="d-flex align-items-center justify-content-center text-muted w-100 h-100">
+                                    <i class="fas fa-box fa-5x"></i>
+                                </div>
+                            }
+                            @if (Model.Product.StockQuantity <= 0)
+                            {
+                                <span class="position-absolute top-0 end-0 m-3 badge bg-danger p-3">نفذ المخزون</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-lg-6">
+                <div class="d-flex align-items-start mb-3 flex-wrap gap-2">
+                    @if (!string.IsNullOrEmpty(Model.Product.VendorStoreName))
+                    {
+                        <span class="badge bg-warning text-dark fs-6 fw-bold">
+                            <i class="fas fa-store me-1"></i>بائع معتمد: @Model.Product.VendorStoreName
+                        </span>
+                    }
+                    <span class="badge bg-info text-dark fs-6 fw-bold">
+                        <i class="fas fa-tag me-1"></i>@Model.Product.CategoryName
+                    </span>
+                </div>
+
+                <h1 class="fw-bold mb-2">@Model.Product.Name</h1>
+
+                <!-- Rating Summary -->
+                <div class="mb-3 text-warning">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="fas fa-star @(i <= fullStars ? "" : "text-muted")"></i>
+                    }                    <span class="text-muted small ms-2">
+                        @(Model.Reviews.TotalReviews > 0
+                            ? $"{avg:0.0} من 5 ({Model.Reviews.TotalReviews} تقييم)"
+                            : "لا توجد تقييمات بعد")
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <span class="display-4 fw-bold price-tag">$@Model.Product.Price.ToString("F2")</span>
+                </div>
+
+                @if (Model.Product.StockQuantity <= 0)
+                {
+                    <span class="badge bg-danger fs-6 fw-bold mb-3 d-block">نفذ المخزون</span>
+                }
+                else
+                {
+                    <span class="badge bg-success fs-6 fw-bold mb-3 d-block">
+                        <i class="fas fa-check-circle me-1"></i>متوفر في المخزون: @Model.Product.StockQuantity وحدة
+                    </span>
+                }
+
+                <div class="mb-4">
+                    <h2 class="h6 fw-semibold text-dark mb-2">وصف المنتج</h2>
+                    <p class="text-muted">@Model.Product.Description</p>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-box me-2 text-muted"></i>
+                            <span class="text-muted small">رقم المنتج: #@Model.Product.Id</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar me-2 text-muted"></i>
+                            <span class="text-muted small">الإضافة: @Model.Product.CreatedAt.ToString("yyyy/MM/dd")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mb-2">
+                    @if (Model.Product.StockQuantity > 0)
+                    {
+                        <button type="button" class="btn btn-warning btn-lg flex-grow-1 fw-bold shadow-sm"
+                                onclick="addToCart(@Model.Product.Id, 1, this)">
+                            <i class="fas fa-shopping-cart me-2"></i>أضف إلى سلة التسوق
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary btn-lg flex-grow-1 disabled">
+                            <i class="fas fa-times me-2"></i>نفذ المخزون
+                        </button>
+                    }
+
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        if (Model.InWishlist)
+                        {
+                            <form asp-action="RemoveProduct" asp-controller="Wishlist" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@Model.Product.Id" />
+                                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                <button type="submit" class="btn btn-danger btn-lg" title="إزالة من المفضلة">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Add" asp-controller="Wishlist" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@Model.Product.Id" />
+                                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                <button type="submit" class="btn btn-outline-danger btn-lg" title="أضف إلى المفضلة">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </form>
+                        }
+                    }
+                </div>
+
+                <a asp-action="Index" asp-controller="Products" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left me-2"></i>العودة إلى المنتجات
+                </a>
+            </div>
+        </div>
+
+        <!-- ===================== Reviews ===================== -->
+        <div class="mt-5">
+            <h3 class="fw-bold mb-4">
+                <i class="fas fa-comments me-2 text-warning"></i>تقييمات العملاء
+            </h3>
+
+            <div class="row g-4">
+                <!-- Reviews list -->
+                <div class="col-lg-7">
+                    @if (!Model.Reviews.Reviews.Any())
+                    {
+                        <div class="card border-secondary shadow-sm">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-star fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">لا توجد تقييمات لهذا المنتج بعد. كن أول من يقيّمه!</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var review in Model.Reviews.Reviews)
+                        {
+                            <div class="card border-secondary shadow-sm mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <i class="fas fa-user-circle text-gold-dark me-2"></i>
+                                            <strong class="text-dark">@review.CustomerName</strong>
+                                            <span class="badge bg-success ms-2">مشترٍ موثّق</span>
+                                        </div>
+                                        <small class="text-muted">@review.CreatedAt.ToString("yyyy/MM/dd")</small>
+                                    </div>
+                                    <div class="text-warning mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= review.Rating ? "" : "text-muted")"></i>
+                                        }
+                                    </div>
+                                    <p class="text-muted mb-0">@review.Comment</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Add review -->
+                <div class="col-lg-5">
+                    <div class="card border-secondary shadow-sm">
+                        <div class="card-header bg-dark border-secondary py-3">
+                            <h3 class="h6 fw-bold text-white mb-0"><i class="fas fa-pen me-2 text-warning"></i>أضف تقييمك</h3>
+                        </div>
+                        <div class="card-body">
+                            @if (!(User.Identity?.IsAuthenticated ?? false))
+                            {
+                                <p class="text-muted small mb-3">سجّل الدخول لتتمكن من تقييم المنتجات التي اشتريتها.</p>
+                                <a asp-action="Login" asp-controller="Account" class="btn btn-warning w-100 fw-bold">
+                                    <i class="fas fa-sign-in-alt me-1"></i>تسجيل الدخول
+                                </a>
+                            }
+                            else if (Model.Reviews.HasReviewed)
+                            {
+                                <div class="alert alert-success mb-0">
+                                    <i class="fas fa-check-circle me-2"></i>لقد قمت بتقييم هذا المنتج بالفعل. شكراً لك!
+                                </div>
+                            }
+                            else if (!Model.Reviews.CanReview)
+                            {
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    يمكنك تقييم المنتجات التي اشتريتها فقط. اطلب هذا المنتج أولاً لتتمكن من تقييمه.
+                                </div>
+                            }
+                            else
+                            {
+                                <form asp-action="Create" asp-controller="Review" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="ProductId" value="@Model.Product.Id" />
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold text-dark" for="ratingSelect">التقييم</label>
+                                        <select id="ratingSelect" name="Rating" class="form-select">
+                                            <option value="5">★★★★★ ممتاز</option>
+                                            <option value="4">★★★★ جيد جداً</option>
+                                            <option value="3">★★★ جيد</option>
+                                            <option value="2">★★ مقبول</option>
+                                            <option value="1">★ ضعيف</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold text-dark" for="reviewComment">تعليقك</label>
+                                        <textarea id="reviewComment" name="Comment" class="form-control" rows="4" placeholder="شاركنا تجربتك مع هذا المنتج..."></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-warning w-100 fw-bold">
+                                        <i class="fas fa-paper-plane me-1"></i>إرسال التقييم
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

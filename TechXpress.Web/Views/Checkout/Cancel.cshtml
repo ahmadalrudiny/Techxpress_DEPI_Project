@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "إلغاء الدفع - TechXpress";
+    int? retryOrderId = ViewData["RetryOrderId"] as int?;
+    decimal? retryTotal = ViewData["RetryTotal"] as decimal?;
+    var retryAmountText = retryTotal.HasValue ? $" (${retryTotal.Value:F2})" : string.Empty;
+    var cartItemCount = ViewData["CartItemCount"] as int? ?? 0;
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <div class="result-icon result-cancel mb-4">
+                            <i class="fas fa-xmark"></i>
+                        </div>
+                        <h1 class="h2 fw-bold mb-3">لم يكتمل الدفع</h1>
+                        <p class="text-muted mb-4">
+                            لم يتم خصم أي مبلغ من بطاقتك. طلبك محفوظ بحالة
+                            <strong class="text-dark">قيد الانتظار</strong>،
+                            وسلة الشراء محفوظة كما هي، ويمكنك إتمام الدفع الآن أو في أي وقت من سجل طلباتك.
+                        </p>
+
+                        <div class="d-grid gap-2">
+                            @if (retryOrderId.HasValue)
+                            {
+                                <a asp-action="Payment" asp-route-orderId="@retryOrderId.Value"
+                                   class="btn btn-warning btn-lg fw-bold py-3 shadow-sm">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    إعادة محاولة الدفع@(retryAmountText)
+                                </a>
+                            }
+                            @if (cartItemCount > 0)
+                            {
+                                <a asp-controller="Cart" asp-action="Index"
+                                   class="btn btn-outline-warning btn-lg fw-bold py-3">
+                                    <i class="fas fa-cart-shopping me-2"></i>
+                                    العودة إلى السلة (@cartItemCount)
+                                </a>
+                            }
+                            @if (retryOrderId.HasValue)
+                            {
+                                <a asp-controller="Profile" asp-action="OrderDetails" asp-route-id="@retryOrderId.Value"
+                                   class="btn btn-outline-secondary btn-lg fw-bold py-3">
+                                    <i class="fas fa-receipt me-2"></i>تفاصيل الطلب
+                                </a>
+                            }
+                            <a asp-controller="Profile" asp-action="Orders" class="btn btn-outline-secondary btn-lg fw-bold py-3">
+                                <i class="fas fa-shopping-bag me-2"></i>سجل طلباتي
+                            </a>
+                            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary btn-lg fw-bold py-3">
+                                <i class="fas fa-box me-2"></i>تصفح المنتجات
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
