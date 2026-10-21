@@ -7,10 +7,10 @@
 ## 1. Project Proposal
 
 ### 1.1 Overview
-TechXpress is an e-commerce web application for selling electronics (laptops, mobiles, cameras, accessories). Customers can browse products, add them to a shopping cart, and pay online through Stripe. Administrators manage products, categories, and orders from an admin panel.
+TechXpress is an e-commerce web application for selling electronics (laptops, mobiles, cameras, accessories). Customers can browse products, add them to a shopping cart, and pay online through Stripe. Verified vendors can list products, while administrators manage products, categories, orders, and vendor approvals from a central admin panel.
 
 ### 1.2 Objective
-Build a scalable and maintainable e-commerce platform that applies **N-Tier Architecture**, the **Repository Pattern**, the **Unit of Work Pattern**, and **Dependency Injection** to keep concerns separated.
+Build a scalable and maintainable e-commerce platform that applies **N-Tier Architecture**, the **Repository Pattern**, the **Unit of Work Pattern**, and **Dependency Injection** to keep concerns separated while implementing secure vendor verification.
 
 ### 1.3 Scope
 
@@ -20,15 +20,16 @@ Build a scalable and maintainable e-commerce platform that applies **N-Tier Arch
 |---|---|
 | Catalog | Product listing, search, filters, product details |
 | Cart | Session-based cart, totals, promotions/discounts |
-| Authentication | Registration, login, roles (Customer, Admin) via ASP.NET Identity |
+| Authentication | Registration, login, roles (Customer, Vendor, Admin) via ASP.NET Identity |
 | Authorization | Role-based access control (RBAC) |
+| Vendor Onboarding | Submit store details and upload legal documents (National ID, Commercial Register, Tax Card) |
+| Vendor Verification | Admin review and approval/rejection workflow for pending vendor requests |
 | Orders | Checkout, atomic order placement (save order + reduce stock) |
 | Payment | Stripe integration, transaction details stored |
 | Profile | Personal details, order history, account settings |
-| Admin | Manage products, categories, orders using DataTables |
+| Admin | Manage products, categories, orders, and vendor verifications using DataTables |
 | UI | Bootstrap + custom CSS, responsive, jQuery live search, Toastr notifications |
 | Deployment | Microsoft Azure (or Hostinger) |
-
 
 ### 1.4 Technology Stack
 
@@ -55,8 +56,8 @@ N-Tier Architecture, Repository Pattern, Unit of Work Pattern, Dependency Inject
 | # | Milestone | Deadline | Deliverable |
 |---|---|---|---|
 | M0 | Planning, Literature Review, Requirements | 16 Oct 2026 | Documents in `docs/01`, `02`, `03` |
-| M1 | Core architecture + Auth + Catalog + Layout | 25 Oct 2026 | Working skeleton, login, product listing with search/filters |
-| M2 | Cart + RBAC + Admin panel | 8 Nov 2026 | Session cart, discounts, role restrictions, DataTables admin |
+| M1 | Core architecture + Auth + Vendor Onboarding + Catalog + Layout | 25 Oct 2026 | Working skeleton, login, vendor document upload, product listing with search/filters |
+| M2 | Cart + RBAC + Admin panel & Vendor Approvals | 8 Nov 2026 | Session cart, discounts, role restrictions, DataTables admin with vendor review UI |
 | M3 | System Analysis & Design documents | 6 Nov 2026 | All diagrams, wireframes, schema |
 | M4 | Checkout + Stripe + Profile | 22 Nov 2026 | Atomic orders, payments, order history |
 | M5 | Implementation complete | 30 Nov 2026 | Polished UI, deployed on Azure, README |
@@ -77,14 +78,14 @@ gantt
 
     section Phase 1 - Foundation
     Architecture, Entities, Repositories, UoW :p1a, 2026-10-12, 2026-10-16
-    Identity and Login/Register               :p1b, 2026-10-14, 2026-10-22
+    Identity, Register & Vendor Onboarding    :p1b, 2026-10-14, 2026-10-22
     Product catalog, search, filters          :p1c, 2026-10-14, 2026-10-25
     Layout and Bootstrap                      :p1d, 2026-10-14, 2026-10-22
 
     section Phase 2 - Cart, RBAC, Admin
     Session cart and discounts                :p2a, 2026-10-26, 2026-11-08
     RBAC and authorization                    :p2b, 2026-10-26, 2026-11-05
-    Admin panel with DataTables               :p2c, 2026-10-26, 2026-11-08
+    Admin panel (Products, Orders, Vendors)   :p2c, 2026-10-26, 2026-11-08
 
     section Phase 3 - Orders and Payment
     Checkout and atomic order placement       :p3a, 2026-11-09, 2026-11-18
@@ -119,7 +120,7 @@ gantt
 | Member | Role | Responsibilities | Documentation ownership |
 |---|---|---|---|
 | **1** | Architecture, Data & Deployment (Team Lead) | Solution structure, entities, `DbContext`, migrations, generic/specific repositories, Unit of Work, DI setup, seed data, repository integration tests, Azure deployment, PR reviews | Software Architecture, Technology Stack, Deployment Diagram, Component Diagram, README, Project Plan |
-| **2** | Authentication, Authorization & Profile | ASP.NET Identity (register/login/logout), roles Customer/Admin, RBAC, Access Denied, profile page, account settings, order history page, CSRF/XSS review | Stakeholder Analysis, Use Case Diagram, User Stories, Security requirements |
+| **2** | Authentication, Authorization, Vendor Onboarding & Profile | ASP.NET Identity (register/login/logout), roles (Customer, Vendor, Admin), RBAC, Access Denied, vendor document submission flow (ID, Commercial Register, Tax Card), profile page, account settings, order history page, CSRF/XSS review | Stakeholder Analysis, Use Case Diagram, User Stories, Security requirements |
 | **3** | Product Catalog & Services Testing | `ProductService`, `CategoryService`, product listing, search, filters, product details, jQuery live search, unit tests for services | ER Diagram, Logical & Physical Schema, Class Diagram, Functional Requirements |
 | **4** | Cart, Orders & Payment | Session cart, `CartService`, totals and discounts, checkout, `OrderService` with transaction (order + stock), Stripe, storing transaction details | Sequence Diagram (checkout and payment), State Diagram (order status), DFD, Activity Diagram |
 | **5** | Admin Panel, UI & QA | Layout, Bootstrap/custom CSS, responsive design, Toastr, Admin area, DataTables for products/categories/orders, test cases and bug tracking | Wireframes and Mockups, UI/UX Guidelines, Test Plan and Test Cases, Bug Reports, User Manual, Presentation |
@@ -137,12 +138,13 @@ gantt
 | R3 | Team members with different skill levels | High | Medium | Pair programming, mutual code reviews, simple-first implementation |
 | R4 | Stripe integration problems | Medium | High | Start early in test mode, assign to a strong member, keep a fallback "payment pending" flow |
 | R5 | Stock inconsistency if order saving fails | Low | High | Single database transaction through Unit of Work, tested with failure scenarios |
-| R6 | Deployment problems on Azure | Medium | High | Prepare Azure resources early (Phase 3), deploy a test build before the final week |
-| R7 | Secrets leaked to GitHub | Medium | High | User Secrets locally, environment variables on Azure, `.gitignore` review |
-| R8 | Missing a documentation deadline | Medium | High | Documentation owners assigned per section, weekly documentation check |
-| R9 | Member unavailable or delayed | Medium | Medium | Task board visible to all, knowledge sharing, backup owner per module |
-| R10 | Scope creep (adding features outside the specification) | Medium | Medium | Scope section in this document is the reference; any addition needs team agreement |
-| R11 | Local database setup differs between machines | Medium | Low | LocalDB default in `appsettings.json`, personal overrides in User Secrets, auto-migration on startup |
+| R6 | Security leaks of uploaded vendor legal documents (ID, Commercial Register, Tax Card) | Medium | High | Restrict upload directory access, validate MIME types and extensions, serve files through authorized controller actions |
+| R7 | Deployment problems on Azure | Medium | High | Prepare Azure resources early (Phase 3), deploy a test build before the final week |
+| R8 | Secrets leaked to GitHub | Medium | High | User Secrets locally, environment variables on Azure, `.gitignore` review |
+| R9 | Missing a documentation deadline | Medium | High | Documentation owners assigned per section, weekly documentation check |
+| R10 | Member unavailable or delayed | Medium | Medium | Task board visible to all, knowledge sharing, backup owner per module |
+| R11 | Scope creep (adding features outside the specification) | Medium | Medium | Scope section in this document is the reference; any addition needs team agreement |
+| R12 | Local database setup differs between machines | Medium | Low | LocalDB default in `appsettings.json`, personal overrides in User Secrets, auto-migration on startup |
 
 ---
 
