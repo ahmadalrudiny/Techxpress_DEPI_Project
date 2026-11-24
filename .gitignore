@@ -362,6 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-   App_Data/
+# Uploaded vendor documents and other local app data
+App_Data/
+
 # Serilog log files
 logs/
