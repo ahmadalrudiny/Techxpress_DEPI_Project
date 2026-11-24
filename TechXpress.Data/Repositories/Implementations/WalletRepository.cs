@@ -55,4 +55,8 @@ public class WalletRepository : GenericRepository<WalletTransaction>, IWalletRep
     public async Task<bool> HasDepositForOrderDetailAsync(int orderDetailId)
         => await _dbSet.AnyAsync(t => t.OrderDetailId == orderDetailId
                                    && t.Type == WalletTransactionType.Deposit);
+
+    public async Task<bool> HasRefundForOrderDetailAsync(int orderDetailId)
+        => await _dbSet.AnyAsync(t => t.OrderDetailId == orderDetailId
+                                   && t.Type == WalletTransactionType.Refund);
 }

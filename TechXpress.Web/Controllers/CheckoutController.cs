@@ -16,6 +16,7 @@ public class CheckoutController : Controller
     private readonly ICartPersistenceService _cartPersistence;
     private readonly IOrderService _orderService;
     private readonly IPaymentService _paymentService;
+    private readonly IStoreCreditService _storeCreditService;
     private readonly ILogger<CheckoutController> _logger;
 
     public CheckoutController(
@@ -23,12 +24,14 @@ public class CheckoutController : Controller
         ICartPersistenceService cartPersistence,
         IOrderService orderService,
         IPaymentService paymentService,
+        IStoreCreditService storeCreditService,
         ILogger<CheckoutController> logger)
     {
         _cartService = cartService;
         _cartPersistence = cartPersistence;
         _orderService = orderService;
         _paymentService = paymentService;
+        _storeCreditService = storeCreditService;
         _logger = logger;
     }
 
@@ -70,7 +73,8 @@ public class CheckoutController : Controller
             Subtotal = summary.Subtotal,
             Discount = summary.Discount,
             Total = summary.Total,
-            ItemCount = summary.ItemCount
+            ItemCount = summary.ItemCount,
+            AvailableCredit = await _storeCreditService.GetBalanceAsync(CurrentUserId)
         };
 
         return View(model);
@@ -82,6 +86,13 @@ public class CheckoutController : Controller
     {
         if (!ModelState.IsValid)
         {
+            var validationCartJson = await GetCartJsonAsync();
+            var validationSummary = _cartService.GetSummary(validationCartJson);
+            model.Subtotal = validationSummary.Subtotal;
+            model.Discount = validationSummary.Discount;
+            model.Total = validationSummary.Total;
+            model.ItemCount = validationSummary.ItemCount;
+            model.AvailableCredit = await _storeCreditService.GetBalanceAsync(CurrentUserId);
             return View("Checkout", model);
         }
 
@@ -96,11 +107,18 @@ public class CheckoutController : Controller
 
         // لو العميل رجع من صفحة دفع فاشلة أو ملغاة وضغط «إتمام الشراء» تاني بنفس السلة،
         // بنستأنف نفس الطلب المعلّق بدل ما ننشئ طلب مكرر ونحجز مخزون إضافي.
+        var expectedCredit = 0m;
+        if (model.UseStoreCredit)
+        {
+            var balance = await _storeCreditService.GetBalanceAsync(CurrentUserId);
+            expectedCredit = Math.Min(balance, summary.Total);
+        }
+
         var userOrders = await _orderService.GetUserOrdersAsync(CurrentUserId);
         var matchingPendingOrder = userOrders
             .Where(o => o.Status == OrderStatus.Pending)
             .OrderByDescending(o => o.OrderDate)
-            .FirstOrDefault(o => MatchesCart(o, summary));
+            .FirstOrDefault(o => MatchesCart(o, summary, expectedCredit));
 
         if (matchingPendingOrder != null)
         {
@@ -115,6 +133,14 @@ public class CheckoutController : Controller
             return RedirectToAction("Checkout");
         }
 
+        var createdOrder = await _orderService.GetOrderAsync(orderId.Value, CurrentUserId);
+
+        // الطلب المدفوع بالكامل من رصيد النقاط لا يحتاج جلسة Stripe.
+        if (createdOrder != null && createdOrder.TotalAmount <= 0)
+        {
+            return RedirectToAction(nameof(Success), new { orderId = orderId.Value });
+        }
+
         // مهم: لا نُفرّغ السلة هنا. السلة تفضل كما هي لو فشل الدفع أو أُلغى،
         // وتُفرّغ فقط بعد تأكيد نجاح الدفع في Success.
         return RedirectToAction(nameof(Payment), new { orderId = orderId.Value });
@@ -127,7 +153,7 @@ public class CheckoutController : Controller
         try
         {
             return await _orderService.PlaceOrderAsync(
-                CurrentUserId, cartJson, model.ShippingAddress, model.PromoCode);
+                CurrentUserId, cartJson, model.ShippingAddress, model.PromoCode, model.UseStoreCredit);
         }
         catch (Exception ex)
         {
@@ -139,7 +165,7 @@ public class CheckoutController : Controller
     }
 
     /// <summary>يقارن عناصر السلة الحالية بطلب معلّق سابق لنفس العميل (نفس المنتجات والكميات والإجمالي).</summary>
-    private static bool MatchesCart(OrderDto order, CartSummaryDto summary)
+    private static bool MatchesCart(OrderDto order, CartSummaryDto summary, decimal expectedCredit)
     {
         var cartItems = summary.Items.ToList();
         var orderItems = order.OrderDetails.ToList();
@@ -160,7 +186,17 @@ public class CheckoutController : Controller
             }
         }
 
-        return Math.Abs(order.TotalAmount - summary.Total) < 0.01m;
+        // TotalAmount is the cash paid after credit, so compare the full order value.
+        // When the customer does not select credit (expectedCredit == 0) a pending order
+        // that already holds reserved credit still matches, so retrying payment reuses it
+        // instead of creating a duplicate order (the reserved credit is not in the balance).
+        var preCreditTotalMatches =
+            Math.Abs(order.TotalAmount + order.StoreCreditUsed - summary.Total) < 0.01m;
+
+        var creditMatches = expectedCredit <= 0
+            || Math.Abs(order.StoreCreditUsed - expectedCredit) < 0.01m;
+
+        return preCreditTotalMatches && creditMatches;
     }
 
     [HttpGet]
@@ -177,9 +213,12 @@ public class CheckoutController : Controller
         // لا يُسمح بدفع طلب ملغي أو مدفوع بالفعل
         if (order.Status != OrderStatus.Pending)
         {
-            TempData["ErrorMessage"] = order.Status == OrderStatus.Cancelled
-                ? "لا يمكن دفع طلب ملغي."
-                : "تم دفع هذا الطلب بالفعل.";
+            TempData["ErrorMessage"] = order.Status switch
+            {
+                OrderStatus.Cancelled => "لا يمكن دفع طلب ملغي.",
+                OrderStatus.Returned => "لا يمكن دفع طلب تم إرجاعه.",
+                _ => "تم دفع هذا الطلب بالفعل."
+            };
             return RedirectToAction("OrderDetails", "Profile", new { id = orderId });
         }
 
@@ -229,7 +268,7 @@ public class CheckoutController : Controller
         [FromQuery(Name = "session_id")] string? sessionId,
         [FromQuery(Name = "orderId")] int? orderId)
     {
-        if (string.IsNullOrEmpty(sessionId) || !orderId.HasValue)
+        if (!orderId.HasValue)
         {
             TempData["ErrorMessage"] = "بيانات الدفع غير مكتملة.";
             return RedirectToAction("Index", "Home");
@@ -240,6 +279,25 @@ public class CheckoutController : Controller
         if (order == null)
         {
             TempData["ErrorMessage"] = "الطلب غير موجود أو لا تملك صلاحية الوصول إليه.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        // طلب مدفوع بالكامل من رصيد النقاط: لا توجد جلسة Stripe لتأكيدها.
+        if (string.IsNullOrEmpty(sessionId))
+        {
+            if (order.Status is OrderStatus.Paid or OrderStatus.Shipped or OrderStatus.Delivered)
+            {
+                HttpContext.Session.SetString(CartSession.Key, CartSession.EmptyJson);
+                await _cartPersistence.ClearAsync(CurrentUserId);
+
+                TempData["SuccessMessage"] = order.StoreCreditUsed > 0
+                    ? "تم إتمام طلبك باستخدام رصيد النقاط بنجاح."
+                    : "تم تأكيد طلبك بنجاح.";
+                ViewData["OrderId"] = order.Id;
+                return View();
+            }
+
+            TempData["ErrorMessage"] = "بيانات الدفع غير مكتملة.";
             return RedirectToAction("Index", "Home");
         }
 

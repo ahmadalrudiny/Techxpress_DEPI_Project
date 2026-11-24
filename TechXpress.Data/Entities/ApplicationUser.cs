@@ -15,5 +15,11 @@ public class ApplicationUser : IdentityUser
     /// <summary>سلة التسوق المحفوظة (JSON) — تُستعاد عند تسجيل الدخول من جهاز آخر.</summary>
     public string? CartJson { get; set; }
 
+    /// <summary>
+    /// رصيد النقاط/المكافآت المتاح للعميل (1 نقطة = 1 دولار).
+    /// يُضاف عند إلغاء أو إرجاع طلب مدفوع، ويُستخدم كخصم عند الشراء.
+    /// </summary>
+    public decimal StoreCreditBalance { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

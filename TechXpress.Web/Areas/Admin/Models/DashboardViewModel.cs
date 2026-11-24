@@ -17,6 +17,9 @@ public class DashboardViewModel
     /// <summary>إجمالي المبيعات المؤكدة — الطلبات المدفوعة والمشحونة والمُسلّمة فقط.</summary>
     public decimal TotalSales { get; set; }
 
+    /// <summary>إجمالي عمولة الموقع من الطلبات غير الملغاة أو المُرجعة.</summary>
+    public decimal PlatformRevenue { get; set; }
+
     /// <summary>عدد الطلبات المؤكدة المستخدمة في حساب إجمالي المبيعات.</summary>
     public int PaidOrders { get; set; }
 

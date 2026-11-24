@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
 using TechXpress.Data.Context;
 using TechXpress.Data.Entities;
 using TechXpress.Data.Repositories.Implementations;
@@ -9,9 +11,32 @@ using TechXpress.Data.UoW;
 using TechXpress.Services.Implementations;
 using TechXpress.Services.Interfaces;
 using TechXpress.Services.Models;
+using TechXpress.Web.Infrastructure;
 using TechXpress.Web.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ===== تسجيل الأخطاء في ملفات يومية داخل مجلد logs =====
+var logDirectory = Path.Combine(builder.Environment.ContentRootPath, "logs");
+Directory.CreateDirectory(logDirectory);
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(
+        path: Path.Combine(logDirectory, "log-.txt"),
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30,
+        fileSizeLimitBytes: 20 * 1024 * 1024,
+        rollOnFileSizeLimit: true,
+        shared: true,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // 1) الداتابيز
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -94,6 +119,7 @@ builder.Services.AddHttpClient(PaymentService.HttpClientName, client =>
 });
 
 builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<IStoreCreditService, StoreCreditService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
@@ -181,6 +207,21 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// ===== تسجيل كل طلب: المسار + النتيجة + الوقت + المستخدم + IP =====
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} -> {StatusCode} in {Elapsed:0.0000} ms | User: {UserName} | IP: {ClientIP}";
+    options.GetLevel = (httpContext, elapsed, ex) =>
+        ex != null || httpContext.Response.StatusCode >= 500
+            ? LogEventLevel.Error
+            : LogEventLevel.Information;
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("UserName", httpContext.User?.Identity?.Name ?? "anonymous");
+        diagnosticContext.Set("ClientIP", httpContext.Connection.RemoteIpAddress?.ToString() ?? "-");
+    };
+});
+
 // خلف بروكسي الاستضافة (Azure App Service) بنقرأ ترويسات X-Forwarded-*
 // لازم يكون أول Middleware حتى يصحّ Scheme/Host قبل HSTS وإعادة التوجيه
 if (!app.Environment.IsDevelopment())
@@ -206,6 +247,9 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// ===== تسجيل تفاصيل أي Exception غير متوقع (المسار/المستخدم/Stack Trace) قبل معالجته =====
+app.UseMiddleware<ExceptionLoggingMiddleware>();
 
 // صفحة 404 مخصّصة: تُعاد فقط للردود الفارغة (بدون جسم)، لذلك لا تُخفي تفاصيل أي خطأ
 app.UseStatusCodePagesWithReExecute("/Home/HttpStatus/{0}");
@@ -240,4 +284,15 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "توقف التطبيق بشكل غير متوقع");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

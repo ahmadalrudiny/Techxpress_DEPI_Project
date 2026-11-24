@@ -1,15 +1,13 @@
 @model ProductListViewModel
 @using TechXpress.Services.Models
 
-@* لوحة نتائج المنتجات (تُحدَّث بالبحث الحي بدون إعادة تحميل الصفحة) *@
-
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-    <h2 class="h5 fw-bold text-white mb-0">
-        <i class="fas fa-layer-group text-warning me-2"></i>
+    <h2 class="h5 fw-bold results-heading mb-0">
+        <i class="fas fa-layer-group results-icon me-2"></i>
         النتائج
-        <span class="badge bg-warning text-dark ms-1">@Model.TotalCount</span>
+        <span class="badge results-count ms-1">@Model.TotalCount</span>
     </h2>
-    <div class="text-muted small">
+    <div class="results-sort small">
         <i class="fas fa-arrow-down-wide-short me-1"></i>@Model.SortLabel
     </div>
 </div>
@@ -18,9 +16,9 @@
 {
     <div class="card border-0 shadow-sm empty-state text-center">
         <div class="card-body py-5">
-            <i class="fas fa-magnifying-glass-minus fa-3x text-muted mb-3"></i>
-            <h3 class="h5 fw-bold mb-2">لا توجد نتائج مطابقة</h3>
-            <p class="text-muted mb-0">جرّب تغيير كلمة البحث أو توسيع نطاق الفئة والسعر.</p>
+            <i class="fas fa-magnifying-glass-minus fa-3x empty-icon mb-3"></i>
+            <h3 class="h5 fw-bold empty-title mb-2">لا توجد نتائج مطابقة</h3>
+            <p class="empty-description mb-0">جرّب تغيير كلمة البحث أو توسيع نطاق الفئة والسعر.</p>
         </div>
     </div>
 }
@@ -45,3 +43,42 @@ else
         </nav>
     }
 }
+
+<style>
+    .results-heading {
+        color: #0C223F !important;
+    }
+
+    .results-icon {
+        color: #0C223F !important;
+    }
+
+    .results-count {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9 !important;
+        font-weight: 700 !important;
+    }
+
+    .results-sort {
+        color: #64748b !important;
+    }
+
+    .empty-state {
+        background: #FFFFFF !important;
+        border: 1px solid #E3D9C9 !important;
+        border-radius: 14px !important;
+    }
+
+    .empty-icon {
+        color: #0C223F !important;
+    }
+
+    .empty-title {
+        color: #0C223F !important;
+    }
+
+    .empty-description {
+        color: #64748b !important;
+    }
+</style>

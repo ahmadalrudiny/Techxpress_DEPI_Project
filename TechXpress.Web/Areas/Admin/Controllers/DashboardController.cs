@@ -43,6 +43,7 @@ public class DashboardController : Controller
         var vendors = (await _vendorService.GetRequestsAsync(null)).ToList();
         var pendingPayouts = (await _walletService.GetPendingPayoutRequestsAsync()).ToList();
         var users = await _userManagementService.GetAllUsersAsync();
+        var platformRevenue = await _walletService.GetPlatformRevenueAsync();
 
         // إجمالي المبيعات يحتسب الطلبات المؤكدة فقط (مدفوع / مشحون / مُسلّم).
         // الطلبات غير المدفوعة (قيد الانتظار) والملغاة لا تُحتسب.
@@ -55,7 +56,8 @@ public class DashboardController : Controller
             TotalCategories = categories.Count,
             TotalProducts = totalProducts,
             TotalOrders = orders.Count,
-            TotalSales = confirmedOrders.Sum(o => o.TotalAmount),
+            TotalSales = confirmedOrders.Sum(o => o.TotalAmount + o.StoreCreditUsed),
+            PlatformRevenue = platformRevenue,
             PaidOrders = confirmedOrders.Count,
             TotalVendors = vendors.Count,
             PendingVendors = vendors.Count(v => v.Status == VendorStatus.Pending),

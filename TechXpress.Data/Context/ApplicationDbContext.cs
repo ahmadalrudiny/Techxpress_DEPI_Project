@@ -20,6 +20,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<StoreCreditTransaction> StoreCreditTransactions => Set<StoreCreditTransaction>();
+    public DbSet<PlatformEarning> PlatformEarnings => Set<PlatformEarning>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -128,6 +130,48 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             e.Property(c => c.Subject).HasMaxLength(200).IsRequired();
             e.Property(c => c.Message).HasMaxLength(2000).IsRequired();
             e.HasIndex(c => c.CreatedAt);
+        });
+
+        // ----- Store Credit (نقاط العميل) -----
+        builder.Entity<ApplicationUser>()
+            .Property(u => u.StoreCreditBalance)
+            .HasPrecision(18, 2);
+
+        builder.Entity<Order>()
+            .Property(o => o.StoreCreditUsed)
+            .HasPrecision(18, 2);
+
+        builder.Entity<StoreCreditTransaction>(e =>
+        {
+            e.Property(t => t.Amount).HasPrecision(18, 2);
+            e.Property(t => t.BalanceAfter).HasPrecision(18, 2);
+            e.Property(t => t.Type).HasConversion<string>().HasMaxLength(20);
+            e.Property(t => t.Description).HasMaxLength(300).IsRequired();
+
+            e.HasOne(t => t.User).WithMany()
+                .HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(t => t.Order).WithMany()
+                .HasForeignKey(t => t.OrderId).OnDelete(DeleteBehavior.NoAction);
+
+            // منع إضافة استرداد نقاط لنفس الطلب أكثر من مرة
+            e.HasIndex(t => new { t.OrderId, t.Type })
+                .IsUnique()
+                .HasFilter("[OrderId] IS NOT NULL AND [Type] = 'OrderRefund'");
+        });
+
+        // ----- Platform Earnings (عمولة الموقع) -----
+        builder.Entity<PlatformEarning>(e =>
+        {
+            e.Property(p => p.Amount).HasPrecision(18, 2);
+            e.Property(p => p.Rate).HasPrecision(9, 4);
+
+            e.HasOne(p => p.Order).WithMany()
+                .HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(p => p.OrderDetail).WithMany()
+                .HasForeignKey(p => p.OrderDetailId).OnDelete(DeleteBehavior.Restrict);
+
+            // عمولة واحدة لكل بند طلب
+            e.HasIndex(p => p.OrderDetailId).IsUnique();
         });
     }
 }

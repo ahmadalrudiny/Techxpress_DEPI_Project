@@ -278,9 +278,9 @@ public class PaymentService : IPaymentService
                 return (true, "تم تأكيد الدفع مسبقاً.");
             }
 
-            if (order.Status == OrderStatus.Cancelled)
+            if (order.Status is OrderStatus.Cancelled or OrderStatus.Returned)
             {
-                return (false, "لا يمكن تأكيد الدفع لطلب ملغي.");
+                return (false, "لا يمكن تأكيد الدفع لطلب ملغي أو مُرجَع.");
             }
 
             var paymentStatus = root.GetProperty("payment_status").GetString();

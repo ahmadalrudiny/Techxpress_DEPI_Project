@@ -1,6 +1,7 @@
 @model IReadOnlyList<VendorOrderSummaryDto>
 @using TechXpress.Services.Models
 @using TechXpress.Data.Entities
+
 @{
     ViewData["Title"] = "طلبات متجري - TechXpress";
 
@@ -15,98 +16,515 @@
 
     string ShipBadge(ShippingStatus s) => s switch
     {
-        ShippingStatus.Pending => "bg-warning text-dark",
-        ShippingStatus.Preparing => "bg-secondary",
-        ShippingStatus.Shipped => "bg-info text-dark",
-        ShippingStatus.Delivered => "bg-success",
-        _ => "bg-secondary"
+        ShippingStatus.Pending => "status-pending",
+        ShippingStatus.Preparing => "status-preparing",
+        ShippingStatus.Shipped => "status-shipped",
+        ShippingStatus.Delivered => "status-delivered",
+        _ => "status-preparing"
     };
 }
 
 <partial name="_VendorNav" />
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #EDE6DB;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    body {
+        background-color: var(--cream);
+        color: var(--navy);
+    }
+
+    .vendor-orders-page {
+        background: var(--cream);
+        min-height: 100vh;
+        padding-top: 25px;
+        padding-bottom: 50px;
+    }
+
+    /* Page Head - White Clean Card */
+    .page-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 22px 24px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .page-head-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .page-head-text {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 0;
+    }
+
+    .page-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Chip */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 50px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        font-size: 12.5px;
+        font-weight: 700;
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 9px;
+        font-weight: 700;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-warning,
+    .btn-theme-primary {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        padding: 7px 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-warning:hover,
+    .btn-theme-primary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(12, 34, 63, 0.12);
+    }
+
+    .btn-outline-warning,
+    .btn-theme-secondary {
+        background: var(--white) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        padding: 7px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-outline-warning:hover,
+    .btn-theme-secondary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+    }
+
+    /* Card & Card Header */
+    .orders-card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--white) !important;
+        border-bottom: 1px solid var(--border) !important;
+        padding: 18px 24px !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-header h2 {
+        color: var(--navy) !important;
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-icon-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Table Styles */
+    .table {
+        color: var(--navy);
+        --bs-table-color: var(--navy);
+        --bs-table-hover-color: var(--navy);
+        --bs-table-hover-bg: var(--beige);
+        --bs-table-border-color: var(--border);
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: var(--beige) !important;
+    }
+
+    .table thead th {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        font-size: 12.5px;
+        font-weight: 800;
+        padding: 15px 14px;
+        border-bottom: 1.5px solid var(--border);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 15px 14px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(227, 217, 201, 0.45);
+        vertical-align: middle;
+        color: var(--navy);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: var(--beige) !important;
+    }
+
+    .order-number {
+        color: var(--navy);
+        font-weight: 800;
+    }
+
+    .order-date {
+        color: var(--text-muted);
+        font-size: 12.5px;
+    }
+
+    .price-tag {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 5px 11px;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-pending {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1px solid var(--border);
+    }
+
+    .status-preparing {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0;
+    }
+
+    .status-shipped {
+        background: #eff6ff !important;
+        color: #1d4ed8 !important;
+        border: 1px solid #bfdbfe;
+    }
+
+    .status-delivered {
+        background: #ecfdf5 !important;
+        color: #15803d !important;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-note {
+        display: block;
+        margin-top: 5px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-note.pending {
+        color: #d97706;
+    }
+
+    .status-note.cancelled {
+        color: #dc2626;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        padding: 55px 24px !important;
+        text-align: center;
+    }
+
+    .empty-state > i {
+        color: var(--navy);
+        opacity: 0.4;
+        margin-bottom: 14px;
+    }
+
+    .empty-state h2 {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 22px;
+    }
+
+    @@media (max-width: 768px) {
+        .page-head {
+            padding: 16px;
+        }
+
+        .page-head-text h1 {
+            font-size: 20px;
+        }
+
+        .page-head-actions {
+            width: 100%;
+        }
+
+        .table thead th,
+        .table tbody td {
+            padding: 12px 10px;
+        }
+    }
+</style>
+
+<section class="vendor-orders-page">
     <div class="container">
-        <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-truck-fast"></i></div>
+
+        <!-- Page Header -->
+        <div class="page-head">
+            <div class="page-head-icon">
+                <i class="fas fa-truck-fast"></i>
+            </div>
+
             <div class="page-head-text">
                 <h1>طلبات متجري</h1>
-                <p>الطلبات التي تحتوي على منتجاتك</p>
+                <p>متابعة وتحديث حالة الشحن لجميع الطلبات التي تحتوي على منتجاتك</p>
             </div>
+
             <div class="page-head-actions">
-                <span class="chip chip-gold"><i class="fas fa-receipt"></i> @Model.Count طلب</span>
-                <a asp-action="Index" asp-controller="VendorProduct" class="btn btn-outline-warning btn-sm fw-bold">
-                    <i class="fas fa-box me-1"></i>منتجاتي
+                <span class="chip">
+                    <i class="fas fa-receipt ms-1"></i>
+                    @Model.Count طلب
+                </span>
+
+                <a asp-action="Index"
+                   asp-controller="VendorProduct"
+                   class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-boxes-stacked ms-1"></i>
+                    منتجاتي
+                </a>
+
+                <a asp-action="Index"
+                   asp-controller="VendorDashboard"
+                   class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-gauge-high ms-1"></i>
+                    لوحة التحكم
                 </a>
             </div>
         </div>
 
         @if (Model.Count == 0)
         {
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-truck fa-4x mb-3"></i>
-                <h2 class="h4 fw-bold mb-1">لا توجد طلبات بعد</h2>
-                <p class="mb-4">ستظهر هنا الطلبات التي تتضمن منتجاتك.</p>
-                <a asp-action="Index" asp-controller="VendorProduct" class="btn btn-warning fw-bold">
-                    <i class="fas fa-box me-1"></i>إدارة منتجاتي
+            <div class="empty-state">
+                <i class="fas fa-truck fa-4x d-block"></i>
+
+                <h2>لا توجد طلبات حتى الآن</h2>
+                <p>ستظهر هنا الطلبات فور قيام العملاء بشراء منتجاتك من المتجر.</p>
+
+                <a asp-action="Index"
+                   asp-controller="VendorProduct"
+                   class="btn btn-warning px-4 py-2">
+                    <i class="fas fa-boxes-stacked ms-1"></i>
+                    إدارة منتجاتي
                 </a>
             </div>
         }
         else
         {
-            <div class="card border-secondary shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-secondary text-white">
+            <div class="orders-card">
+                <div class="card-header">
+                    <h2>
+                        <span class="card-icon-badge"><i class="fas fa-list-check"></i></span>
+                        قائمة الطلبات (@Model.Count طلب)
+                    </h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>رقم الطلب</th>
+                                <th class="text-center">التاريخ</th>
+                                <th class="text-center">عدد القطع</th>
+                                <th class="text-center">إجمالي منتجاتك</th>
+                                <th class="text-center">حالة الشحن</th>
+                                <th class="text-end">الإجراءات</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var o in Model)
+                            {
                                 <tr>
-                                    <th>رقم الطلب</th>
-                                    <th class="text-center">التاريخ</th>
-                                    <th class="text-center">عدد القطع</th>
-                                    <th class="text-center">إجمالي منتجاتك</th>
-                                    <th class="text-center">حالة الشحن</th>
-                                    <th class="text-end">الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var o in Model)
-                                {
-                                    <tr>
-                                        <td class="fw-bold">#@o.OrderId</td>
-                                        <td class="text-center text-muted small">@o.OrderDate.ToString("yyyy/MM/dd HH:mm")</td>
-                                        <td class="text-center">@o.ItemsCount</td>
-                                        <td class="text-center fw-bold"><span class="price-tag">$@o.VendorTotal.ToString("F2")</span></td>
-                                        <td class="text-center">
-                                            <span class="badge @ShipBadge(o.ShippingStatus)">@ShipText(o.ShippingStatus)</span>
-                                            @if (o.Status == OrderStatus.Pending)
-                                            {
-                                                <small class="d-block text-muted mt-1">بانتظار دفع العميل</small>
-                                            }
-                                            else if (o.Status == OrderStatus.Cancelled)
-                                            {
-                                                <small class="d-block text-danger mt-1">الطلب ملغي</small>
-                                            }
-                                        </td>
-                                        <td class="text-end">
-                                            <a asp-action="Details" asp-route-id="@o.OrderId" class="btn btn-sm btn-outline-warning">
-                                                <i class="fas fa-eye"></i> تفاصيل
+                                    <td>
+                                        <span class="order-number">#@o.OrderId</span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="order-date">
+                                            @o.OrderDate.ToString("yyyy/MM/dd HH:mm")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center fw-bold">
+                                        @o.ItemsCount
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="price-tag">
+                                            $@o.VendorTotal.ToString("N2")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="status-badge @ShipBadge(o.ShippingStatus)">
+                                            @ShipText(o.ShippingStatus)
+                                        </span>
+
+                                        @if (o.Status == OrderStatus.Pending)
+                                        {
+                                            <small class="status-note pending">
+                                                <i class="fas fa-hourglass-half ms-1"></i>بانتظار دفع العميل
+                                            </small>
+                                        }
+                                        else if (o.Status == OrderStatus.Cancelled)
+                                        {
+                                            <small class="status-note cancelled">
+                                                <i class="fas fa-circle-xmark ms-1"></i>الطلب ملغي
+                                            </small>
+                                        }
+                                        else if (o.Status == OrderStatus.Returned)
+                                        {
+                                            <small class="status-note cancelled">
+                                                <i class="fas fa-rotate-left ms-1"></i>تم إرجاع الطلب
+                                            </small>
+                                        }
+                                    </td>
+
+                                    <td class="text-end">
+                                        <div class="action-buttons">
+                                            <a asp-action="Details"
+                                               asp-route-id="@o.OrderId"
+                                               class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-eye ms-1"></i>تفاصيل
                                             </a>
-                                            @if (o.Status is OrderStatus.Paid or OrderStatus.Shipped
-                                                 && o.ShippingStatus is ShippingStatus.Pending or ShippingStatus.Preparing)
+
+                                            @if ((o.Status is OrderStatus.Paid or OrderStatus.Shipped)
+                                                && (o.ShippingStatus is ShippingStatus.Pending or ShippingStatus.Preparing))
                                             {
-                                                <a asp-action="Details" asp-route-id="@o.OrderId" asp-fragment="shipping"
-                                                   class="btn btn-sm btn-warning fw-bold">
-                                                    <i class="fas fa-truck-fast"></i> شحن
+                                                <a asp-action="Details"
+                                                   asp-route-id="@o.OrderId"
+                                                   asp-fragment="shipping"
+                                                   class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-truck-fast ms-1"></i>تجهيز وشحن
                                                 </a>
                                             }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         }
+
     </div>
 </section>

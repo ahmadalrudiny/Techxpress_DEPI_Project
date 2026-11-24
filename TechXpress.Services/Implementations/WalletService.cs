@@ -25,7 +25,7 @@ public class WalletService : IWalletService
     public async Task ProcessOrderCommissionAsync(int orderId)
     {
         var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
-        if (order == null || order.Status != OrderStatus.Paid)
+        if (order == null || order.Status is not (OrderStatus.Paid or OrderStatus.Shipped or OrderStatus.Delivered))
         {
             _logger.LogWarning("Commission skipped: order {OrderId} not found or not paid", orderId);
             return;
@@ -61,6 +61,21 @@ public class WalletService : IWalletService
                     Status = WalletTransactionStatus.Completed,
                     Description = $"أرباح الطلب #{orderId} بعد خصم العمولة"
                 });
+
+                // Record the platform's share so it can be reported and reversed reliably.
+                var existingEarning = (await _unitOfWork.PlatformEarnings
+                    .FindAsync(p => p.OrderDetailId == item.Id)).FirstOrDefault();
+
+                if (existingEarning == null)
+                {
+                    await _unitOfWork.PlatformEarnings.AddAsync(new PlatformEarning
+                    {
+                        OrderId = orderId,
+                        OrderDetailId = item.Id,
+                        Amount = commission,
+                        Rate = _commissionRate
+                    });
+                }
             }
 
             await _unitOfWork.CommitAsync();
@@ -77,9 +92,9 @@ public class WalletService : IWalletService
     public async Task ReverseOrderCommissionAsync(int orderId)
     {
         var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
-        if (order == null || order.Status != OrderStatus.Paid)
+        if (order == null)
         {
-            _logger.LogWarning("Reverse commission skipped: order {OrderId} not found or not paid", orderId);
+            _logger.LogWarning("Reverse commission skipped: order {OrderId} not found", orderId);
             return;
         }
 
@@ -97,23 +112,39 @@ public class WalletService : IWalletService
                                  && t.Status == WalletTransactionStatus.Completed))
                     .FirstOrDefault();
 
-                if (deposit == null) continue;
+                // Idempotency: never reverse the same vendor earning twice.
+                var alreadyReversed = await _unitOfWork.Wallets.HasRefundForOrderDetailAsync(item.Id);
 
-                var vendor = await _unitOfWork.Vendors.GetByIdAsync(deposit.VendorId);
-                if (vendor == null) continue;
-
-                vendor.WalletBalance -= deposit.Amount;
-
-                await _unitOfWork.Wallets.AddAsync(new WalletTransaction
+                if (deposit != null && !alreadyReversed)
                 {
-                    VendorId = vendor.Id,
-                    OrderDetailId = item.Id,
-                    Amount = deposit.Amount,
-                    BalanceAfter = vendor.WalletBalance,
-                    Type = WalletTransactionType.Refund,
-                    Status = WalletTransactionStatus.Completed,
-                    Description = $"Reverse commission for order #{orderId} after cancellation"
-                });
+                    var vendor = await _unitOfWork.Vendors.GetByIdAsync(deposit.VendorId);
+                    if (vendor != null)
+                    {
+                        vendor.WalletBalance -= deposit.Amount;
+
+                        await _unitOfWork.Wallets.AddAsync(new WalletTransaction
+                        {
+                            VendorId = vendor.Id,
+                            OrderDetailId = item.Id,
+                            Amount = deposit.Amount,
+                            BalanceAfter = vendor.WalletBalance,
+                            Type = WalletTransactionType.Refund,
+                            Status = WalletTransactionStatus.Completed,
+                            Description = $"إلغاء أرباح الطلب #{orderId} بعد الإلغاء أو الإرجاع"
+                        });
+                    }
+                }
+
+                // Reverse the recorded platform commission (if any).
+                var earning = (await _unitOfWork.PlatformEarnings
+                    .FindAsync(p => p.OrderDetailId == item.Id)).FirstOrDefault();
+
+                if (earning != null && !earning.IsReversed)
+                {
+                    earning.IsReversed = true;
+                    earning.ReversedAt = DateTime.UtcNow;
+                    _unitOfWork.PlatformEarnings.Update(earning);
+                }
             }
 
             await _unitOfWork.CommitAsync();
@@ -125,6 +156,12 @@ public class WalletService : IWalletService
             _logger.LogError(ex, "Failed to reverse commission for order {OrderId}", orderId);
             throw;
         }
+    }
+
+    public async Task<decimal> GetPlatformRevenueAsync()
+    {
+        var earnings = await _unitOfWork.PlatformEarnings.GetAllAsync();
+        return earnings.Where(e => !e.IsReversed).Sum(e => e.Amount);
     }
 
     public async Task<(bool Success, string Message)> RequestPayoutAsync(

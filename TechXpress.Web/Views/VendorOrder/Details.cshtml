@@ -1,3 +1,4 @@
+
 @model VendorOrderDetailsDto
 @using TechXpress.Services.Models
 @using TechXpress.Data.Entities
@@ -15,11 +16,11 @@
 
     string ShipBadge(ShippingStatus s) => s switch
     {
-        ShippingStatus.Pending => "bg-warning text-dark",
-        ShippingStatus.Preparing => "bg-secondary",
-        ShippingStatus.Shipped => "bg-info text-dark",
-        ShippingStatus.Delivered => "bg-success",
-        _ => "bg-secondary"
+        ShippingStatus.Pending => "status-pending",
+        ShippingStatus.Preparing => "status-preparing",
+        ShippingStatus.Shipped => "status-shipped",
+        ShippingStatus.Delivered => "status-delivered",
+        _ => "status-preparing"
     };
 
     var orderIsActive = Model.Status is OrderStatus.Paid or OrderStatus.Shipped;
@@ -28,85 +29,503 @@
     var canDeliver = Model.ShippingStatus == ShippingStatus.Shipped;
 }
 
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #EDE6DB;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+    }
+
+    body {
+        background-color: var(--cream);
+    }
+
+    .vendor-order-details {
+        padding-top: 25px;
+        color: var(--text-dark);
+    }
+
+    /* Page Header */
+    .page-head {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 25px;
+        border-radius: 20px;
+        overflow: hidden;
+        background: linear-gradient(165deg, var(--navy-dark) 0%, var(--navy) 65%, #102d52 100%);
+        box-shadow: 0 12px 35px rgba(12, 34, 63, 0.12);
+        isolation: isolate;
+    }
+
+    .page-head::before {
+        content: "";
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(250,247,242,.12) 0%, transparent 70%);
+        top: -120px;
+        left: -100px;
+        z-index: -1;
+    }
+
+    .page-head-icon {
+        width: 55px;
+        height: 55px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: var(--beige);
+        color: var(--navy);
+        font-size: 23px;
+    }
+
+    .page-head-text {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .page-head-text h1 {
+        color: var(--white);
+        font-size: 25px;
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .page-head-text p {
+        color: #dbe4ef;
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    .page-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Cards */
+    .vendor-order-details .card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        transition: box-shadow .2s ease, transform .2s ease;
+    }
+
+    .vendor-order-details .card-header {
+        background: var(--navy) !important;
+        border-color: rgba(255,255,255,.12) !important;
+        padding: 16px 20px;
+    }
+
+    .vendor-order-details .card-header h2 {
+        color: var(--white);
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .vendor-order-details .card-header h2 i {
+        color: var(--beige) !important;
+    }
+
+    .vendor-order-details .card-body {
+        padding: 22px;
+    }
+
+    .vendor-order-details .card-footer {
+        background: var(--navy) !important;
+        border-color: rgba(255,255,255,.12) !important;
+        padding: 16px 20px;
+    }
+
+    /* Information */
+    .vendor-order-details .form-label {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .vendor-order-details .card-body p {
+        color: var(--text-dark);
+        font-size: 14px;
+    }
+
+    .vendor-order-details .text-dark {
+        color: var(--navy) !important;
+    }
+
+    .vendor-order-details .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .vendor-order-details a:not(.btn) {
+        color: var(--navy);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .vendor-order-details a:not(.btn):hover {
+        color: var(--navy-light);
+        text-decoration: underline;
+    }
+
+    /* Status Badges */
+    .status-pending {
+        background: var(--beige);
+        color: #8a641d;
+        border: 1px solid #ead9b5;
+    }
+
+    .status-preparing {
+        background: #f1f5f9;
+        color: var(--navy);
+        border: 1px solid #e2e8f0;
+    }
+
+    .status-shipped {
+        background: #eaf1f9;
+        color: #244d73;
+        border: 1px solid #cbdced;
+    }
+
+    .status-delivered {
+        background: #ecfdf5;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .vendor-order-details .badge {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 11px;
+        border-radius: 7px;
+    }
+
+    .vendor-order-details .page-head .badge {
+        padding: 9px 14px;
+    }
+
+    .vendor-order-details .badge.bg-danger {
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca;
+    }
+
+    /* Table */
+    .vendor-order-details .table {
+        color: var(--navy);
+        border-color: var(--border);
+        --bs-table-color: var(--navy);
+        --bs-table-hover-color: var(--navy);
+        --bs-table-hover-bg: var(--beige);
+        --bs-table-border-color: var(--border);
+    }
+
+    .vendor-order-details .table thead,
+    .vendor-order-details .table thead th {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+    }
+
+    .vendor-order-details .table thead th {
+        font-size: 13px;
+        font-weight: 800;
+        padding: 15px 12px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .vendor-order-details .table tbody td {
+        padding: 14px 12px;
+        font-size: 13px;
+        vertical-align: middle;
+        color: var(--navy);
+    }
+
+    .vendor-order-details .table tbody tr:hover {
+        background: var(--beige);
+    }
+
+    .vendor-order-details .table img {
+        border: 1px solid var(--border);
+        background: var(--white);
+        padding: 2px;
+    }
+
+    .price-tag {
+        color: var(--navy);
+        font-weight: 800;
+    }
+
+    .vendor-order-details .card-footer .text-warning {
+        color: var(--beige) !important;
+    }
+
+    .vendor-order-details .card-footer .text-white {
+        color: var(--white) !important;
+    }
+
+    /* Forms */
+    .vendor-order-details .form-control {
+        min-height: 43px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--navy);
+        font-size: 14px;
+        box-shadow: none;
+    }
+
+    .vendor-order-details .form-control::placeholder {
+        color: #94a3b8;
+    }
+
+    .vendor-order-details .form-control:focus {
+        border-color: var(--navy);
+        box-shadow: 0 0 0 3px rgba(12, 34, 63, 0.08);
+    }
+
+    /* Buttons */
+    .vendor-order-details .btn {
+        border-radius: 9px;
+        font-weight: 700;
+        transition: all .2s ease;
+    }
+
+    .btn-theme-primary,
+    .btn-theme-outline,
+    .btn-theme-navy {
+        background: var(--beige) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+    }
+
+    .btn-theme-primary:hover,
+    .btn-theme-outline:hover,
+    .btn-theme-navy:hover {
+        background: var(--navy) !important;
+        border-color: var(--navy) !important;
+        color: var(--white) !important;
+        transform: translateY(-2px);
+    }
+
+    .btn-theme-secondary {
+        background: var(--white) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+    }
+
+    .btn-theme-secondary:hover {
+        background: var(--navy) !important;
+        border-color: var(--navy) !important;
+        color: var(--white) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Alerts */
+    .vendor-order-details .alert {
+        border-radius: 10px;
+        border: 1px solid transparent;
+        font-size: 13px;
+        padding: 12px;
+    }
+
+    .vendor-order-details .alert-warning {
+        background: var(--beige);
+        border-color: var(--border);
+        color: var(--navy);
+    }
+
+    .vendor-order-details .alert-warning i {
+        color: var(--gold);
+    }
+
+    .vendor-order-details .alert-danger {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .vendor-order-details .alert-success {
+        background: #ecfdf5;
+        border-color: #bbf7d0;
+        color: #15803d;
+    }
+
+    .vendor-order-details hr {
+        border-color: var(--border);
+        opacity: 1;
+        margin: 18px 0;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .vendor-order-details {
+            padding-top: 15px;
+        }
+
+        .page-head {
+            padding: 20px;
+            gap: 12px;
+        }
+
+        .page-head-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 19px;
+        }
+
+        .page-head-text h1 {
+            font-size: 20px;
+        }
+
+        .page-head-text p {
+            font-size: 12px;
+        }
+
+        .page-head-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .vendor-order-details .card-body {
+            padding: 17px;
+        }
+    }
+</style>
+
 <partial name="_VendorNav" />
 
-<section class="pb-5">
+<section class="vendor-order-details pb-5">
     <div class="container">
+
         <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-receipt"></i></div>
+            <div class="page-head-icon">
+                <i class="fas fa-receipt"></i>
+            </div>
+
             <div class="page-head-text">
                 <h1>تفاصيل الطلب #@Model.OrderId</h1>
                 <p>المنتجات الخاصة بمتجرك داخل هذا الطلب — وأنت مسؤول عن شحنها</p>
             </div>
+
             <div class="page-head-actions">
-                <span class="badge @ShipBadge(Model.ShippingStatus) fs-6 px-3 py-2">@ShipText(Model.ShippingStatus)</span>
-                <a asp-action="Index" class="btn btn-outline-warning btn-sm fw-bold">
-                    <i class="fas fa-arrow-right me-1"></i>طلبات متجري
+                <span class="badge @ShipBadge(Model.ShippingStatus) fs-6 px-3 py-2">
+                    @ShipText(Model.ShippingStatus)
+                </span>
+
+                <a asp-action="Index" class="btn btn-theme-primary btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>
+                    طلبات متجري
                 </a>
             </div>
         </div>
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="card border-secondary shadow-sm">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-info-circle me-2 text-warning"></i>معلومات الطلب</h2>
+
+                <!-- Order Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            معلومات الطلب
+                        </h2>
                     </div>
+
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label text-muted">رقم الطلب</label>
-                            <p class="fw-bold text-dark mb-0">#@Model.OrderId</p>
+                            <label class="form-label">رقم الطلب</label>
+                            <p class="fw-bold mb-0">#@Model.OrderId</p>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label text-muted">التاريخ</label>
-                            <p class="mb-0 text-muted">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</p>
+                            <label class="form-label">التاريخ</label>
+                            <p class="mb-0">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</p>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label text-muted">حالة الطلب العامة</label>
+                            <label class="form-label">حالة الطلب العامة</label>
                             <p class="mb-0">
                                 @switch (Model.Status)
                                 {
                                     case OrderStatus.Pending:
-                                        <span class="badge bg-warning text-dark">بانتظار الدفع</span>
+                                        <span class="badge status-pending">بانتظار الدفع</span>
                                         break;
                                     case OrderStatus.Paid:
-                                        <span class="badge bg-primary">تم الدفع</span>
+                                        <span class="badge status-delivered">تم الدفع</span>
                                         break;
                                     case OrderStatus.Shipped:
-                                        <span class="badge bg-info text-dark">تم الشحن</span>
+                                        <span class="badge status-shipped">تم الشحن</span>
                                         break;
                                     case OrderStatus.Delivered:
-                                        <span class="badge bg-success">تم التوصيل</span>
+                                        <span class="badge status-delivered">تم التوصيل</span>
                                         break;
                                     case OrderStatus.Cancelled:
                                         <span class="badge bg-danger">ملغي</span>
                                         break;
+                                    case OrderStatus.Returned:
+                                        <span class="badge bg-secondary">مُرتجع</span>
+                                        break;
                                 }
                             </p>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label text-muted">العميل</label>
-                            <p class="mb-0 text-dark fw-semibold">@(string.IsNullOrWhiteSpace(Model.CustomerName) ? "غير متاح" : Model.CustomerName)</p>
+                            <label class="form-label">العميل</label>
+                            <p class="mb-0 fw-semibold">
+                                @(string.IsNullOrWhiteSpace(Model.CustomerName) ? "غير متاح" : Model.CustomerName)
+                            </p>
+
                             @if (!string.IsNullOrWhiteSpace(Model.CustomerPhone))
                             {
-                                <a href="tel:@Model.CustomerPhone" class="small text-warning" dir="ltr">@Model.CustomerPhone</a>
+                                <a href="tel:@Model.CustomerPhone" class="small" dir="ltr">
+                                    @Model.CustomerPhone
+                                </a>
                             }
                         </div>
+
                         <div class="mb-0">
-                            <label class="form-label text-muted">عنوان الشحن</label>
-                            <p class="mb-0 text-muted">@(string.IsNullOrWhiteSpace(Model.ShippingAddress) ? "غير متاح" : Model.ShippingAddress)</p>
+                            <label class="form-label">عنوان الشحن</label>
+                            <p class="mb-0">
+                                @(string.IsNullOrWhiteSpace(Model.ShippingAddress) ? "غير متاح" : Model.ShippingAddress)
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="card border-secondary shadow-sm mt-4" id="shipping">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-truck-fast me-2 text-warning"></i>شحن الطلب</h2>
+                <!-- Shipping -->
+                <div class="card mt-4" id="shipping">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-truck-fast me-2"></i>
+                            شحن الطلب
+                        </h2>
                     </div>
+
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted">حالة الشحن</span>
-                            <span class="badge @ShipBadge(Model.ShippingStatus)">@ShipText(Model.ShippingStatus)</span>
+                            <span class="badge @ShipBadge(Model.ShippingStatus)">
+                                @ShipText(Model.ShippingStatus)
+                            </span>
                         </div>
 
                         @if (!string.IsNullOrWhiteSpace(Model.Carrier))
@@ -116,6 +535,7 @@
                                 <span class="fw-bold text-dark">@Model.Carrier</span>
                             </div>
                         }
+
                         @if (!string.IsNullOrWhiteSpace(Model.TrackingNumber))
                         {
                             <div class="d-flex justify-content-between mb-2">
@@ -123,18 +543,24 @@
                                 <span class="fw-bold text-dark" dir="ltr">@Model.TrackingNumber</span>
                             </div>
                         }
+
                         @if (Model.ShippedAt.HasValue)
                         {
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">تاريخ الشحن</span>
-                                <span class="text-dark small">@Model.ShippedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span>
+                                <span class="text-dark small">
+                                    @Model.ShippedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                                </span>
                             </div>
                         }
+
                         @if (Model.DeliveredAt.HasValue)
                         {
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">تاريخ التوصيل</span>
-                                <span class="text-dark small">@Model.DeliveredAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span>
+                                <span class="text-dark small">
+                                    @Model.DeliveredAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                                </span>
                             </div>
                         }
 
@@ -152,6 +578,13 @@
                                 هذا الطلب ملغي، لا يمكن شحنه.
                             </div>
                         }
+                        else if (Model.Status == OrderStatus.Returned)
+                        {
+                            <div class="alert alert-secondary small mb-0 mt-3" role="alert">
+                                <i class="fas fa-rotate-left me-1"></i>
+                                تم إرجاع هذا الطلب واسترداد قيمته للعميل، لا يمكن شحنه.
+                            </div>
+                        }
                         else if (Model.ShippingStatus == ShippingStatus.Delivered)
                         {
                             <div class="alert alert-success small mb-0 mt-3" role="alert">
@@ -163,10 +596,13 @@
                         {
                             @if (canPrepare)
                             {
-                                <form asp-action="StartPreparing" asp-route-id="@Model.OrderId" method="post" class="mt-3">
+                                <form asp-action="StartPreparing" asp-route-id="@Model.OrderId"
+                                      method="post" class="mt-3">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-outline-secondary fw-bold w-100">
-                                        <i class="fas fa-box-open me-1"></i>بدء التجهيز
+
+                                    <button type="submit" class="btn btn-theme-secondary fw-bold w-100">
+                                        <i class="fas fa-box-open me-1"></i>
+                                        بدء التجهيز
                                     </button>
                                 </form>
                             }
@@ -174,20 +610,30 @@
                             @if (canShip)
                             {
                                 <hr />
+
                                 <form asp-action="Ship" asp-route-id="@Model.OrderId" method="post">
                                     @Html.AntiForgeryToken()
+
                                     <div class="mb-2">
                                         <label class="form-label" for="carrier">شركة الشحن</label>
-                                        <input id="carrier" name="carrier" class="form-control" maxlength="100"
-                                               required placeholder="مثال: Aramex أو DHL" />
+                                        <input id="carrier" name="carrier" class="form-control"
+                                               maxlength="100" required
+                                               placeholder="مثال: Aramex أو DHL" />
                                     </div>
+
                                     <div class="mb-3">
-                                        <label class="form-label" for="trackingNumber">رقم التتبع (اختياري)</label>
-                                        <input id="trackingNumber" name="trackingNumber" class="form-control"
-                                               maxlength="100" placeholder="TRK-123456" dir="ltr" />
+                                        <label class="form-label" for="trackingNumber">
+                                            رقم التتبع (اختياري)
+                                        </label>
+
+                                        <input id="trackingNumber" name="trackingNumber"
+                                               class="form-control" maxlength="100"
+                                               placeholder="TRK-123456" dir="ltr" />
                                     </div>
-                                    <button type="submit" class="btn btn-warning fw-bold w-100">
-                                        <i class="fas fa-truck-fast me-1"></i>تأكيد الشحن
+
+                                    <button type="submit" class="btn btn-theme-primary fw-bold w-100">
+                                        <i class="fas fa-truck-fast me-1"></i>
+                                        تأكيد الشحن
                                     </button>
                                 </form>
                             }
@@ -195,11 +641,15 @@
                             @if (canDeliver)
                             {
                                 <hr />
-                                <form asp-action="Deliver" asp-route-id="@Model.OrderId" method="post"
+
+                                <form asp-action="Deliver" asp-route-id="@Model.OrderId"
+                                      method="post"
                                       onsubmit="return confirm('هل تأكدت من وصول الشحنة للعميل؟');">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-success fw-bold w-100">
-                                        <i class="fas fa-circle-check me-1"></i>تأكيد التوصيل
+
+                                    <button type="submit" class="btn btn-theme-primary fw-bold w-100">
+                                        <i class="fas fa-circle-check me-1"></i>
+                                        تأكيد التوصيل
                                     </button>
                                 </form>
                             }
@@ -208,16 +658,24 @@
                 </div>
             </div>
 
+            <!-- Products -->
             <div class="col-lg-8">
-                <div class="card border-secondary shadow-sm">
-                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-box me-2 text-warning"></i>منتجاتك في هذا الطلب</h2>
-                        <span class="badge bg-secondary">@Model.Items.Count صنف</span>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-box me-2"></i>
+                            منتجاتك في هذا الطلب
+                        </h2>
+
+                        <span class="badge status-preparing">
+                            @Model.Items.Count صنف
+                        </span>
                     </div>
+
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-secondary text-white">
+                                <thead>
                                     <tr>
                                         <th>المنتج</th>
                                         <th class="text-center">الكمية</th>
@@ -226,6 +684,7 @@
                                         <th class="text-center">حالة الشحن</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     @foreach (var item in Model.Items)
                                     {
@@ -234,16 +693,32 @@
                                                 <div class="d-flex align-items-center">
                                                     @if (!string.IsNullOrEmpty(item.ImageUrl))
                                                     {
-                                                        <img src="@item.ImageUrl" class="rounded me-2" style="width:44px;height:44px;object-fit:cover;" alt="@item.ProductName" />
+                                                        <img src="@item.ImageUrl"
+                                                             class="rounded me-2"
+                                                             style="width:44px;height:44px;object-fit:cover;"
+                                                             alt="@item.ProductName" />
                                                     }
+
                                                     <span class="fw-bold">@item.ProductName</span>
                                                 </div>
                                             </td>
+
                                             <td class="text-center">@item.Quantity</td>
-                                            <td class="text-center">$@item.UnitPrice.ToString("F2")</td>
-                                            <td class="text-center fw-bold"><span class="price-tag">$@item.LineTotal.ToString("F2")</span></td>
+
                                             <td class="text-center">
-                                                <span class="badge @ShipBadge(item.ShippingStatus)">@ShipText(item.ShippingStatus)</span>
+                                                $@item.UnitPrice.ToString("F2")
+                                            </td>
+
+                                            <td class="text-center fw-bold">
+                                                <span class="price-tag">
+                                                    $@item.LineTotal.ToString("F2")
+                                                </span>
+                                            </td>
+
+                                            <td class="text-center">
+                                                <span class="badge @ShipBadge(item.ShippingStatus)">
+                                                    @ShipText(item.ShippingStatus)
+                                                </span>
                                             </td>
                                         </tr>
                                     }
@@ -251,17 +726,21 @@
                             </table>
                         </div>
                     </div>
-                    <div class="card-footer bg-dark border-secondary">
-                        <div class="d-flex justify-content-between fw-bold fs-5">
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center fw-bold fs-5">
                             <span class="text-white">إجمالي منتجاتك</span>
-                            <span class="text-warning">$@Model.VendorTotal.ToString("F2")</span>
+                            <span class="text-warning">
+                                $@Model.VendorTotal.ToString("F2")
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <div class="text-end mt-3">
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>العودة إلى الطلبات
+                    <a asp-action="Index" class="btn btn-theme-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        العودة إلى الطلبات
                     </a>
                 </div>
             </div>

@@ -10,6 +10,9 @@ public class ProfileViewModel
     public string Email { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public string PostalCode { get; set; } = string.Empty;
+
+    /// <summary>رصيد النقاط المتاح للعميل.</summary>
+    public decimal StoreCreditBalance { get; set; }
 }
 
 public class EditProfileViewModel

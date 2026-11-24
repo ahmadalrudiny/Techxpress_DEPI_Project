@@ -60,4 +60,14 @@ public class OrdersController : Controller
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Return(int id)
+    {
+        // Administrator return of a delivered order; the value is refunded as store credit.
+        var (success, message) = await _orderService.ReturnOrderAsync(id, null);
+        TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
+        return RedirectToAction(nameof(Details), new { id });
+    }
 }

@@ -8,8 +8,11 @@ public interface IWalletService
     /// <summary>Deposits vendors' net earnings after an order is paid. Safe to call more than once.</summary>
     Task ProcessOrderCommissionAsync(int orderId);
 
-    /// <summary>Reverses vendor earnings when a paid order is cancelled. Idempotent. Allows negative balance.</summary>
+    /// <summary>Reverses vendor earnings and platform commission when a paid order is cancelled or returned. Idempotent.</summary>
     Task ReverseOrderCommissionAsync(int orderId);
+
+    /// <summary>Total platform commission from all non-reversed earnings (admin dashboard).</summary>
+    Task<decimal> GetPlatformRevenueAsync();
 
     /// <summary>Creates a payout request. The amount is reserved (deducted) immediately.</summary>
     Task<(bool Success, string Message)> RequestPayoutAsync(

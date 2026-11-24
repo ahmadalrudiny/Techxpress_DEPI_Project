@@ -6,115 +6,640 @@
     var fullStars = (int)Math.Floor(avg);
 }
 
-<section class="py-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --cream: #FAF7F2;
+        --beige: #FAF7F2;
+        --beige-hover: #ede6db;
+        --navy: #0C223F;
+        --navy-light: #16223D;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+        --success-bg: #ecfdf5;
+        --success-text: #15803d;
+        --success-border: #bbf7d0;
+        --danger-bg: #fef2f2;
+        --danger-text: #b91c1c;
+        --danger-border: #fecaca;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    .product-details-section {
+        background-color: var(--cream);
+        min-height: 85vh;
+        padding-top: 30px;
+        padding-bottom: 60px;
+    }
+
+    .custom-breadcrumb {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 20px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.03);
+    }
+
+    .custom-breadcrumb .breadcrumb {
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .custom-breadcrumb .breadcrumb-item a {
+        color: var(--navy);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        transition: color 0.2s ease;
+    }
+
+    .custom-breadcrumb .breadcrumb-item a:hover {
+        color: #173860;
+        text-decoration: underline;
+    }
+
+    .custom-breadcrumb .breadcrumb-item.active {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .product-gallery-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: 0 6px 24px rgba(12, 34, 63, 0.04);
+        padding: 16px;
+    }
+
+    .product-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        background: #fafafa;
+        border-radius: 16px;
+        min-height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(227, 217, 201, 0.4);
+    }
+
+    .product-main-img {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    .product-main-img:hover {
+        transform: scale(1.02);
+    }
+
+    .product-image-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #cbd5e1;
+        height: 380px;
+        width: 100%;
+    }
+
+    .badge-out-stock-float {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: var(--danger-bg);
+        color: var(--danger-text);
+        border: 1px solid var(--danger-border);
+        font-size: 13px;
+        font-weight: 800;
+        padding: 8px 16px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+    }
+
+    .badge-vendor {
+        background: var(--beige);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 7px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge-category {
+        background: #f1f5f9;
+        color: var(--navy);
+        border: 1px solid #e2e8f0;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 7px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .product-title {
+        color: var(--navy);
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1.4;
+        margin-bottom: 12px;
+    }
+
+    .rating-stars-wrap {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 15px;
+    }
+
+    .star-filled {
+        color: var(--gold);
+    }
+
+    .star-empty {
+        color: #e2e8f0;
+    }
+
+    .rating-text {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        font-weight: 600;
+        margin-right: 8px;
+    }
+
+    .product-price-box {
+        margin: 18px 0;
+        display: flex;
+        align-items: baseline;
+    }
+
+    .price-value {
+        color: var(--navy);
+        font-size: 38px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stock-badge-instock {
+        background: var(--success-bg);
+        color: var(--success-text);
+        border: 1px solid var(--success-border);
+        font-size: 13.5px;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 9px 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        margin-bottom: 20px;
+    }
+
+    .stock-badge-outstock {
+        background: var(--danger-bg);
+        color: var(--danger-text);
+        border: 1px solid var(--danger-border);
+        font-size: 13.5px;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 9px 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        margin-bottom: 20px;
+    }
+
+    .product-desc-box {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 20px;
+    }
+
+    .product-desc-title {
+        color: var(--navy);
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .product-desc-text {
+        color: #475569;
+        font-size: 14.5px;
+        line-height: 1.8;
+        margin-bottom: 0;
+    }
+
+    .product-meta-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .product-meta-icon {
+        width: 38px;
+        height: 38px;
+        background: var(--beige);
+        color: var(--navy);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .product-meta-label {
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .product-meta-value {
+        color: var(--navy);
+        font-size: 13.5px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .btn-theme-primary {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 12px !important;
+        padding: 13px 24px;
+        font-weight: 800;
+        font-size: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(12, 34, 63, 0.06);
+        cursor: pointer;
+    }
+
+    .btn-theme-primary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(12, 34, 63, 0.12);
+    }
+
+    .btn-theme-disabled {
+        background: #f1f5f9 !important;
+        color: #94a3b8 !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 13px 24px;
+        font-weight: 800;
+        font-size: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: not-allowed;
+    }
+
+    .btn-wishlist {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        background: var(--white);
+        color: var(--navy);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .btn-wishlist:hover {
+        border-color: #ef4444;
+        background: #fef2f2;
+        color: #ef4444;
+        transform: translateY(-2px);
+    }
+
+    .btn-wishlist.is-active {
+        border-color: #fecaca;
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    .btn-wishlist.is-active:hover {
+        background: #fee2e2;
+        color: #dc2626;
+        transform: translateY(-2px);
+    }
+
+    .btn-theme-outline {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 12px !important;
+        padding: 12px 20px;
+        font-weight: 700;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-outline:hover {
+        background: var(--beige) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+    }
+
+    .reviews-section-title {
+        color: var(--navy);
+        font-size: 22px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .review-item-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.03);
+        padding: 20px 24px;
+        margin-bottom: 16px;
+    }
+
+    .review-user-name {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 15px;
+    }
+
+    .badge-verified-buyer {
+        background: var(--success-bg);
+        color: var(--success-text);
+        border: 1px solid var(--success-border);
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 3px 8px;
+    }
+
+    .review-date {
+        color: var(--text-muted);
+        font-size: 12.5px;
+    }
+
+    .review-comment {
+        color: #334155;
+        font-size: 14.5px;
+        line-height: 1.8;
+        margin-bottom: 0;
+    }
+
+    .review-empty-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.03);
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .add-review-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(12, 34, 63, 0.04);
+        overflow: hidden;
+    }
+
+    .add-review-header {
+        background: var(--navy);
+        color: var(--white);
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .add-review-header h3 {
+        color: var(--white);
+        font-size: 16px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .add-review-header i {
+        color: var(--beige);
+    }
+
+    .add-review-body {
+        padding: 24px;
+    }
+
+    .form-control-theme {
+        background: #FFFFFF !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 11px 14px;
+        font-size: 14px;
+        color: var(--navy) !important;
+        transition: all 0.2s ease;
+    }
+
+    .form-control-theme:focus {
+        border-color: var(--navy) !important;
+        box-shadow: 0 0 0 3.5px rgba(12, 34, 63, 0.1) !important;
+        outline: none;
+    }
+
+    .form-label-theme {
+        color: var(--navy);
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .review-alert {
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 1.6;
+    }
+
+    .review-alert-success {
+        background: var(--success-bg);
+        border: 1px solid var(--success-border);
+        color: var(--success-text);
+    }
+
+    .review-alert-info {
+        background: #eef5fc;
+        border: 1px solid #c8dff3;
+        color: #17426b;
+    }
+</style>
+
+<section class="product-details-section">
     <div class="container">
-        <nav class="mb-4">
+        <nav class="custom-breadcrumb mb-4">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Products">المنتجات</a></li>
-                <li class="breadcrumb-item active text-warning">@Model.Product.Name</li>
+                <li class="breadcrumb-item active">@Model.Product.Name</li>
             </ol>
         </nav>
 
         <div class="row g-5">
-            <!-- Product Image -->
             <div class="col-lg-6">
-                <div class="card border-secondary shadow-sm">
-                    <div class="card-body p-0">
-                        <div class="product-image-wrapper position-relative overflow-hidden bg-light" style="border-radius: 1rem;">
-                            @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
-                            {
-                                <img src="@Model.Product.ImageUrl" class="card-img-top w-100 h-auto" alt="@Model.Product.Name" />
-                            }
-                            else
-                            {
-                                <div class="d-flex align-items-center justify-content-center text-muted w-100 h-100">
-                                    <i class="fas fa-box fa-5x"></i>
-                                </div>
-                            }
-                            @if (Model.Product.StockQuantity <= 0)
-                            {
-                                <span class="position-absolute top-0 end-0 m-3 badge bg-danger p-3">نفذ المخزون</span>
-                            }
-                        </div>
+                <div class="product-gallery-card">
+                    <div class="product-image-wrapper">
+                        @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+                        {
+                            <img src="@Model.Product.ImageUrl" class="product-main-img" alt="@Model.Product.Name" />
+                        }
+                        else
+                        {
+                            <div class="product-image-placeholder">
+                                <i class="fas fa-box fa-5x"></i>
+                            </div>
+                        }
+                        @if (Model.Product.StockQuantity <= 0)
+                        {
+                            <span class="badge-out-stock-float">نفذ المخزون</span>
+                        }
                     </div>
                 </div>
             </div>
 
-            <!-- Product Info -->
             <div class="col-lg-6">
                 <div class="d-flex align-items-start mb-3 flex-wrap gap-2">
                     @if (!string.IsNullOrEmpty(Model.Product.VendorStoreName))
                     {
-                        <span class="badge bg-warning text-dark fs-6 fw-bold">
-                            <i class="fas fa-store me-1"></i>بائع معتمد: @Model.Product.VendorStoreName
+                        <span class="badge-vendor">
+                            <i class="fas fa-store"></i>بائع معتمد: @Model.Product.VendorStoreName
                         </span>
                     }
-                    <span class="badge bg-info text-dark fs-6 fw-bold">
-                        <i class="fas fa-tag me-1"></i>@Model.Product.CategoryName
+                    <span class="badge-category">
+                        <i class="fas fa-tag"></i>@Model.Product.CategoryName
                     </span>
                 </div>
 
-                <h1 class="fw-bold mb-2">@Model.Product.Name</h1>
+                <h1 class="product-title">@Model.Product.Name</h1>
 
-                <!-- Rating Summary -->
-                <div class="mb-3 text-warning">
-                    @for (int i = 1; i <= 5; i++)
-                    {
-                        <i class="fas fa-star @(i <= fullStars ? "" : "text-muted")"></i>
-                    }                    <span class="text-muted small ms-2">
+                <div class="mb-3 d-flex align-items-center">
+                    <div class="rating-stars-wrap">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="fas fa-star @(i <= fullStars ? "star-filled" : "star-empty")"></i>
+                        }
+                    </div>
+                    <span class="rating-text">
                         @(Model.Reviews.TotalReviews > 0
                             ? $"{avg:0.0} من 5 ({Model.Reviews.TotalReviews} تقييم)"
                             : "لا توجد تقييمات بعد")
                     </span>
                 </div>
 
-                <div class="mb-4">
-                    <span class="display-4 fw-bold price-tag">$@Model.Product.Price.ToString("F2")</span>
+                <div class="product-price-box">
+                    <span class="price-value">$@Model.Product.Price.ToString("F2")</span>
                 </div>
 
                 @if (Model.Product.StockQuantity <= 0)
                 {
-                    <span class="badge bg-danger fs-6 fw-bold mb-3 d-block">نفذ المخزون</span>
+                    <div class="stock-badge-outstock">
+                        <i class="fas fa-circle-xmark"></i>نفذ المخزون
+                    </div>
                 }
                 else
                 {
-                    <span class="badge bg-success fs-6 fw-bold mb-3 d-block">
-                        <i class="fas fa-check-circle me-1"></i>متوفر في المخزون: @Model.Product.StockQuantity وحدة
-                    </span>
+                    <div class="stock-badge-instock">
+                        <i class="fas fa-circle-check"></i>متوفر في المخزون: @Model.Product.StockQuantity وحدة
+                    </div>
                 }
 
-                <div class="mb-4">
-                    <h2 class="h6 fw-semibold text-dark mb-2">وصف المنتج</h2>
-                    <p class="text-muted">@Model.Product.Description</p>
+                <div class="product-desc-box">
+                    <h2 class="product-desc-title">
+                        <i class="fas fa-align-right"></i>وصف المنتج
+                    </h2>
+                    <p class="product-desc-text">@Model.Product.Description</p>
                 </div>
 
                 <div class="row g-3 mb-4">
                     <div class="col-6">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-box me-2 text-muted"></i>
-                            <span class="text-muted small">رقم المنتج: #@Model.Product.Id</span>
+                        <div class="product-meta-card">
+                            <div class="product-meta-icon"><i class="fas fa-barcode"></i></div>
+                            <div>
+                                <p class="product-meta-label">رقم المنتج</p>
+                                <p class="product-meta-value">#@Model.Product.Id</p>
+                            </div>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-calendar me-2 text-muted"></i>
-                            <span class="text-muted small">الإضافة: @Model.Product.CreatedAt.ToString("yyyy/MM/dd")</span>
+                        <div class="product-meta-card">
+                            <div class="product-meta-icon"><i class="fas fa-calendar-check"></i></div>
+                            <div>
+                                <p class="product-meta-label">تاريخ الإضافة</p>
+                                <p class="product-meta-value">@Model.Product.CreatedAt.ToString("yyyy/MM/dd")</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 mb-2">
+                <div class="d-flex gap-2 mb-3">
                     @if (Model.Product.StockQuantity > 0)
                     {
-                        <button type="button" class="btn btn-warning btn-lg flex-grow-1 fw-bold shadow-sm"
+                        <button type="button" class="btn-theme-primary flex-grow-1"
                                 onclick="addToCart(@Model.Product.Id, 1, this)">
-                            <i class="fas fa-shopping-cart me-2"></i>أضف إلى سلة التسوق
+                            <i class="fas fa-cart-shopping ms-1"></i>أضف إلى سلة التسوق
                         </button>
                     }
                     else
                     {
-                        <button class="btn btn-secondary btn-lg flex-grow-1 disabled">
-                            <i class="fas fa-times me-2"></i>نفذ المخزون
+                        <button type="button" class="btn-theme-disabled flex-grow-1" disabled>
+                            <i class="fas fa-ban ms-1"></i>نفذ المخزون
                         </button>
                     }
 
@@ -126,7 +651,7 @@
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="productId" value="@Model.Product.Id" />
                                 <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-                                <button type="submit" class="btn btn-danger btn-lg" title="إزالة من المفضلة">
+                                <button type="submit" class="btn-wishlist is-active" title="إزالة من المفضلة">
                                     <i class="fas fa-heart"></i>
                                 </button>
                             </form>
@@ -137,7 +662,7 @@
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="productId" value="@Model.Product.Id" />
                                 <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-                                <button type="submit" class="btn btn-outline-danger btn-lg" title="أضف إلى المفضلة">
+                                <button type="submit" class="btn-wishlist" title="أضف إلى المفضلة">
                                     <i class="far fa-heart"></i>
                                 </button>
                             </form>
@@ -145,82 +670,77 @@
                     }
                 </div>
 
-                <a asp-action="Index" asp-controller="Products" class="btn btn-outline-secondary w-100">
-                    <i class="fas fa-arrow-left me-2"></i>العودة إلى المنتجات
+                <a asp-action="Index" asp-controller="Products" class="btn-theme-outline w-100">
+                    <i class="fas fa-arrow-right ms-1"></i>العودة إلى المنتجات
                 </a>
             </div>
         </div>
 
-        <!-- ===================== Reviews ===================== -->
-        <div class="mt-5">
-            <h3 class="fw-bold mb-4">
-                <i class="fas fa-comments me-2 text-warning"></i>تقييمات العملاء
+        <div class="mt-5 pt-3">
+            <h3 class="reviews-section-title">
+                <i class="fas fa-comments"></i>تقييمات العملاء
             </h3>
 
             <div class="row g-4">
-                <!-- Reviews list -->
                 <div class="col-lg-7">
                     @if (!Model.Reviews.Reviews.Any())
                     {
-                        <div class="card border-secondary shadow-sm">
-                            <div class="card-body text-center py-4">
-                                <i class="fas fa-star fa-2x text-muted mb-2"></i>
-                                <p class="text-muted mb-0">لا توجد تقييمات لهذا المنتج بعد. كن أول من يقيّمه!</p>
-                            </div>
+                        <div class="review-empty-card">
+                            <i class="fas fa-star fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">لا توجد تقييمات لهذا المنتج بعد. كن أول من يقيّمه!</p>
                         </div>
                     }
                     else
                     {
                         @foreach (var review in Model.Reviews.Reviews)
                         {
-                            <div class="card border-secondary shadow-sm mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <i class="fas fa-user-circle text-gold-dark me-2"></i>
-                                            <strong class="text-dark">@review.CustomerName</strong>
-                                            <span class="badge bg-success ms-2">مشترٍ موثّق</span>
-                                        </div>
-                                        <small class="text-muted">@review.CreatedAt.ToString("yyyy/MM/dd")</small>
+                            <div class="review-item-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-circle-user" style="font-size: 20px; color: var(--navy);"></i>
+                                        <strong class="review-user-name">@review.CustomerName</strong>
+                                        <span class="badge-verified-buyer">مشترٍ موثّق</span>
                                     </div>
-                                    <div class="text-warning mb-2">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            <i class="fas fa-star @(i <= review.Rating ? "" : "text-muted")"></i>
-                                        }
-                                    </div>
-                                    <p class="text-muted mb-0">@review.Comment</p>
+                                    <small class="review-date">@review.CreatedAt.ToString("yyyy/MM/dd")</small>
                                 </div>
+                                <div class="rating-stars-wrap mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star @(i <= review.Rating ? "star-filled" : "star-empty")"></i>
+                                    }
+                                </div>
+                                <p class="review-comment">@review.Comment</p>
                             </div>
                         }
                     }
                 </div>
 
-                <!-- Add review -->
                 <div class="col-lg-5">
-                    <div class="card border-secondary shadow-sm">
-                        <div class="card-header bg-dark border-secondary py-3">
-                            <h3 class="h6 fw-bold text-white mb-0"><i class="fas fa-pen me-2 text-warning"></i>أضف تقييمك</h3>
+                    <div class="add-review-card">
+                        <div class="add-review-header">
+                            <i class="fas fa-pen-to-square"></i>
+                            <h3>أضف تقييمك</h3>
                         </div>
-                        <div class="card-body">
+                        <div class="add-review-body">
                             @if (!(User.Identity?.IsAuthenticated ?? false))
                             {
                                 <p class="text-muted small mb-3">سجّل الدخول لتتمكن من تقييم المنتجات التي اشتريتها.</p>
-                                <a asp-action="Login" asp-controller="Account" class="btn btn-warning w-100 fw-bold">
-                                    <i class="fas fa-sign-in-alt me-1"></i>تسجيل الدخول
+                                <a asp-action="Login" asp-controller="Account" class="btn-theme-primary w-100">
+                                    <i class="fas fa-arrow-right-to-bracket ms-1"></i>تسجيل الدخول
                                 </a>
                             }
                             else if (Model.Reviews.HasReviewed)
                             {
-                                <div class="alert alert-success mb-0">
-                                    <i class="fas fa-check-circle me-2"></i>لقد قمت بتقييم هذا المنتج بالفعل. شكراً لك!
+                                <div class="review-alert review-alert-success">
+                                    <i class="fas fa-circle-check"></i>
+                                    <span>لقد قمت بتقييم هذا المنتج بالفعل. شكراً لك!</span>
                                 </div>
                             }
                             else if (!Model.Reviews.CanReview)
                             {
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    يمكنك تقييم المنتجات التي اشتريتها فقط. اطلب هذا المنتج أولاً لتتمكن من تقييمه.
+                                <div class="review-alert review-alert-info">
+                                    <i class="fas fa-circle-info"></i>
+                                    <span>يمكنك تقييم المنتجات التي اشتريتها فقط. اطلب هذا المنتج أولاً لتتمكن من تقييمه.</span>
                                 </div>
                             }
                             else
@@ -230,8 +750,8 @@
                                     <input type="hidden" name="ProductId" value="@Model.Product.Id" />
 
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold text-dark" for="ratingSelect">التقييم</label>
-                                        <select id="ratingSelect" name="Rating" class="form-select">
+                                        <label class="form-label-theme" for="ratingSelect">التقييم</label>
+                                        <select id="ratingSelect" name="Rating" class="form-select form-control-theme">
                                             <option value="5">★★★★★ ممتاز</option>
                                             <option value="4">★★★★ جيد جداً</option>
                                             <option value="3">★★★ جيد</option>
@@ -241,12 +761,12 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold text-dark" for="reviewComment">تعليقك</label>
-                                        <textarea id="reviewComment" name="Comment" class="form-control" rows="4" placeholder="شاركنا تجربتك مع هذا المنتج..."></textarea>
+                                        <label class="form-label-theme" for="reviewComment">تعليقك</label>
+                                        <textarea id="reviewComment" name="Comment" class="form-control form-control-theme" rows="4" placeholder="شاركنا تجربتك مع هذا المنتج..."></textarea>
                                     </div>
 
-                                    <button type="submit" class="btn btn-warning w-100 fw-bold">
-                                        <i class="fas fa-paper-plane me-1"></i>إرسال التقييم
+                                    <button type="submit" class="btn-theme-primary w-100">
+                                        <i class="fas fa-paper-plane ms-1"></i>إرسال التقييم
                                     </button>
                                 </form>
                             }

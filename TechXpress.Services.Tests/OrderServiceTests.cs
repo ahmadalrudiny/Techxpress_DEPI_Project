@@ -66,6 +66,13 @@ public class OrderServiceTests
         var orderDetailsRepo = new Mock<IGenericRepository<OrderDetail>>();
         _uowMock.Setup(x => x.OrderDetails).Returns(orderDetailsRepo.Object);
 
+        // Store credit repository (used for refunds and credit-paid orders)
+        var storeCreditRepo = new Mock<IStoreCreditRepository>();
+        storeCreditRepo.Setup(x => x.GetBalanceAsync(It.IsAny<string>())).ReturnsAsync(0m);
+        storeCreditRepo.Setup(x => x.GetUserAsync(It.IsAny<string>())).ReturnsAsync((ApplicationUser?)null);
+        storeCreditRepo.Setup(x => x.HasRefundForOrderAsync(It.IsAny<int>())).ReturnsAsync(false);
+        _uowMock.Setup(x => x.StoreCredits).Returns(storeCreditRepo.Object);
+
         // Capture order Id on AddAsync
         _uowMock.Setup(x => x.Orders.AddAsync(It.IsAny<Order>()))
             .Callback<Order>(o => o.Id = _nextOrderId++)
@@ -247,6 +254,7 @@ public class OrderServiceTests
             Id = 1, OrderId = 1, ProductId = 1, Quantity = 2, UnitPrice = 100m, VendorId = 5,
             Product = _product
         };
+        order.OrderDetails.Add(orderDetail);
 
         var orderRepo = new Mock<IOrderRepository>();
         orderRepo.Setup(x => x.GetByIdForUserAsync(1, "user-1")).ReturnsAsync(order);
@@ -292,6 +300,6 @@ public class OrderServiceTests
         var result = await _service.CancelOrderAsync(1, "user-1");
 
         Assert.False(result.Success);
-        Assert.Equal("لا يمكن إلغاء طلب تم توصيله.", result.Message);
+        Assert.Equal("لا يمكن إلغاء طلب تم توصيله. استخدم خيار إرجاع الطلب.", result.Message);
     }
 }

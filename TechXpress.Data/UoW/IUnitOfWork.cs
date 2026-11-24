@@ -15,6 +15,8 @@ public interface IUnitOfWork : IDisposable
     IReviewRepository Reviews { get; }
     IGenericRepository<ContactMessage> ContactMessages { get; }
     IPersistentCartRepository PersistentCarts { get; }
+    IStoreCreditRepository StoreCredits { get; }
+    IGenericRepository<PlatformEarning> PlatformEarnings { get; }
 
     Task<int> SaveChangesAsync();
 

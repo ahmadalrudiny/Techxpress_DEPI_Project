@@ -2,68 +2,280 @@
     ViewData["Title"] = "من نحن - TechXpress";
 }
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #ede6db;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    .about-section {
+        background-color: var(--cream);
+        min-height: 85vh;
+        padding-top: 35px;
+        padding-bottom: 50px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+    }
+
+    .page-head-main {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .page-head-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--navy);
+        color: var(--beige);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 0;
+    }
+
+    .custom-card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        overflow: hidden;
+    }
+
+    .custom-card-header {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        padding: 16px 22px !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+
+    .custom-card-header h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .custom-card-header i {
+        color: var(--beige);
+    }
+
+    .feature-box {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px 24px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .feature-box:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(12, 34, 63, 0.08);
+    }
+
+    .feature-icon-badge {
+        width: 60px;
+        height: 60px;
+        background: var(--beige);
+        color: var(--navy);
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 18px;
+        border: 1px solid var(--border);
+    }
+
+    .feature-title {
+        color: var(--navy);
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .feature-desc {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        line-height: 1.7;
+        margin-bottom: 0;
+    }
+
+    .chip-theme {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--beige);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .btn-theme-primary {
+        background: var(--beige) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 10px !important;
+        padding: 10px 22px;
+        font-weight: 800;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(12, 34, 63, 0.08);
+    }
+
+    .btn-theme-primary:hover {
+        background: var(--beige-hover) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(12, 34, 63, 0.14);
+    }
+
+    .btn-theme-outline {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 10px 22px;
+        font-weight: 700;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-outline:hover {
+        background: var(--beige) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+    }
+</style>
+
+<section class="about-section">
     <div class="container">
         <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-circle-info"></i></div>
-            <div class="page-head-text">
-                <h1>من نحن</h1>
-                <p>تعرّف على منصة TechXpress ورؤيتنا في تجارة الإلكترونيات</p>
+            <div class="page-head-main">
+                <div class="page-head-icon">
+                    <i class="fas fa-circle-info"></i>
+                </div>
+                <div class="page-head-text">
+                    <h1>من نحن</h1>
+                    <p>تعرّف على منصة TechXpress ورؤيتنا في تجارة الإلكترونيات</p>
+                </div>
             </div>
             <div class="page-head-actions">
-                <a asp-controller="Products" asp-action="Index" class="btn btn-warning fw-bold px-4">
-                    <i class="fas fa-box me-1"></i>تصفّح المنتجات
+                <a asp-controller="Products" asp-action="Index" class="btn-theme-primary">
+                    <i class="fas fa-box-open ms-1"></i> تصفّح المنتجات
                 </a>
             </div>
         </div>
 
         <div class="row g-4 mb-4">
             <div class="col-lg-7">
-                <div class="card border-secondary shadow-sm h-100">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-microchip text-warning me-2"></i>قصتنا</h2>
+                <div class="custom-card h-100">
+                    <div class="custom-card-header">
+                        <h2>
+                            <i class="fas fa-microchip"></i> قصتنا
+                        </h2>
                     </div>
-                    <div class="card-body p-4">
+                    <div class="p-4" style="line-height: 1.9; font-size: 14.5px;">
                         <p class="text-muted mb-3">
-                            <strong class="text-dark">TechXpress</strong> سوق إلكتروني متكامل متخصص في أحدث أجهزة الكمبيوتر
+                            <strong style="color: var(--navy);">TechXpress</strong> سوق إلكتروني متكامل متخصص في أحدث أجهزة الكمبيوتر
                             والهواتف الذكية والكاميرات والملحقات، يجمع بين أفضل البائعين المعتمدين في مكان واحد.
                         </p>
                         <p class="text-muted mb-3">
                             نؤمن بأن شراء جهاز إلكتروني يجب أن يكون تجربة بسيطة وآمنة، لذلك بنينا المنصة على ثلاثة أعمدة:
-                            <strong class="text-dark">منتجات أصلية</strong>، و<strong class="text-dark">دفع آمن</strong>،
-                            و<strong class="text-dark">دعم سريع</strong> لكل عميل وبائع.
+                            <strong style="color: var(--navy);">منتجات أصلية</strong>، و<strong style="color: var(--navy);">دفع آمن</strong>،
+                            و<strong style="color: var(--navy);">دعم سريع</strong> لكل عميل وبائع.
                         </p>
                         <p class="text-muted mb-0">
-                            كل بائع يخضع لمراجعة مستنداته (البطاقة الشخصية والسجل التجاري والبطاقة الضريبية) قبل اعتماده،
-                            وكل تقييم على المنتجات مكتوب من عميل <strong class="text-dark">أكمل شراء المنتج فعلياً</strong> فقط.
+                            كل بائع يخضع لمراجعة مستنداته الرسمية قبل اعتماده، وكل تقييم على المنتجات مكتوب من عميل
+                            <strong style="color: var(--navy);">أكمل شراء المنتج فعلياً</strong> فقط لضمان النزاهة والشفافية.
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-5">
-                <div class="card border-secondary shadow-sm h-100">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-bullseye text-warning me-2"></i>رؤيتنا ورسالتنا</h2>
+                <div class="custom-card h-100">
+                    <div class="custom-card-header">
+                        <h2>
+                            <i class="fas fa-bullseye"></i> رؤيتنا ورسالتنا
+                        </h2>
                     </div>
-                    <div class="card-body p-4">
+                    <div class="p-4">
                         <div class="mb-4">
-                            <h3 class="h6 fw-bold text-gold-dark mb-1"><i class="fas fa-eye me-2"></i>الرؤية</h3>
-                            <p class="text-muted small mb-0">
-                                أن نكون الوجهة الأولى في مصر والشرق الأوسط لشراء الأجهزة الإلكترونية بثقة وشفافية.
+                            <h3 class="fw-bold mb-1" style="color: var(--navy); font-size: 16px;">
+                                <i class="fas fa-eye ms-2" style="color: var(--navy-light);"></i> الرؤية
+                            </h3>
+                            <p class="text-muted small mb-0" style="line-height: 1.8;">
+                                أن نكون الوجهة الأولى في مصر والشرق الأوسط لشراء الأجهزة الإلكترونية بثقة وشفافية مطلقة.
                             </p>
                         </div>
                         <div class="mb-4">
-                            <h3 class="h6 fw-bold text-gold-dark mb-1"><i class="fas fa-bullhorn me-2"></i>الرسالة</h3>
-                            <p class="text-muted small mb-0">
-                                تمكين البائعين الصغار والمتوسطين من الوصول لعملائهم مع تجربة شراء سلسة وآمنة للجميع.
+                            <h3 class="fw-bold mb-1" style="color: var(--navy); font-size: 16px;">
+                                <i class="fas fa-bullhorn ms-2" style="color: var(--navy-light);"></i> الرسالة
+                            </h3>
+                            <p class="text-muted small mb-0" style="line-height: 1.8;">
+                                تمكين البائعين الصغار والمتوسطين من الوصول لعملائهم مع توفير تجربة شراء ذكية، سلسة، وآمنة للجميع.
                             </p>
                         </div>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="chip chip-gold"><i class="fas fa-shield-halved"></i> دفع آمن</span>
-                            <span class="chip chip-gold"><i class="fas fa-certificate"></i> بائعون معتمدون</span>
-                            <span class="chip chip-gold"><i class="fas fa-truck-fast"></i> توصيل سريع</span>
-                            <span class="chip chip-gold"><i class="fas fa-headset"></i> دعم متواصل</span>
+                        <div class="d-flex flex-wrap gap-2 pt-2">
+                            <span class="chip-theme"><i class="fas fa-shield-halved"></i> دفع آمن</span>
+                            <span class="chip-theme"><i class="fas fa-certificate"></i> بائعون معتمدون</span>
+                            <span class="chip-theme"><i class="fas fa-truck-fast"></i> توصيل سريع</span>
+                            <span class="chip-theme"><i class="fas fa-headset"></i> دعم متواصل</span>
                         </div>
                     </div>
                 </div>
@@ -72,52 +284,52 @@
 
         <div class="row g-4 mb-4">
             <div class="col-md-4">
-                <div class="card border-secondary shadow-sm h-100">
-                    <div class="card-body p-4 text-center">
-                        <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-credit-card"></i></div>
-                        <h2 class="h5 fw-bold mb-2">دفع إلكتروني آمن</h2>
-                        <p class="text-muted small mb-0">
-                            نعتمد على بوابة دفع عالمية (Stripe) لمعالجة المدفوعات، ولا نحتفظ ببيانات بطاقتك على السيرفر.
-                        </p>
+                <div class="feature-box h-100 text-center">
+                    <div class="feature-icon-badge">
+                        <i class="fas fa-credit-card"></i>
                     </div>
+                    <h2 class="feature-title">دفع إلكتروني آمن</h2>
+                    <p class="feature-desc">
+                        نعتمد على بوابة دفع عالمية مشفّرة لمعالجة المدفوعات، ولا يتم تخزين أي بيانات للبطاقات على خوادمنا.
+                    </p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-secondary shadow-sm h-100">
-                    <div class="card-body p-4 text-center">
-                        <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-store"></i></div>
-                        <h2 class="h5 fw-bold mb-2">بائعون موثّقون</h2>
-                        <p class="text-muted small mb-0">
-                            كل متجر يمر بمراجعة إدارية لمستنداته الرسمية قبل نشر منتجاته على المنصة.
-                        </p>
+                <div class="feature-box h-100 text-center">
+                    <div class="feature-icon-badge">
+                        <i class="fas fa-store"></i>
                     </div>
+                    <h2 class="feature-title">بائعون موثّقون</h2>
+                    <p class="feature-desc">
+                        كل متجر يخضع لمراجعة إدارية دقيقة لمستنداته الرسمية وسجلاته التجارية قبل نشر أي منتج على المنصة.
+                    </p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-secondary shadow-sm h-100">
-                    <div class="card-body p-4 text-center">
-                        <div class="result-icon result-success mx-auto mb-3"><i class="fas fa-star"></i></div>
-                        <h2 class="h5 fw-bold mb-2">تقييمات موثوقة</h2>
-                        <p class="text-muted small mb-0">
-                            التقييمات مقصورة على المشترين الفعليين، لتضمن قراءة رأي حقيقي قبل الشراء.
-                        </p>
+                <div class="feature-box h-100 text-center">
+                    <div class="feature-icon-badge">
+                        <i class="fas fa-star"></i>
                     </div>
+                    <h2 class="feature-title">تقييمات موثوقة</h2>
+                    <p class="feature-desc">
+                        التقييمات مقتصرة فقط على المشترين الفعليين للمنتج، لتضمن دائماً قراءة آراء حقيقية وتجارب موثوقة.
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div class="card border-secondary shadow-sm">
-            <div class="card-body p-4 p-lg-5 text-center">
-                <h2 class="h4 fw-bold mb-2">هل أنت بائع؟</h2>
-                <p class="text-muted mb-4">
-                    انضم إلى TechXpress واعرض منتجاتك أمام آلاف العملاء، مع لوحة تحكم كاملة لإدارة منتجاتك وأرباحك.
+        <div class="custom-card text-center">
+            <div class="p-4 p-lg-5">
+                <h2 class="fw-bold mb-2" style="color: var(--navy); font-size: 22px;">هل أنت بائع؟</h2>
+                <p class="text-muted mb-4" style="max-width: 600px; margin: 0 auto; line-height: 1.8;">
+                    انضم إلى TechXpress واعرض منتجاتك أمام آلاف المشترين المهتمين بالإلكترونيات، مع لوحة تحكم كاملة لإدارة مخزونك وأرباحك.
                 </p>
-                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                    <a asp-controller="VendorApply" asp-action="Apply" class="btn btn-warning fw-bold px-4">
-                        <i class="fas fa-store me-1"></i>كن بائعاً
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a asp-controller="VendorApply" asp-action="Apply" class="btn-theme-primary">
+                        <i class="fas fa-store ms-1"></i> كن بائعاً
                     </a>
-                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-warning fw-bold px-4">
-                        <i class="fas fa-envelope me-1"></i>تواصل معنا
+                    <a asp-controller="Home" asp-action="Contact" class="btn-theme-outline">
+                        <i class="fas fa-envelope ms-1"></i> تواصل معنا
                     </a>
                 </div>
             </div>

@@ -8,6 +8,7 @@ public record OrderDto(
     string? UserId,
     decimal TotalAmount,
     decimal DiscountAmount,
+    decimal StoreCreditUsed,
     string? PromoCode,
     OrderStatus Status,
     string? PaymentIntentId,

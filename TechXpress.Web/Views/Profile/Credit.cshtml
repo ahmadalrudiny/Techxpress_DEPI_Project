@@ -1,0 +1,315 @@
+@model StoreCreditSummaryDto
+@using TechXpress.Services.Models
+@using TechXpress.Data.Entities
+@{
+    ViewData["Title"] = "رصيد النقاط - TechXpress";
+
+    string TypeText(StoreCreditTransactionType t) => t switch
+    {
+        StoreCreditTransactionType.OrderRefund => "استرداد قيمة طلب",
+        StoreCreditTransactionType.OrderPayment => "استخدام في طلب",
+        StoreCreditTransactionType.AdminAdjustment => "تعديل إداري",
+        _ => t.ToString()
+    };
+
+    string TypeIcon(StoreCreditTransactionType t) => t switch
+    {
+        StoreCreditTransactionType.OrderRefund => "fa-rotate-left",
+        StoreCreditTransactionType.OrderPayment => "fa-cart-shopping",
+        StoreCreditTransactionType.AdminAdjustment => "fa-sliders",
+        _ => "fa-circle-info"
+    };
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --cream: #FAF7F2;
+        --beige: #FAF7F2;
+        --navy: #0C223F;
+        --navy-light: #173860;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-muted: #64748b;
+    }
+
+    * { font-family: 'Cairo', "Segoe UI", sans-serif; }
+
+    .credit-page-section {
+        background-color: var(--cream);
+        min-height: 85vh;
+        padding-top: 30px;
+        padding-bottom: 60px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px 24px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-head-start { display: flex; align-items: center; gap: 16px; }
+
+    .page-head-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--navy);
+        color: var(--beige);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .page-head-text p { color: var(--text-muted); font-size: 13.5px; margin-bottom: 0; }
+
+    .credit-hero {
+        background: linear-gradient(135deg, #0C223F 0%, #173860 100%);
+        color: var(--white);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: 0 10px 30px rgba(12, 34, 63, 0.18);
+        flex-wrap: wrap;
+    }
+
+    .credit-hero-label { font-size: 14px; opacity: .85; display: flex; align-items: center; gap: 8px; }
+    .credit-hero-value { font-size: 42px; font-weight: 800; line-height: 1.2; margin: 4px 0; }
+    .credit-hero-note { font-size: 13px; opacity: .75; margin: 0; max-width: 520px; line-height: 1.8; }
+
+    .credit-hero-icon {
+        width: 78px;
+        height: 78px;
+        border-radius: 22px;
+        background: rgba(250, 247, 242, .14);
+        border: 1px solid rgba(250, 247, 242, .25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: #FAF7F2;
+        flex-shrink: 0;
+    }
+
+    .credit-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 6px 20px rgba(12, 34, 63, 0.04);
+        overflow: hidden;
+    }
+
+    .credit-card-header {
+        background: var(--navy);
+        color: var(--white);
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .credit-card-header h2 { color: var(--white); font-size: 16px; font-weight: 800; margin: 0; }
+    .credit-card-header i { color: var(--beige); }
+
+    .credit-table { width: 100%; margin-bottom: 0; }
+    .credit-table thead th {
+        background: #F5F0E8;
+        color: var(--navy);
+        font-size: 12.5px;
+        font-weight: 800;
+        padding: 13px 18px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+    }
+    .credit-table tbody td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #F1ECE3;
+        color: var(--navy);
+        font-size: 13.5px;
+        vertical-align: middle;
+    }
+    .credit-table tbody tr:last-child td { border-bottom: none; }
+
+    .credit-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .credit-amount {
+        font-weight: 800;
+        font-size: 14.5px;
+        white-space: nowrap;
+    }
+
+    .credit-amount.positive { color: #15803d; }
+    .credit-amount.negative { color: #b91c1c; }
+
+    .credit-empty {
+        text-align: center;
+        padding: 50px 20px;
+        color: var(--text-muted);
+    }
+
+    .credit-empty i { font-size: 46px; opacity: .3; margin-bottom: 14px; display: block; }
+
+    .btn-theme-outline {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 8px 18px;
+        font-weight: 700;
+        font-size: 13.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-outline:hover {
+        background: var(--beige) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+    }
+
+    @@media (max-width: 767px) {
+        .credit-hero { padding: 24px 20px; }
+        .credit-hero-value { font-size: 34px; }
+        .credit-hero-icon { display: none; }
+        .credit-table thead { display: none; }
+        .credit-table tbody td { display: block; text-align: right; border-bottom: none; padding: 6px 18px; }
+        .credit-table tbody tr { display: block; border-bottom: 1px solid #F1ECE3; padding: 10px 0; }
+    }
+</style>
+
+<section class="credit-page-section">
+    <div class="container">
+        <div class="page-head">
+            <div class="page-head-start">
+                <div class="page-head-icon"><i class="fas fa-coins"></i></div>
+                <div class="page-head-text">
+                    <h1>رصيد النقاط</h1>
+                    <p>رصيدك من إلغاء أو إرجاع الطلبات، واستخداماته في المشتريات</p>
+                </div>
+            </div>
+            <div class="page-head-actions d-flex gap-2">
+                <a asp-action="Index" class="btn-theme-outline">
+                    <i class="fas fa-user ms-1"></i>ملفي الشخصي
+                </a>
+                <a asp-action="Orders" class="btn-theme-outline">
+                    <i class="fas fa-bag-shopping ms-1"></i>طلباتي
+                </a>
+            </div>
+        </div>
+
+        <div class="credit-hero">
+            <div>
+                <div class="credit-hero-label"><i class="fas fa-wallet"></i> الرصيد المتاح الآن</div>
+                <div class="credit-hero-value">$@Model.Balance.ToString("F2")</div>
+                <p class="credit-hero-note">
+                    كل $1 = نقطة واحدة. يُضاف الرصيد تلقائيًا عند إلغاء طلب مدفوع أو إرجاع طلب تم توصيله،
+                    ويُخصم تلقائيًا عند اختيار «استخدام رصيد النقاط» في صفحة إتمام الطلب.
+                </p>
+            </div>
+            <div class="credit-hero-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+        </div>
+
+        <div class="credit-card">
+            <div class="credit-card-header">
+                <i class="fas fa-clock-rotate-left"></i>
+                <h2>سجل حركات الرصيد</h2>
+            </div>
+
+            @if (Model.Transactions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table credit-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع الحركة</th>
+                                <th>البيان</th>
+                                <th class="text-center">الرصيد بعد الحركة</th>
+                                <th class="text-center">القيمة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var tx in Model.Transactions)
+                            {
+                                var positive = tx.Amount >= 0;
+                                <tr>
+                                    <td class="text-nowrap">@tx.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>
+                                        <span class="credit-type">
+                                            <i class="fas @TypeIcon(tx.Type)"></i>@TypeText(tx.Type)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @tx.Description
+                                        @if (tx.OrderId.HasValue)
+                                        {
+                                            <a asp-action="OrderDetails" asp-route-id="@tx.OrderId" class="text-decoration-none fw-bold ms-1">
+                                                #@tx.OrderId
+                                            </a>
+                                        }
+                                    </td>
+                                    <td class="text-center fw-bold">$@tx.BalanceAfter.ToString("F2")</td>
+                                    <td class="text-center">
+                                        <span class="credit-amount @(positive ? "positive" : "negative")">
+                                            @(positive ? "+" : "-") $@Math.Abs(tx.Amount).ToString("F2")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="credit-empty">
+                    <i class="fas fa-coins"></i>
+                    <h3 class="h6 fw-bold mb-2">لا توجد حركات على الرصيد حتى الآن</h3>
+                    <p class="mb-0 small">
+                        عند إلغاء طلب مدفوع أو إرجاع طلب تم توصيله، ستظهر قيمته هنا كنقاط جاهزة للاستخدام.
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</section>

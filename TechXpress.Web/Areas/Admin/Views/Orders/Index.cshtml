@@ -56,7 +56,7 @@
                             <td>
                                 <span class="text-muted small">@o.OrderDate.ToString("yyyy/MM/dd HH:mm")</span>
                             </td>
-                            <td class="text-center fw-bold">$@o.TotalAmount.ToString("F2")</td>
+                            <td class="text-center fw-bold">$@((o.TotalAmount + o.StoreCreditUsed).ToString("F2"))</td>
                             <td class="text-center">
                                 @switch (o.Status)
                                 {
@@ -75,6 +75,9 @@
                                     case OrderStatus.Cancelled:
                                         <span class="badge bg-danger fs-6">ملغي</span>
                                         break;
+                                    case OrderStatus.Returned:
+                                        <span class="badge bg-secondary fs-6">مُرتجع</span>
+                                        break;
                                 }
                             </td>
                             <td class="text-end">
@@ -87,6 +90,11 @@
                                             aria-label="تغيير حالة الطلب رقم @o.Id">
                                         @foreach (var status in Enum.GetValues<OrderStatus>())
                                         {
+                                            if (status == OrderStatus.Returned && o.Status != OrderStatus.Returned)
+                                            {
+                                                continue;
+                                            }
+
                                             var isSelected = o.Status == status;
                                             var statusLabel = status switch
                                             {
@@ -95,18 +103,22 @@
                                                 OrderStatus.Shipped => "تم الشحن",
                                                 OrderStatus.Delivered => "تم التوصيل",
                                                 OrderStatus.Cancelled => "ملغي",
+                                                OrderStatus.Returned => "مُرتجع",
                                                 _ => status.ToString()
                                             };
                                             <option value="@status" selected="@isSelected">@statusLabel</option>
                                         }
                                     </select>
                                 </form>
-                                <form asp-action="Cancel" asp-route-id="@o.Id" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استعادة المخزون.');">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-times"></i>إلغاء
-                                    </button>
-                                </form>
+                                @if (o.Status != OrderStatus.Cancelled && o.Status != OrderStatus.Returned)
+                                {
+                                    <form asp-action="Cancel" asp-route-id="@o.Id" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استعادة المخزون، وإذا كان مدفوعًا ستُضاف قيمته كنقاط لرصيد العميل.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times"></i>إلغاء
+                                        </button>
+                                    </form>
+                                }
                             </td>
                         </tr>
                     }

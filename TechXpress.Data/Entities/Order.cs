@@ -14,6 +14,10 @@ public class Order
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public decimal TotalAmount { get; set; }
     public decimal DiscountAmount { get; set; }   
+
+    /// <summary>قيمة رصيد النقاط المستخدمة في هذا الطلب (تُخصم من الإجمالي).</summary>
+    public decimal StoreCreditUsed { get; set; }
+
     public string? PromoCode { get; set; }          
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public string? PaymentIntentId { get; set; }

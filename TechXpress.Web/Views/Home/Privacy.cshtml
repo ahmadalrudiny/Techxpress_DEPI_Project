@@ -2,10 +2,127 @@
     ViewData["Title"] = "سياسة الخصوصية - TechXpress";
 }
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    .privacy-section {
+        background-color: var(--cream);
+        min-height: 85vh;
+        padding-top: 35px;
+        padding-bottom: 50px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        gap: 16px;
+    }
+
+    .page-head-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--navy);
+        color: var(--beige);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 0;
+    }
+
+    .custom-card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 20px rgba(12, 34, 63, 0.04) !important;
+    }
+
+    .privacy-heading {
+        color: var(--navy);
+        font-size: 17px;
+        font-weight: 800;
+        margin-top: 28px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .privacy-heading::before {
+        content: "";
+        width: 6px;
+        height: 18px;
+        background: var(--navy);
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .privacy-list {
+        padding-inline-start: 20px;
+        line-height: 2;
+        color: var(--text-muted);
+        font-size: 14.5px;
+        margin-bottom: 0;
+    }
+
+    .privacy-list li strong {
+        color: var(--navy);
+    }
+
+    .privacy-alert {
+        background: #faf7f2;
+        border: 1.5px dashed var(--border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        font-size: 14px;
+        color: var(--navy);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 32px;
+    }
+</style>
+
+<section class="privacy-section">
     <div class="container">
         <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="page-head-icon">
+                <i class="fas fa-shield-halved"></i>
+            </div>
             <div class="page-head-text">
                 <h1>سياسة الخصوصية</h1>
                 <p>كيف نجمع بياناتك ونستخدمها ونحميها في TechXpress</p>
@@ -13,38 +130,35 @@
         </div>
 
         <div class="row justify-content-center">
-            <div class="col-lg-9">
-                <div class="card border-secondary shadow-sm">
-                    <div class="card-body p-5">
-                        <p class="text-muted">
-                            نحن في <strong>TechXpress</strong> نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية.
-                            توضح هذه السياسة كيف نجمع بياناتك ونستخدمها ونحميها.
-                        </p>
+            <div class="col-lg-10">
+                <div class="custom-card p-4 p-md-5">
+                    <p class="text-muted" style="font-size: 15px; line-height: 1.9;">
+                        نحن في <strong style="color: var(--navy);">TechXpress</strong> نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية بالكامل.
+                        توضح هذه السياسة بشفافية كيف نجمع بياناتك ونستخدمها ونحميها أثناء تجربة تسوقك معنا.
+                    </p>
 
-                        <h2 class="h5 fw-bold mt-4">البيانات التي نجمعها</h2>
-                        <ul class="text-muted">
-                            <li>بيانات الحساب: الاسم، البريد الإلكتروني، وكلمة المرور المشفّرة.</li>
-                            <li>بيانات الطلبات: عنوان الشحن والمنتجات التي تم شراؤها.</li>
-                            <li>بيانات الدفع: تتم معالجتها بأمان عبر <strong>Stripe</strong> ولا نخزّن بيانات بطاقتك.</li>
-                        </ul>
+                    <h2 class="privacy-heading">البيانات التي نجمعها</h2>
+                    <ul class="privacy-list">
+                        <li><strong>بيانات الحساب:</strong> الاسم، البريد الإلكتروني، وكلمة المرور المشفّرة بشكل آمن.</li>
+                        <li><strong>بيانات الطلبات:</strong> عنوان الشحن ومعلومات المنتجات التي تم شراؤها لمتابعة التوصيل.</li>
+                        <li><strong>بيانات الدفع:</strong> تتم معالجتها بأمان عبر بوابة <strong>Stripe</strong> العالمية ولا نخزّن بيانات بطاقتك البنكية على خوادمنا نهائياً.</li>
+                    </ul>
 
-                        <h2 class="h5 fw-bold mt-4">كيف نستخدم بياناتك</h2>
-                        <ul class="text-muted">
-                            <li>معالجة الطلبات وتوصيلها إليك.</li>
-                            <li>تحسين تجربة التسوق وخدمة العملاء.</li>
-                            <li>إرسال تحديثات مهمة تتعلق بحسابك أو طلباتك.</li>
-                        </ul>
+                    <h2 class="privacy-heading">كيف نستخدم بياناتك</h2>
+                    <ul class="privacy-list">
+                        <li>معالجة الطلبات وإدارتها وتوصيلها بدقة إلى عنوانك.</li>
+                        <li>تحسين وتخصيص تجربة التصفح والتسوق وتقديم دعم فني فوري.</li>
+                        <li>إرسال تحديثات وإشعارات مهمة تتعلق بحالة حسابك وشحناتك.</li>
+                    </ul>
 
-                        <h2 class="h5 fw-bold mt-4">حماية البيانات</h2>
-                        <p class="text-muted">
-                            نستخدم إجراءات أمنية معتمدة لحماية بياناتك، ولا نشارك بياناتك مع أي طرف ثالث
-                            إلا بموجب القانون أو لإتمام عملية الدفع.
-                        </p>
+                    <h2 class="privacy-heading">حماية البيانات</h2>
+                    <p class="text-muted" style="font-size: 14.5px; line-height: 1.9; margin-bottom: 0;">
+                        نطبق بروتوكولات وإجراءات أمنية معتمدة لحماية بياناتك من أي وصول غير مصرّح به، ولا نشارك بياناتك مع أي طرف ثالث لأغراض تجارية، وتقتصر المشاركة فقط على الجهات المعتمدة لإتمام الشحن والدفع أو بما يقتضيه القانون.
+                    </p>
 
-                        <div class="alert alert-info mt-4 mb-0">
-                            <i class="fas fa-envelope me-2"></i>
-                            لأي استفسار بخصوص الخصوصية، تواصل معنا عبر الدعم الفني.
-                        </div>
+                    <div class="privacy-alert">
+                        <i class="fas fa-envelope" style="font-size: 18px;"></i>
+                        <span>لأي استفسار أو طلب يتعلق ببياناتك وخصوصيتك، يسعدنا تواصلك مع فريق الدعم الفني في أي وقت.</span>
                     </div>
                 </div>
             </div>

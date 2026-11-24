@@ -6,49 +6,448 @@
 
 <partial name="_VendorNav" />
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #EDE6DB;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    body {
+        background-color: var(--cream);
+        color: var(--navy);
+    }
+
+    .vendor-products-page {
+        background: var(--cream);
+        min-height: 100vh;
+        padding-top: 25px;
+        padding-bottom: 50px;
+    }
+
+    /* Page Head - White Clean Card */
+    .page-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 22px 24px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .page-head-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .page-head-text {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 0;
+    }
+
+    .page-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 9px;
+        font-weight: 700;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-warning {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        padding: 9px 20px;
+    }
+
+    .btn-warning:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(12, 34, 63, 0.12);
+    }
+
+    .btn-outline-warning,
+    .btn-outline-secondary {
+        background: var(--white) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        padding: 8px 18px;
+    }
+
+    .btn-outline-warning:hover,
+    .btn-outline-secondary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+    }
+
+    /* Card & Card Header */
+    .card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--white) !important;
+        border-bottom: 1px solid var(--border) !important;
+        padding: 18px 24px !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-header h2 {
+        color: var(--navy) !important;
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-icon-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Table Styles */
+    .table {
+        color: var(--navy);
+        --bs-table-color: var(--navy);
+        --bs-table-hover-color: var(--navy);
+        --bs-table-hover-bg: var(--beige);
+        --bs-table-border-color: var(--border);
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: var(--beige) !important;
+    }
+
+    .table thead th {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        font-size: 12.5px;
+        font-weight: 800;
+        padding: 15px 14px;
+        border-bottom: 1.5px solid var(--border);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 14px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(227, 217, 201, 0.45);
+        vertical-align: middle;
+        color: var(--navy);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: var(--beige) !important;
+    }
+
+    .table img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 3px;
+        transition: transform 0.2s ease;
+    }
+
+    .table img:hover {
+        transform: scale(1.06);
+    }
+
+    .product-placeholder {
+        width: 48px;
+        height: 48px;
+        background: var(--beige);
+        color: var(--navy);
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .price-tag {
+        color: var(--navy);
+        font-size: 14px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 6px;
+    }
+
+    .badge.bg-info {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0;
+    }
+
+    .badge.bg-success {
+        background: #ecfdf5 !important;
+        color: #15803d !important;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge.bg-danger {
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca;
+    }
+
+    .text-success {
+        color: #15803d !important;
+    }
+
+    .text-danger {
+        color: #dc2626 !important;
+    }
+
+    /* Action Buttons in Table */
+    .btn-outline-danger {
+        color: #b91c1c !important;
+        border: 1px solid #fecaca !important;
+        background: #fef2f2 !important;
+        font-size: 12px !important;
+        padding: 6px 11px !important;
+    }
+
+    .btn-outline-danger:hover {
+        background: #b91c1c !important;
+        color: var(--white) !important;
+        border-color: #b91c1c !important;
+    }
+
+    .btn-outline-success {
+        color: #15803d !important;
+        border: 1px solid #bbf7d0 !important;
+        background: #ecfdf5 !important;
+        font-size: 12px !important;
+        padding: 6px 11px !important;
+    }
+
+    .btn-outline-success:hover {
+        background: #15803d !important;
+        color: var(--white) !important;
+        border-color: #15803d !important;
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        padding: 50px 24px !important;
+        text-align: center;
+    }
+
+    .empty-state > i {
+        color: var(--navy);
+        opacity: 0.4;
+        margin-bottom: 12px;
+    }
+
+    .empty-state h2 {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 22px;
+    }
+
+    /* Pagination */
+    .pagination {
+        gap: 6px;
+    }
+
+    .pagination .page-link {
+        background: var(--white);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 8px !important;
+        font-weight: 700;
+        padding: 7px 14px;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: var(--beige);
+        color: var(--navy);
+        border-color: var(--navy);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--navy);
+        color: var(--white);
+        border-color: var(--navy);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+    }
+
+    @@media (max-width: 767px) {
+        .page-head {
+            padding: 16px;
+        }
+
+        .page-head-text h1 {
+            font-size: 20px;
+        }
+
+        .page-head-actions {
+            width: 100%;
+        }
+
+        .page-head-actions .btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .table thead th,
+        .table tbody td {
+            padding: 12px 10px;
+        }
+    }
+</style>
+
+<section class="vendor-products-page">
     <div class="container">
-        <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-box-open"></i></div>
+        <!-- Page Header -->
+        <div class="page-head">
+            <div class="page-head-icon">
+                <i class="fas fa-boxes-stacked"></i>
+            </div>
+
             <div class="page-head-text">
                 <h1>منتجاتي</h1>
-                <p>إدارة المنتجات المعروضة في متجرك — @Model.TotalCount منتج</p>
+                <p>إدارة المنتجات المعروضة في متجرك — إجمالي @Model.TotalCount منتج</p>
             </div>
+
             <div class="page-head-actions">
-                <a asp-action="Create" class="btn btn-warning fw-bold px-4">
-                    <i class="fas fa-plus me-1"></i>إضافة منتج جديد
+                <a asp-action="Create" class="btn btn-warning">
+                    <i class="fas fa-plus ms-1"></i>إضافة منتج جديد
                 </a>
-                <a asp-action="Index" asp-controller="VendorOrder" class="btn btn-outline-info fw-bold px-4">
-                    <i class="fas fa-truck-fast me-1"></i>طلبات متجري
+
+                <a asp-action="Index" asp-controller="VendorOrder" class="btn btn-outline-warning">
+                    <i class="fas fa-truck-fast ms-1"></i>طلبات متجري
                 </a>
             </div>
         </div>
 
         @if (!Model.Products.Any())
         {
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-box fa-4x mb-3"></i>
-                <h2 class="h4 fw-bold mb-1">لا توجد منتجات بعد</h2>
-                <p class="mb-4">ابدأ البيع الآن بإضافة أول منتج إلى متجرك.</p>
-                <a asp-action="Create" class="btn btn-warning fw-bold px-4">
-                    <i class="fas fa-plus me-1"></i>إضافة منتج جديد
+            <div class="empty-state">
+                <i class="fas fa-box-open fa-3x d-block"></i>
+                <h2>لا توجد منتجات حتى الآن</h2>
+                <p>ابدأ البيع الآن بعرض وإضافة أول منتج إلى متجرك الإلكتروني.</p>
+
+                <a asp-action="Create" class="btn btn-warning px-4">
+                    <i class="fas fa-plus ms-1"></i>إضافة أول منتج
                 </a>
             </div>
         }
         else
         {
-            <div class="card border-secondary shadow-sm mb-4">
-                <div class="card-header bg-dark border-secondary py-3">
-                    <h2 class="h5 fw-bold text-white mb-0">
-                        <i class="fas fa-list me-2"></i>قائمة منتجاتك (@Model.TotalCount منتج)
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>
+                        <span class="card-icon-badge"><i class="fas fa-list-check"></i></span>
+                        قائمة منتجاتك (@Model.TotalCount منتج)
                     </h2>
                 </div>
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-secondary text-white">
+                        <table class="table table-hover align-middle">
+                            <thead>
                                 <tr>
-                                    <th style="width:80px;">الصورة</th>
+                                    <th style="width:75px;">الصورة</th>
                                     <th>المنتج</th>
                                     <th>الفئة</th>
                                     <th class="text-center">السعر</th>
@@ -57,6 +456,7 @@
                                     <th class="text-end">الإجراءات</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @foreach (var p in Model.Products)
                                 {
@@ -64,45 +464,55 @@
                                         <td>
                                             @if (!string.IsNullOrEmpty(p.ImageUrl))
                                             {
-                                                <img src="@p.ImageUrl" class="rounded shadow-sm" alt="@p.Name"
-                                                     style="width:50px;height:50px;object-fit:cover;" />
+                                                <img src="@p.ImageUrl" alt="@p.Name" />
                                             }
                                             else
                                             {
-                                                <div class="bg-light d-flex align-items-center justify-content-center text-muted rounded border"
-                                                     style="width:50px;height:50px;">
+                                                <div class="product-placeholder">
                                                     <i class="fas fa-box"></i>
                                                 </div>
                                             }
                                         </td>
+
                                         <td>
-                                            <span class="fw-bold text-dark d-block">@p.Name</span>
+                                            <span class="fw-bold d-block" style="color: var(--navy);">@p.Name</span>
                                             <small class="text-muted text-truncate d-inline-block" style="max-width:260px;">
-                                                @p.Description
+                                                @(string.IsNullOrEmpty(p.Description) ? "بدون وصف" : p.Description)
                                             </small>
                                         </td>
-                                        <td><span class="badge bg-info text-dark">@p.CategoryName</span></td>
-                                        <td class="text-center"><span class="price-tag">$@p.Price.ToString("F2")</span></td>
+
+                                        <td>
+                                            <span class="badge bg-info">@p.CategoryName</span>
+                                        </td>
+
                                         <td class="text-center">
-                                            <span class="fw-semibold @(p.StockQuantity > 0 ? "text-success" : "text-danger")">
+                                            <span class="price-tag">$@p.Price.ToString("N2")</span>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <span class="fw-bold @(p.StockQuantity > 0 ? "text-success" : "text-danger")">
                                                 @p.StockQuantity
                                             </span>
                                         </td>
+
                                         <td class="text-center">
                                             <span class="badge @(p.IsActive ? "bg-success" : "bg-danger")">
                                                 @(p.IsActive ? "مفعّل" : "معطّل")
                                             </span>
                                         </td>
+
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">
                                                 <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-pen"></i> تعديل
+                                                    <i class="fas fa-pen ms-1"></i>تعديل
                                                 </a>
+
                                                 <form asp-action="Deactivate" asp-route-id="@p.Id" method="post" class="d-inline"
                                                       onsubmit="return confirm('هل أنت متأكد من تغيير حالة هذا المنتج؟');">
                                                     @Html.AntiForgeryToken()
+
                                                     <button type="submit" class="btn btn-sm @(p.IsActive ? "btn-outline-danger" : "btn-outline-success")">
-                                                        <i class="fas @(p.IsActive ? "fa-ban" : "fa-check")"></i>
+                                                        <i class="fas @(p.IsActive ? "fa-ban" : "fa-check") ms-1"></i>
                                                         @(p.IsActive ? "تعطيل" : "تفعيل")
                                                     </button>
                                                 </form>

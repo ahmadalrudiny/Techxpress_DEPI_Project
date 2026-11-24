@@ -1,7 +1,138 @@
+
 @model VendorApplyViewModel
 @{
     ViewData["Title"] = "التقديم كمورد - TechXpress";
 }
+
+<style>
+    .page-head-icon {
+        background: #FAF7F2;
+        color: #0C223F;
+        border: 1px solid #E3D9C9;
+    }
+
+    .page-head-text h1 {
+        color: #0C223F;
+    }
+
+    .page-head-text p {
+        color: #64748b;
+    }
+
+    .page-head-actions .btn-outline-warning {
+        color: #0C223F !important;
+        border-color: #E3D9C9 !important;
+        background: #FAF7F2 !important;
+    }
+
+    .page-head-actions .btn-outline-warning:hover {
+        background: #0C223F !important;
+        border-color: #0C223F !important;
+        color: #FFFFFF !important;
+    }
+
+    .card {
+        background: #FFFFFF;
+        border-color: #E3D9C9 !important;
+        border-radius: 14px;
+    }
+
+    .card-header {
+        background: #0C223F !important;
+        border-color: #153359 !important;
+    }
+
+    .card-header h2 {
+        color: #FFFFFF !important;
+    }
+
+    .card-header h2 .text-warning {
+        color: #FAF7F2 !important;
+    }
+
+    .form-label {
+        color: #0C223F;
+        font-weight: 700;
+    }
+
+    .form-control {
+        border-color: #E3D9C9;
+        border-radius: 8px;
+    }
+
+    .form-control:focus {
+        border-color: #0C223F;
+        box-shadow: 0 0 0 0.2rem rgba(12, 34, 63, 0.12);
+    }
+
+    .btn-warning {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1.5px solid #E3D9C9 !important;
+        border-radius: 8px;
+    }
+
+    .btn-warning:hover {
+        background: #0C223F !important;
+        color: #FFFFFF !important;
+        border-color: #0C223F !important;
+    }
+
+    .btn-outline-secondary {
+        color: #0C223F !important;
+        border-color: #E3D9C9 !important;
+        border-radius: 8px;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #0C223F !important;
+        color: #FFFFFF !important;
+        border-color: #0C223F !important;
+    }
+
+    .card.bg-dark {
+        background: #FFFFFF !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    .card.bg-dark .card-header {
+        background: #FAF7F2 !important;
+        border-color: #E3D9C9 !important;
+    }
+
+    .card.bg-dark .card-header h3 {
+        color: #0C223F !important;
+    }
+
+    .card.bg-dark .card-header h3 i {
+        color: #0C223F !important;
+    }
+
+    .card.bg-dark .card-body {
+        background: #FFFFFF !important;
+        color: #0C223F !important;
+    }
+
+    .card.bg-dark .card-body li {
+        color: #0C223F !important;
+        font-weight: 600;
+    }
+
+    .card.bg-dark .card-body li i {
+        color: #0C223F !important;
+    }
+
+    .alert-info {
+        background: #FAF7F2;
+        color: #0C223F;
+        border: 1px solid #E3D9C9;
+        border-radius: 10px;
+    }
+
+    .alert-info i {
+        color: #0C223F;
+    }
+</style>
 
 <section class="pb-5">
     <div class="container">

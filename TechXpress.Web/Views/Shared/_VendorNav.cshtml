@@ -19,3 +19,69 @@
         <i class="fas fa-wallet"></i><span>محفظتي والأرباح</span>
     </a>
 </nav>
+
+<style>
+    .vendor-subnav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+        background: #FAF7F2;
+        border: 1px solid #E3D9C9;
+        border-radius: 12px;
+    }
+
+    .vendor-subnav .vnav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        color: #0C223F !important;
+        background: #FFFFFF;
+        border: 1px solid #E3D9C9;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .vendor-subnav .vnav-link i {
+        color: #0C223F;
+        font-size: 14px;
+    }
+
+    .vendor-subnav .vnav-link:hover {
+        background: #0C223F;
+        color: #FFFFFF !important;
+        border-color: #0C223F;
+    }
+
+    .vendor-subnav .vnav-link:hover i {
+        color: #FFFFFF;
+    }
+
+    .vendor-subnav .vnav-link.active {
+        background: #0C223F;
+        color: #FFFFFF !important;
+        border-color: #0C223F;
+        box-shadow: 0 3px 8px rgba(12, 34, 63, 0.12);
+    }
+
+    .vendor-subnav .vnav-link.active i {
+        color: #FFFFFF;
+    }
+
+    @@media (max-width: 576px) {
+        .vendor-subnav {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .vendor-subnav .vnav-link {
+            padding: 10px 8px;
+            font-size: 12px;
+        }
+    }
+</style>

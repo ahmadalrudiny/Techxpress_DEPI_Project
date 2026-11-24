@@ -4,29 +4,329 @@
     ViewData["Title"] = "سلة التسوق - TechXpress";
 }
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #ede6db;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    .cart-section {
+        background-color: var(--cream);
+        min-height: 85vh;
+        padding-top: 35px;
+        padding-bottom: 50px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+    }
+
+    .page-head-main {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .page-head-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--navy);
+        color: var(--beige);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 0;
+    }
+
+    .custom-card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        overflow: hidden;
+    }
+
+    .custom-card-header {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        padding: 16px 22px !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+
+    .custom-card-header h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .custom-card-header i {
+        color: var(--beige);
+    }
+
+    .cart-row {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s ease;
+    }
+
+    .cart-row:last-child {
+        border-bottom: none;
+    }
+
+    .cart-row:hover {
+        background-color: #fdfbf7;
+    }
+
+    .cart-item-title {
+        color: var(--navy);
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+
+    .cart-item-price {
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    .cart-item-total {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 16px;
+    }
+
+    .qty-input {
+        background: var(--white) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        font-weight: 700;
+        border-radius: 8px 0 0 8px !important;
+        height: 38px;
+    }
+
+    .qty-input:focus {
+        border-color: var(--navy) !important;
+        box-shadow: none !important;
+    }
+
+    .btn-update-qty {
+        background: var(--beige) !important;
+        border: 1.5px solid var(--border) !important;
+        border-right: none !important;
+        color: var(--navy) !important;
+        border-radius: 0 8px 8px 0 !important;
+        padding: 0 12px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-update-qty:hover {
+        background: var(--beige-hover) !important;
+    }
+
+    .btn-remove-item {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1.5px solid #fee2e2;
+        background: #fef2f2;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-remove-item:hover {
+        background: #dc2626;
+        color: #ffffff;
+        border-color: #dc2626;
+    }
+
+    .btn-theme-primary {
+        background: var(--beige) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 10px !important;
+        padding: 12px 20px;
+        font-weight: 800;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(12, 34, 63, 0.08);
+    }
+
+    .btn-theme-primary:hover {
+        background: var(--beige-hover) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(12, 34, 63, 0.14);
+    }
+
+    .btn-theme-outline {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 9px 16px;
+        font-weight: 700;
+        font-size: 13.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-outline:hover {
+        background: var(--beige) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+    }
+
+    .promo-input {
+        background: var(--white) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 8px 0 0 8px !important;
+        height: 44px;
+        font-size: 13.5px;
+    }
+
+    .promo-input:focus {
+        border-color: var(--navy) !important;
+        box-shadow: none !important;
+    }
+
+    .btn-promo-apply {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border: 1.5px solid var(--navy) !important;
+        border-radius: 0 8px 8px 0 !important;
+        padding: 0 18px;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-promo-apply:hover {
+        background: var(--navy-light) !important;
+        border-color: var(--navy-light) !important;
+    }
+
+    .cart-summary-total {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 20px;
+    }
+
+    .stripe-info-box {
+        background: #faf7f2;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 12.5px;
+        color: var(--navy);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .empty-cart-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 60px 20px;
+        box-shadow: 0 8px 24px rgba(12, 34, 63, 0.05);
+    }
+
+    .empty-cart-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--beige);
+        color: var(--navy);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<section class="cart-section">
     <div class="container">
         <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-cart-shopping"></i></div>
-            <div class="page-head-text">
-                <h1>سلة التسوق</h1>
-                <p>راجع المنتجات وطبّق كود الخصم قبل إتمام الدفع</p>
+            <div class="page-head-main">
+                <div class="page-head-icon">
+                    <i class="fas fa-cart-shopping"></i>
+                </div>
+                <div class="page-head-text">
+                    <h1>سلة التسوق</h1>
+                    <p>راجع المنتجات وطبّق كود الخصم قبل إتمام الدفع</p>
+                </div>
             </div>
             <div class="page-head-actions">
-                <a asp-action="Index" asp-controller="Products" class="btn btn-outline-warning btn-sm fw-bold">
-                    <i class="fas fa-box me-1"></i>متابعة التسوق
+                <a asp-action="Index" asp-controller="Products" class="btn-theme-outline">
+                    <i class="fas fa-box-open ms-1"></i> متابعة التسوق
                 </a>
             </div>
         </div>
 
         @if (Model == null || !Model.Items.Any())
         {
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-shopping-cart fa-4x mb-4"></i>
-                <h2 class="h3 fw-bold mb-2">سلة التسوق فارغة</h2>
-                <p class="mb-4">لم تقم بإضافة أي منتجات إلى سلتك بعد.</p>
-                <a asp-action="Index" asp-controller="Products" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm">
-                    <i class="fas fa-box me-2"></i>تصفح المنتجات
+            <div class="empty-cart-card text-center my-4">
+                <div class="empty-cart-icon">
+                    <i class="fas fa-cart-arrow-down"></i>
+                </div>
+                <h2 class="h4 fw-bold mb-2" style="color: var(--navy);">سلة التسوق فارغة</h2>
+                <p class="text-muted mb-4" style="font-size: 14.5px;">لم تقم بإضافة أي منتجات إلى سلتك حتى الآن.</p>
+                <a asp-action="Index" asp-controller="Products" class="btn-theme-primary d-inline-flex px-4">
+                    <i class="fas fa-bag-shopping ms-1"></i> تصفح المنتجات
                 </a>
             </div>
         }
@@ -34,76 +334,84 @@
         {
             <div class="row g-4">
                 <div class="col-lg-8">
-                    <div class="card border-secondary shadow-sm mb-4">
-                        <div class="card-header bg-dark border-secondary py-3">
-                            <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-shopping-basket me-2 text-warning"></i>عناصر السلة</h2>
+                    <div class="custom-card mb-4">
+                        <div class="custom-card-header">
+                            <h2>
+                                <i class="fas fa-basket-shopping"></i> عناصر السلة
+                            </h2>
                         </div>
-                        <div class="card-body p-0">
+                        <div class="p-0">
                             @foreach (var item in Model.Items)
                             {
-                                <div class="row align-items-center py-4 border-bottom">
-                                    <div class="col-md-3 col-lg-2 text-center">
-                                        <img src="@item.ImageUrl" class="img-fluid rounded shadow-sm" alt="@item.Name" style="max-height: 100px;" />
+                                <div class="cart-row row align-items-center g-3 m-0">
+                                    <div class="col-3 col-sm-2 text-center p-0">
+                                        <img src="@item.ImageUrl" class="img-fluid rounded border" alt="@item.Name" style="max-height: 80px; object-fit: contain; background: #fff;" />
                                     </div>
-                                    <div class="col-md-4">
-                                        <h3 class="h6 fw-bold text-dark mb-1">@item.Name</h3>
-                                        <small class="text-muted">$@item.Price.ToString("F2") للوحدة</small>
+                                    <div class="col-9 col-sm-4">
+                                        <h3 class="cart-item-title">@item.Name</h3>
+                                        <span class="cart-item-price">$@item.Price.ToString("F2") للوحدة</span>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-7 col-sm-3">
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control text-center qty-input" data-product-id="@item.ProductId" value="@item.Quantity" min="1" max="@item.StockQuantity"
-                                                   aria-label="كمية @item.Name" />
-                                            <button class="btn btn-outline-secondary update-qty" data-product-id="@item.ProductId"
-                                                    title="تحديث الكمية" aria-label="تحديث كمية @item.Name"><i class="fas fa-sync-alt"></i></button>
+                                            <input type="number" class="form-control text-center qty-input" data-product-id="@item.ProductId" value="@item.Quantity" min="1" max="@item.StockQuantity" aria-label="كمية @item.Name" />
+                                            <button class="btn btn-update-qty update-qty" data-product-id="@item.ProductId" title="تحديث الكمية" aria-label="تحديث كمية @item.Name">
+                                                <i class="fas fa-rotate"></i>
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="col-md-2">
-                                        <strong class="item-total text-dark" data-product-id="@item.ProductId">$@((item.Price * item.Quantity).ToString("F2"))</strong>
+                                    <div class="col-3 col-sm-2 text-center">
+                                        <strong class="cart-item-total item-total" data-product-id="@item.ProductId">$@((item.Price * item.Quantity).ToString("F2"))</strong>
                                     </div>
-                                    <div class="col-md-1 text-end">
-                                        <button class="btn btn-sm btn-outline-danger remove-item" data-product-id="@item.ProductId"
-                                                title="حذف من السلة" aria-label="حذف @item.Name من السلة"><i class="fas fa-trash"></i></button>
+                                    <div class="col-2 col-sm-1 text-end">
+                                        <button class="btn-remove-item remove-item" data-product-id="@item.ProductId" title="حذف من السلة" aria-label="حذف @item.Name من السلة">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
                                     </div>
                                 </div>
                             }
                         </div>
                     </div>
                 </div>
+
                 <div class="col-lg-4">
-                    <div class="card border-secondary shadow-sm sticky-top" style="top: 100px;">
-                        <div class="card-header bg-dark border-secondary py-3">
-                            <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-file-invoice me-2 text-warning"></i>ملخص الطلب</h2>
+                    <div class="custom-card sticky-top" style="top: 30px;">
+                        <div class="custom-card-header">
+                            <h2>
+                                <i class="fas fa-receipt"></i> ملخص الطلب
+                            </h2>
                         </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between mb-2">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between mb-2" style="font-size: 14.5px;">
                                 <span class="text-muted">المجموع الفرعي</span>
-                                <span class="fw-bold">$@Model.Subtotal.ToString("F2")</span>
+                                <span class="fw-bold" style="color: var(--navy);">$@Model.Subtotal.ToString("F2")</span>
                             </div>
                             @if (Model.Discount > 0)
                             {
-                                <div class="d-flex justify-content-between mb-3 text-success">
-                                    <span class="text-muted">الخصم</span>
+                                <div class="d-flex justify-content-between mb-3 text-success" style="font-size: 14.5px;">
+                                    <span>الخصم</span>
                                     <span class="fw-bold">- $@Model.Discount.ToString("F2")</span>
                                 </div>
                             }
-                            <div class="d-flex justify-content-between mb-4 fw-bold fs-5">
-                                <span class="text-dark">المجموع الكلي</span>
-                                <span class="price-tag">$@Model.Total.ToString("F2")</span>
+                            <hr style="border-color: var(--border); margin: 15px 0;">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <span class="fw-bold" style="color: var(--navy); font-size: 16px;">المجموع الكلي</span>
+                                <span class="cart-summary-total">$@Model.Total.ToString("F2")</span>
                             </div>
 
                             <form id="promoForm" method="get" asp-action="Index">
                                 <div class="input-group mb-4">
-                                    <input type="text" name="promoCode" class="form-control" placeholder="كود الخصم (مثل SAVE10)" />
-                                    <button class="btn btn-outline-warning" type="submit">تطبيق</button>
+                                    <input type="text" name="promoCode" class="form-control promo-input" placeholder="كود الخصم (مثل SAVE10)" />
+                                    <button class="btn btn-promo-apply" type="submit">تطبيق</button>
                                 </div>
                             </form>
 
-                            <a asp-controller="Checkout" asp-action="Checkout" class="btn btn-warning btn-lg w-100 fw-bold shadow-sm mb-3">
-                                <i class="fas fa-credit-card me-2"></i>انتقل إلى الدفع
+                            <a asp-controller="Checkout" asp-action="Checkout" class="btn-theme-primary w-100 mb-3">
+                                <i class="fas fa-credit-card ms-1"></i> الانتقال إلى الدفع
                             </a>
 
-                            <div class="alert alert-info small">
-                                <i class="fas fa-info-circle me-2"></i>سيتم توجيهك إلى Stripe لإتمام الدفع بشكل آمن.
+                            <div class="stripe-info-box">
+                                <i class="fas fa-shield-halved" style="color: var(--navy); font-size: 15px;"></i>
+                                <span>سيتم توجيهك إلى Stripe لإتمام الدفع بشكل آمن ومشفّر.</span>
                             </div>
                         </div>
                     </div>

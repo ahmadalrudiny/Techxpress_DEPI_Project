@@ -12,10 +12,10 @@
 
     string TypeBadge(string t) => t switch
     {
-        "Deposit" => "bg-success",
-        "Withdrawal" => "bg-info text-dark",
-        "Refund" => "bg-warning text-dark",
-        _ => "bg-secondary"
+        "Deposit" => "wallet-badge-deposit",
+        "Withdrawal" => "wallet-badge-withdrawal",
+        "Refund" => "wallet-badge-refund",
+        _ => "wallet-badge-default"
     };
 
     string StatusText(string s) => s switch
@@ -28,52 +28,438 @@
 
     string StatusBadge(string s) => s switch
     {
-        "Pending" => "bg-warning text-dark",
-        "Completed" => "bg-success",
-        "Rejected" => "bg-danger",
-        _ => "bg-secondary"
+        "Pending" => "wallet-badge-pending",
+        "Completed" => "wallet-badge-completed",
+        "Rejected" => "wallet-badge-rejected",
+        _ => "wallet-badge-default"
     };
 }
 
 <partial name="_VendorNav" />
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #EDE6DB;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+    }
+
+    body {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+        background-color: var(--cream);
+    }
+
+    .vendor-wallet {
+        background: var(--cream);
+        min-height: 100vh;
+        padding-top: 25px;
+        color: var(--navy);
+    }
+
+    /* Page Head */
+    .page-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 22px 24px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+    }
+
+    .page-head-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        font-size: 23px;
+        flex-shrink: 0;
+    }
+
+    .page-head-text {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-bottom: 0;
+    }
+
+    .page-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Cards - White Clean Style */
+    .card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        overflow: hidden;
+        transition: box-shadow .2s ease, transform .2s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 24px rgba(12, 34, 63, 0.07) !important;
+    }
+
+    /* Card Header - White with Beige Icon Badge */
+    .card-header {
+        background: var(--white) !important;
+        border-bottom: 1px solid var(--border) !important;
+        padding: 18px 22px !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-header h2 {
+        color: var(--navy) !important;
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-icon-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .card-body {
+        color: var(--navy);
+        padding: 22px;
+    }
+
+    /* Stat Card */
+    .stat-card {
+        height: 100%;
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+        padding: 24px;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(12, 34, 63, 0.08);
+        border-color: var(--navy) !important;
+    }
+
+    .stat-card h2 {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--navy) !important;
+    }
+
+    .stat-icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    /* Form Styles */
+    .form-label {
+        color: var(--navy);
+        font-weight: 700;
+        font-size: 13px;
+        margin-bottom: 7px;
+    }
+
+    .form-control {
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: var(--navy);
+        background: var(--white);
+        font-size: 13.5px;
+        font-family: 'Cairo', sans-serif;
+        transition: all .2s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--navy);
+        box-shadow: 0 0 0 3px rgba(12, 34, 63, 0.08);
+        color: var(--navy);
+        background: var(--white);
+    }
+
+    .form-control::placeholder {
+        color: #94a3b8;
+    }
+
+    /* Buttons */
+    .btn-warning,
+    .btn-primary {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 9px !important;
+        padding: 9px 20px !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        transition: all .2s ease;
+    }
+
+    .btn-warning:hover,
+    .btn-primary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-warning,
+    .btn-outline-secondary {
+        background: var(--white) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 9px !important;
+        padding: 8px 16px !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        transition: all .2s ease;
+    }
+
+    .btn-outline-warning:hover,
+    .btn-outline-secondary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+    }
+
+    /* Tables */
+    .table {
+        color: var(--navy);
+        --bs-table-color: var(--navy);
+        --bs-table-hover-color: var(--navy);
+        --bs-table-hover-bg: var(--beige);
+        --bs-table-border-color: var(--border);
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: var(--beige) !important;
+    }
+
+    .table thead th {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        font-size: 12.5px;
+        font-weight: 800;
+        padding: 15px 14px;
+        border-bottom: 1.5px solid var(--border);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        color: var(--navy);
+        font-size: 13px;
+        padding: 15px 14px;
+        border-bottom: 1px solid rgba(227, 217, 201, 0.45);
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background: var(--beige) !important;
+    }
+
+    /* Badges */
+    .badge {
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 11.5px;
+    }
+
+    .wallet-badge-deposit,
+    .wallet-badge-completed {
+        background: #ecfdf5 !important;
+        color: #15803d !important;
+        border: 1px solid #bbf7d0 !important;
+    }
+
+    .wallet-badge-withdrawal {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    .wallet-badge-refund,
+    .wallet-badge-pending {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .wallet-badge-rejected {
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca !important;
+    }
+
+    .wallet-badge-default {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    /* Helpers */
+    .text-success {
+        color: #15803d !important;
+    }
+
+    .text-danger {
+        color: #dc2626 !important;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .empty-state {
+        color: var(--text-muted);
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .empty-state i {
+        color: var(--navy);
+        opacity: .4;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        color: var(--navy);
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 767px) {
+        .page-head {
+            padding: 16px;
+        }
+
+        .page-head-text h1 {
+            font-size: 20px;
+        }
+
+        .page-head-actions {
+            width: 100%;
+        }
+
+        .stat-card {
+            padding: 18px !important;
+        }
+
+        .stat-card h2 {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<section class="vendor-wallet pb-5">
     <div class="container">
+        <!-- Page Header -->
         <div class="page-head mb-4">
             <div class="page-head-icon"><i class="fas fa-wallet"></i></div>
             <div class="page-head-text">
                 <h1>محفظتي والأرباح</h1>
-                <p>@Model.StoreName — رصيدك ومعاملاتك المالية وطلبات السحب وحالتها</p>
+                <p>@Model.StoreName — رصيدك ومعاملاتك المالية وطلبات السحب وحالتها في مكان واحد.</p>
             </div>
             <div class="page-head-actions">
-                <a asp-action="Index" asp-controller="VendorDashboard" class="btn btn-outline-warning btn-sm fw-bold">
-                    <i class="fas fa-gauge-high me-1"></i>لوحة التحكم
+                <a asp-action="Index" asp-controller="VendorDashboard" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-gauge-high ms-1"></i>لوحة التحكم
                 </a>
-                <a asp-action="Index" asp-controller="VendorOrder" class="btn btn-outline-info btn-sm fw-bold">
-                    <i class="fas fa-truck-fast me-1"></i>طلبات متجري
+                <a asp-action="Index" asp-controller="VendorOrder" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-truck-fast ms-1"></i>طلبات متجري
                 </a>
             </div>
         </div>
 
+        <!-- Top Section (Balance & Payout Request) -->
         <div class="row g-4 mb-4">
+            <!-- Balance Card -->
             <div class="col-lg-4">
-                <div class="stat-card bg-dark border-secondary p-4 rounded-3 shadow-sm h-100">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted small mb-1">الرصيد المتاح</p>
-                            <h2 class="fw-bold text-warning mb-0">$@Model.Balance.ToString("N2")</h2>
+                <div class="stat-card d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">الرصيد المتاح</p>
+                                <h2 class="mb-0">$@Model.Balance.ToString("N2")</h2>
+                            </div>
+                            <div class="stat-icon-wrap">
+                                <i class="fas fa-sack-dollar"></i>
+                            </div>
                         </div>
-                        <i class="fas fa-sack-dollar fa-2x text-warning opacity-50"></i>
+                        <span class="small text-muted d-inline-block mt-3">
+                            <i class="fas fa-shield-check text-success ms-1"></i>رصيد جاهز ومتاح للسحب الفوري
+                        </span>
                     </div>
                 </div>
             </div>
 
+            <!-- Payout Request Form -->
             <div class="col-lg-8">
-                <div class="card border-secondary shadow-sm h-100">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-money-bill-transfer me-2"></i>طلب سحب أرباح</h2>
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2>
+                            <span class="card-icon-badge"><i class="fas fa-money-bill-transfer"></i></span>
+                            طلب سحب أرباح
+                        </h2>
                     </div>
-                    <div class="card-body p-4">
+                    <div class="card-body">
                         <form asp-action="RequestPayout" method="post" class="row g-3 align-items-end" novalidate>
                             @Html.AntiForgeryToken()
                             <div class="col-md-4">
@@ -86,13 +472,15 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label" for="Note">ملاحظة (اختياري)</label>
-                                <input class="form-control" id="Note" name="Note" maxlength="200" />
+                                <input class="form-control" id="Note" name="Note" maxlength="200" placeholder="ملاحظة إضافية..." />
                             </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-warning fw-bold px-4">
-                                    <i class="fas fa-paper-plane me-1"></i>إرسال طلب السحب
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-paper-plane ms-1"></i>إرسال طلب السحب
                                 </button>
-                                <span class="text-muted small ms-2">تتم مراجعة الطلب من الإدارة قبل التحويل.</span>
+                                <span class="text-muted small ms-2 d-inline-block mt-2 mt-sm-0">
+                                    <i class="fas fa-circle-info ms-1"></i>تتم مراجعة الطلب من الإدارة قبل التحويل.
+                                </span>
                             </div>
                         </form>
                     </div>
@@ -100,30 +488,35 @@
             </div>
         </div>
 
-        <div class="card border-secondary shadow-sm">
-            <div class="card-header bg-dark border-secondary py-3">
-                <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-clock-rotate-left me-2"></i>سجل المعاملات</h2>
+        <!-- Transactions History -->
+        <div class="card">
+            <div class="card-header">
+                <h2>
+                    <span class="card-icon-badge"><i class="fas fa-clock-rotate-left"></i></span>
+                    سجل المعاملات المالية
+                </h2>
             </div>
             <div class="card-body p-0">
                 @if (Model.Transactions == null || !Model.Transactions.Any())
                 {
-                    <div class="empty-state text-center py-5">
-                        <i class="fas fa-receipt fa-3x mb-3"></i>
+                    <div class="empty-state">
+                        <i class="fas fa-receipt fa-3x"></i>
                         <p class="mb-0">لا توجد معاملات مالية حتى الآن.</p>
+                        <span class="small text-muted">ستظهر جميع عمليات الإيداع والسحب والاسترداد هنا.</span>
                     </div>
                 }
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-secondary text-white">
+                        <table class="table table-hover align-middle">
+                            <thead>
                                 <tr>
                                     <th>التاريخ</th>
                                     <th>النوع</th>
                                     <th class="text-center">الحالة</th>
                                     <th class="text-center">المبلغ</th>
-                                    <th class="text-center">الرصيد بعد</th>
-                                    <th>الوصف</th>
+                                    <th class="text-center">الرصيد بعد العملية</th>
+                                    <th>الوصف والتفاصيل</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -136,19 +529,19 @@
                                         <td class="text-center fw-bold @(t.Type == "Withdrawal" ? "text-danger" : "text-success")">
                                             @(t.Type == "Withdrawal" ? "-" : "+")$@t.Amount.ToString("N2")
                                         </td>
-                                        <td class="text-center text-dark">$@t.BalanceAfter.ToString("N2")</td>
+                                        <td class="text-center fw-bold" style="color: var(--navy);">$@t.BalanceAfter.ToString("N2")</td>
                                         <td>
                                             <span class="text-muted small">@(string.IsNullOrEmpty(t.Description) ? "-" : t.Description)</span>
                                             @if (!string.IsNullOrEmpty(t.RejectionReason))
                                             {
                                                 <div class="text-danger small mt-1">
-                                                    <i class="fas fa-circle-xmark me-1"></i>سبب الرفض: @t.RejectionReason
+                                                    <i class="fas fa-circle-xmark ms-1"></i>سبب الرفض: @t.RejectionReason
                                                 </div>
                                             }
                                             else if (t.ProcessedAt.HasValue)
                                             {
                                                 <div class="text-success small mt-1">
-                                                    <i class="fas fa-circle-check me-1"></i>تمت المراجعة: @t.ProcessedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                                                    <i class="fas fa-circle-check ms-1"></i>تمت المعالجة: @t.ProcessedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
                                                 </div>
                                             }
                                         </td>

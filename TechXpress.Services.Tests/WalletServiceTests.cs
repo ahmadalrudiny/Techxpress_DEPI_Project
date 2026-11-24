@@ -59,6 +59,14 @@ public class WalletServiceTests : IDisposable
             Id = 1, VendorId = 1, OrderDetailId = 10, Amount = 180m, BalanceAfter = 1000m,
             Type = WalletTransactionType.Deposit, Status = WalletTransactionStatus.Completed
         };
+
+        // Platform earnings repository (used when recording/reversing the site commission).
+        var platformRepo = new Mock<IGenericRepository<PlatformEarning>>();
+        platformRepo.Setup(x => x.FindAsync(It.IsAny<Expression<Func<PlatformEarning, bool>>>()))
+            .ReturnsAsync(new List<PlatformEarning>());
+        platformRepo.Setup(x => x.AddAsync(It.IsAny<PlatformEarning>()))
+            .Returns(Task.CompletedTask);
+        _uowMock.Setup(x => x.PlatformEarnings).Returns(platformRepo.Object);
     }
 
     private void SetupOrderRepository(Order? order = null)
@@ -149,11 +157,19 @@ public class WalletServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ReverseOrderCommissionAsync_OrderNotPaid_DoesNothing()
+    public async Task ReverseOrderCommissionAsync_OrderWithoutDeposit_DoesNothing()
     {
         SetupOrderRepository(new Order { Id = 100, Status = OrderStatus.Pending });
+        SetupOrderDetailsRepository(new List<OrderDetail>());
+        SetupUnitOfWorkForTransaction();
+
+        var walletRepo = new Mock<IWalletRepository>();
+        walletRepo.Setup(x => x.HasRefundForOrderDetailAsync(It.IsAny<int>())).ReturnsAsync(false);
+        _uowMock.Setup(x => x.Wallets).Returns(walletRepo.Object);
+
         await _service.ReverseOrderCommissionAsync(100);
-        Assert.True(true);
+
+        Assert.Equal(1000m, _vendor.WalletBalance);
     }
 
     [Fact]
@@ -167,6 +183,7 @@ public class WalletServiceTests : IDisposable
         var walletRepo = new Mock<IWalletRepository>();
         walletRepo.Setup(x => x.FindAsync(It.IsAny<Expression<Func<WalletTransaction, bool>>>()))
             .ReturnsAsync(new List<WalletTransaction> { _deposit });
+        walletRepo.Setup(x => x.HasRefundForOrderDetailAsync(It.IsAny<int>())).ReturnsAsync(false);
         _uowMock.Setup(x => x.Wallets).Returns(walletRepo.Object);
 
         await _service.ReverseOrderCommissionAsync(100);

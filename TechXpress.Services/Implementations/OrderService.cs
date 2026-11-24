@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TechXpress.Data.Entities;
 using TechXpress.Data.UoW;
@@ -29,7 +28,8 @@ public class OrderService : IOrderService
     }
 
     public async Task<(bool Success, string Message, int? OrderId)> PlaceOrderAsync(
-        string userId, string cartJson, string shippingAddress, string? promoCode = null)
+        string userId, string cartJson, string shippingAddress, string? promoCode = null,
+        bool useStoreCredit = false)
     {
         if (string.IsNullOrWhiteSpace(shippingAddress))
             return (false, "عنوان الشحن مطلوب.", null);
@@ -81,22 +81,58 @@ public class OrderService : IOrderService
             var subtotal = cartItems.Sum(i => i.Price * i.Quantity);
             var totalAmount = subtotal - discountAmount;
 
-            // 3. Create Order
+            // 3. Apply store credit (نقاط العميل) when requested
+            decimal storeCreditUsed = 0m;
+            if (useStoreCredit)
+            {
+                var balance = await _unitOfWork.StoreCredits.GetBalanceAsync(userId);
+                if (balance > 0)
+                    storeCreditUsed = Math.Min(balance, totalAmount);
+            }
+
+            var payableAmount = Math.Round(totalAmount - storeCreditUsed, 2, MidpointRounding.AwayFromZero);
+            if (payableAmount < 0) payableAmount = 0;
+
+            // 4. Create Order
             var order = new Order
             {
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
-                TotalAmount = totalAmount,
+                TotalAmount = payableAmount,
+                StoreCreditUsed = storeCreditUsed,
                 DiscountAmount = discountAmount,
                 PromoCode = appliedPromoCode,
-                Status = OrderStatus.Pending,
+                Status = payableAmount <= 0 ? OrderStatus.Paid : OrderStatus.Pending,
+                PaymentIntentId = payableAmount <= 0 ? "STORE_CREDIT" : null,
                 ShippingAddress = shippingAddress
             };
 
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.SaveChangesAsync(); // to get order.Id
 
-            // 4. Create OrderDetails with UnitPrice from database, VendorId from Product.VendorId
+            // 5. Deduct the used credit and keep an audit trail
+            if (storeCreditUsed > 0)
+            {
+                var user = await _unitOfWork.StoreCredits.GetUserAsync(userId);
+                if (user == null)
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return (false, "تعذر العثور على حساب العميل.", null);
+                }
+
+                user.StoreCreditBalance -= storeCreditUsed;
+                await _unitOfWork.StoreCredits.AddTransactionAsync(new StoreCreditTransaction
+                {
+                    UserId = userId,
+                    Amount = -storeCreditUsed,
+                    BalanceAfter = user.StoreCreditBalance,
+                    Type = StoreCreditTransactionType.OrderPayment,
+                    OrderId = order.Id,
+                    Description = Clamp("استخدام رصيد النقاط في الطلب", 300)
+                });
+            }
+
+            // 6. Create OrderDetails with UnitPrice from database, VendorId from Product.VendorId
             foreach (var item in cartItems)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
@@ -119,8 +155,27 @@ public class OrderService : IOrderService
 
             await _unitOfWork.CommitAsync();
 
-            _logger.LogInformation("Order {OrderId} placed for user {UserId}", order.Id, userId);
-            return (true, "تم إنشاء طلبك بنجاح.", order.Id);
+            // 7. Orders completely covered by credit are already paid -> record vendor/platform earnings
+            if (payableAmount <= 0)
+            {
+                try
+                {
+                    await _walletService.ProcessOrderCommissionAsync(order.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to process commission for credit-paid order {OrderId}", order.Id);
+                }
+            }
+
+            _logger.LogInformation("Order {OrderId} placed for user {UserId} (credit used: {Credit})",
+                order.Id, userId, storeCreditUsed);
+
+            var message = storeCreditUsed > 0
+                ? $"تم إنشاء طلبك بنجاح وتم استخدام ${storeCreditUsed:F2} من رصيد نقاطك."
+                : "تم إنشاء طلبك بنجاح.";
+
+            return (true, message, order.Id);
         }
         catch (Exception ex)
         {
@@ -154,6 +209,13 @@ public class OrderService : IOrderService
 
     public async Task<(bool Success, string Message)> UpdateStatusAsync(int id, OrderStatus newStatus)
     {
+        // Cancellation and return both need refund/stock/commission side effects.
+        if (newStatus == OrderStatus.Cancelled)
+            return await CancelOrderAsync(id, null);
+
+        if (newStatus == OrderStatus.Returned)
+            return await ReturnOrderAsync(id, null);
+
         var order = await _unitOfWork.Orders.GetByIdWithDetailsAsync(id);
         if (order == null)
             return (false, "الطلب غير موجود.");
@@ -162,9 +224,7 @@ public class OrderService : IOrderService
         bool allowed = (order.Status, newStatus) switch
         {
             (OrderStatus.Pending, OrderStatus.Paid) => true,
-            (OrderStatus.Pending, OrderStatus.Cancelled) => true,
             (OrderStatus.Paid, OrderStatus.Shipped) => true,
-            (OrderStatus.Paid, OrderStatus.Cancelled) => true,
             (OrderStatus.Shipped, OrderStatus.Delivered) => true,
             _ => false
         };
@@ -200,6 +260,20 @@ public class OrderService : IOrderService
         try
         {
             await _unitOfWork.SaveChangesAsync();
+
+            // When an admin marks a pending order as paid, vendors/platform must get their share.
+            if (newStatus == OrderStatus.Paid)
+            {
+                try
+                {
+                    await _walletService.ProcessOrderCommissionAsync(id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to process commission for order {OrderId} marked paid by admin", id);
+                }
+            }
+
             _logger.LogInformation("Order {OrderId} status changed to {Status}", id, newStatus);
             return (true, "تم تحديث حالة الطلب بنجاح.");
         }
@@ -221,19 +295,26 @@ public class OrderService : IOrderService
         if (order.Status == OrderStatus.Cancelled)
             return (false, "تم إلغاء هذا الطلب بالفعل.");
 
-        if (order.Status == OrderStatus.Delivered)
-            return (false, "لا يمكن إلغاء طلب تم توصيله.");
+        if (order.Status == OrderStatus.Returned)
+            return (false, "تم إرجاع هذا الطلب بالفعل.");
 
-        var wasPaid = order.Status == OrderStatus.Paid;
+        if (order.Status == OrderStatus.Delivered)
+            return (false, "لا يمكن إلغاء طلب تم توصيله. استخدم خيار إرجاع الطلب.");
+
+        var wasPaid = order.Status is OrderStatus.Paid or OrderStatus.Shipped;
+        var alreadyRefunded = await _unitOfWork.StoreCredits.HasRefundForOrderAsync(id);
+
+        // Paid orders refund the full value (cash + used credit) as store credit.
+        // Pending orders only need the reserved credit to be returned.
+        var refundAmount = wasPaid
+            ? order.TotalAmount + order.StoreCreditUsed
+            : order.StoreCreditUsed;
 
         await _unitOfWork.BeginTransactionAsync();
         try
         {
             // Restore stock
-            var details = await _unitOfWork.OrderDetails
-                .FindAsync(d => d.OrderId == id);
-
-            foreach (var detail in details)
+            foreach (var detail in order.OrderDetails)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(detail.ProductId);
                 if (product != null)
@@ -243,25 +324,127 @@ public class OrderService : IOrderService
                 }
             }
 
+            // Refund the value as points on the customer's account
+            if (!alreadyRefunded && refundAmount > 0)
+            {
+                var user = await _unitOfWork.StoreCredits.GetUserAsync(order.UserId);
+                if (user != null)
+                {
+                    user.StoreCreditBalance += refundAmount;
+
+                    await _unitOfWork.StoreCredits.AddTransactionAsync(new StoreCreditTransaction
+                    {
+                        UserId = order.UserId,
+                        Amount = refundAmount,
+                        BalanceAfter = user.StoreCreditBalance,
+                        Type = StoreCreditTransactionType.OrderRefund,
+                        OrderId = order.Id,
+                        Description = Clamp(
+                            wasPaid
+                                ? "استرداد قيمة الطلب كنقاط بعد الإلغاء"
+                                : "إرجاع رصيد النقاط المستخدم في الطلب",
+                            300)
+                    });
+                }
+            }
+
             order.Status = OrderStatus.Cancelled;
             _unitOfWork.Orders.Update(order);
 
             await _unitOfWork.CommitAsync();
 
-            // If order was Paid, reverse commission (outside the order transaction)
-            if (wasPaid)
+            // Reverse vendor + platform earnings outside the order transaction
+            if (wasPaid && !alreadyRefunded)
             {
                 await _walletService.ReverseOrderCommissionAsync(id);
                 _logger.LogInformation("Commission reversed for cancelled order {OrderId}", id);
             }
 
             _logger.LogInformation("Order {OrderId} cancelled by user {UserId}", id, userId);
+
+            if (wasPaid && refundAmount > 0)
+                return (true, $"تم إلغاء الطلب واستعادة الكميات، وأُضيف ${refundAmount:F2} إلى رصيد نقاطك.");
+
+            if (!wasPaid && refundAmount > 0)
+                return (true, "تم إلغاء الطلب واستعادة الكميات ورصيد النقاط المستخدم.");
+
             return (true, "تم إلغاء الطلب واستعادة الكميات إلى المخزون.");
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "Failed to cancel order {OrderId}", id);
+            throw;
+        }
+    }
+
+    public async Task<(bool Success, string Message)> ReturnOrderAsync(int id, string? userId)
+    {
+        var order = userId == null
+            ? await _unitOfWork.Orders.GetByIdWithDetailsAsync(id)
+            : await _unitOfWork.Orders.GetByIdForUserAsync(id, userId);
+        if (order == null)
+            return (false, "الطلب غير موجود أو لا تملك صلاحية الوصول إليه.");
+
+        if (order.Status != OrderStatus.Delivered)
+            return (false, "يمكن إرجاع الطلبات التي تم توصيلها فقط.");
+
+        if (await _unitOfWork.StoreCredits.HasRefundForOrderAsync(id))
+            return (false, "تم إرجاع هذا الطلب واسترداد قيمته بالفعل.");
+
+        var refundAmount = order.TotalAmount + order.StoreCreditUsed;
+
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            // Restore stock
+            foreach (var detail in order.OrderDetails)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(detail.ProductId);
+                if (product != null)
+                {
+                    product.StockQuantity += detail.Quantity;
+                    _unitOfWork.Products.Update(product);
+                }
+            }
+
+            // Refund the full value as store credit
+            if (refundAmount > 0)
+            {
+                var user = await _unitOfWork.StoreCredits.GetUserAsync(order.UserId);
+                if (user == null)
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return (false, "تعذر العثور على حساب العميل.");
+                }
+
+                user.StoreCreditBalance += refundAmount;
+
+                await _unitOfWork.StoreCredits.AddTransactionAsync(new StoreCreditTransaction
+                {
+                    UserId = order.UserId,
+                    Amount = refundAmount,
+                    BalanceAfter = user.StoreCreditBalance,
+                    Type = StoreCreditTransactionType.OrderRefund,
+                    OrderId = order.Id,
+                    Description = Clamp("استرداد قيمة الطلب كنقاط بعد الإرجاع", 300)
+                });
+            }
+
+            order.Status = OrderStatus.Returned;
+            _unitOfWork.Orders.Update(order);
+
+            await _unitOfWork.CommitAsync();
+
+            await _walletService.ReverseOrderCommissionAsync(id);
+
+            _logger.LogInformation("Order {OrderId} returned by user {UserId}", id, userId);
+            return (true, $"تم إرجاع الطلب وأُضيف ${refundAmount:F2} إلى رصيد نقاطك.");
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync();
+            _logger.LogError(ex, "Failed to return order {OrderId}", id);
             throw;
         }
     }
@@ -274,6 +457,7 @@ public class OrderService : IOrderService
             order.UserId,
             order.TotalAmount,
             order.DiscountAmount,
+            order.StoreCreditUsed,
             order.PromoCode,
             order.Status,
             order.PaymentIntentId,
@@ -297,4 +481,7 @@ public class OrderService : IOrderService
 
     private static IEnumerable<OrderDto> MapToDtos(IEnumerable<Order> orders)
         => orders.Select(MapToDto);
+
+    private static string Clamp(string value, int maxLength)
+        => value.Length <= maxLength ? value : value[..maxLength];
 }

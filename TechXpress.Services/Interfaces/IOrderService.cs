@@ -9,9 +9,12 @@ public interface IOrderService
     /// Places an order from the cart in one transaction: re-checks stock from the database,
     /// reduces stock, creates Order (Status Pending) and OrderDetails with UnitPrice from the database,
     /// sets OrderDetail.VendorId from Product.VendorId, applies discount and stores DiscountAmount/PromoCode.
+    /// When <paramref name="useStoreCredit"/> is true the available store credit is deducted from the total;
+    /// if it covers the whole order the order is marked paid immediately.
     /// </summary>
     Task<(bool Success, string Message, int? OrderId)> PlaceOrderAsync(
-        string userId, string cartJson, string shippingAddress, string? promoCode = null);
+        string userId, string cartJson, string shippingAddress, string? promoCode = null,
+        bool useStoreCredit = false);
 
     /// <summary>Gets all orders for a specific user (customer sees only own orders).</summary>
     Task<IEnumerable<OrderDto>> GetUserOrdersAsync(string userId);
@@ -43,4 +46,14 @@ public interface IOrderService
     /// </param>
     /// <returns>A tuple with the success flag and a user-facing message.</returns>
     Task<(bool Success, string Message)> CancelOrderAsync(int id, string? userId);
+
+    /// <summary>
+    /// Returns a delivered order: restores the stock, refunds the full order value as store credit,
+    /// reverses vendor earnings and platform commission, then marks the order as Returned.
+    /// </summary>
+    /// <param name="id">Identifier of the delivered order.</param>
+    /// <param name="userId">
+    /// Owner of the order, or <c>null</c> when an administrator performs the return.
+    /// </param>
+    Task<(bool Success, string Message)> ReturnOrderAsync(int id, string? userId);
 }

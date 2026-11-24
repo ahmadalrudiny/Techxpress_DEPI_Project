@@ -1,3 +1,4 @@
+
 @model VendorApplicationStatusViewModel
 @{
     ViewData["Title"] = "حالة طلب الانضمام - TechXpress";
@@ -8,6 +9,133 @@
         : Model.Status == "Rejected" ? "bg-danger"
         : "bg-warning text-dark";
 }
+
+<style>
+    .page-head-icon {
+        background: #FAF7F2;
+        color: #0C223F;
+        border: 1px solid #E3D9C9;
+    }
+
+    .page-head-text h1 {
+        color: #0C223F;
+    }
+
+    .page-head-text p {
+        color: #64748b;
+    }
+
+    .page-head-actions .badge {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9;
+        border-radius: 8px;
+    }
+
+    .page-head-actions .btn-warning {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9 !important;
+        border-radius: 8px;
+    }
+
+    .page-head-actions .btn-warning:hover {
+        background: #0C223F !important;
+        color: #FFFFFF !important;
+        border-color: #0C223F !important;
+    }
+
+    .card {
+        background: #FFFFFF;
+        border: 1px solid #E3D9C9 !important;
+        border-radius: 14px;
+    }
+
+    .card-header {
+        background: #0C223F !important;
+        border-color: #153359 !important;
+    }
+
+    .card-header h2 {
+        color: #FFFFFF !important;
+    }
+
+    .card-header h2 i {
+        color: #FAF7F2 !important;
+    }
+
+    .card-body {
+        color: #0C223F;
+    }
+
+    .card-body dt {
+        color: #64748b !important;
+    }
+
+    .card-body dd {
+        color: #0C223F !important;
+    }
+
+    .card-body dd.fw-bold,
+    .card-body dd.text-dark {
+        color: #0C223F !important;
+    }
+
+    .card-body dd.text-danger {
+        color: #0C223F !important;
+    }
+
+    .card-body .badge {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9;
+    }
+
+    .bg-success,
+    .bg-danger,
+    .bg-warning {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+    }
+
+    .alert {
+        border-radius: 10px;
+        color: #0C223F !important;
+    }
+
+    .alert-info {
+        background: #FAF7F2 !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    .alert-danger {
+        background: #FAF7F2 !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    .alert-success {
+        background: #FAF7F2 !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    .alert i {
+        color: #0C223F !important;
+    }
+
+    .btn-warning {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1.5px solid #E3D9C9 !important;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-warning:hover {
+        background: #0C223F !important;
+        color: #FFFFFF !important;
+        border-color: #0C223F !important;
+    }
+</style>
 
 <section class="pb-5">
     <div class="container">

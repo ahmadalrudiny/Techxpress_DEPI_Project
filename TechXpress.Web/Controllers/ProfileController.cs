@@ -14,17 +14,20 @@ public class ProfileController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IOrderService _orderService;
+    private readonly IStoreCreditService _storeCreditService;
     private readonly ILogger<ProfileController> _logger;
 
     public ProfileController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IOrderService orderService,
+        IStoreCreditService storeCreditService,
         ILogger<ProfileController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _orderService = orderService;
+        _storeCreditService = storeCreditService;
         _logger = logger;
     }
 
@@ -43,7 +46,8 @@ public class ProfileController : Controller
             PhoneNumber = user.PhoneNumber ?? string.Empty,
             Email = user.Email ?? string.Empty,
             City = user.City ?? string.Empty,
-            PostalCode = user.PostalCode ?? string.Empty
+            PostalCode = user.PostalCode ?? string.Empty,
+            StoreCreditBalance = user.StoreCreditBalance
         };
 
         return View(model);
@@ -159,5 +163,31 @@ public class ProfileController : Controller
         var (success, message) = await _orderService.CancelOrderAsync(id, userId);
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToAction(nameof(Orders));
+    }
+
+    /// <summary>إرجاع طلب تم توصيله واسترداد قيمته كنقاط على حساب العميل.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReturnOrder(int id)
+    {
+        var userId = CurrentUserId;
+        if (userId == null) return Challenge();
+
+        var (success, message) = await _orderService.ReturnOrderAsync(id, userId);
+        TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
+        return RedirectToAction(nameof(OrderDetails), new { id });
+    }
+
+    /// <summary>صفحة رصيد النقاط وحركاته.</summary>
+    [HttpGet]
+    public async Task<IActionResult> Credit()
+    {
+        var userId = CurrentUserId;
+        if (userId == null) return Challenge();
+
+        var summary = await _storeCreditService.GetSummaryAsync(userId);
+        if (summary == null) return Challenge();
+
+        return View(summary);
     }
 }

@@ -1,3 +1,4 @@
+
 @model VendorDashboardViewModel
 @{
     ViewData["Title"] = "لوحة تحكم البائع";
@@ -40,6 +41,400 @@
 
 <partial name="_VendorNav" />
 
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #EDE6DB;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+    }
+
+    body {
+        background-color: var(--cream);
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 22px 24px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12,34,63,.04);
+    }
+
+    .page-head-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        font-size: 23px;
+    }
+
+    .page-head-text {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-bottom: 0;
+    }
+
+    .page-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 13px;
+        border-radius: 50px;
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .chip-gold {
+        background: #ecfdf5;
+        border-color: #bbf7d0;
+        color: #15803d;
+    }
+
+    .stat-card {
+        height: 100%;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(12,34,63,.04);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(12,34,63,.08);
+    }
+
+    .stat-card h2 {
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .stat-card .text-warning,
+    .stat-card h2.text-warning {
+        color: var(--navy) !important;
+    }
+
+    .stat-card .text-success,
+    .stat-card h2.text-success {
+        color: #15803d !important;
+    }
+
+    .stat-card .text-info {
+        color: var(--navy-light) !important;
+    }
+
+    .stat-card .text-dark {
+        color: var(--navy) !important;
+    }
+
+    .stat-card .fa-wallet,
+    .stat-card .fa-truck-fast {
+        color: var(--navy) !important;
+        opacity: .55;
+    }
+
+    .stat-card .fa-chart-line {
+        color: #15803d !important;
+    }
+
+    .stat-card .fa-box {
+        color: var(--navy-light) !important;
+    }
+
+    .stat-card a.text-warning {
+        color: var(--navy) !important;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .stat-card a.text-warning:hover {
+        color: var(--navy-light) !important;
+        text-decoration: underline;
+    }
+
+    .card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12,34,63,.04) !important;
+        overflow: hidden;
+        transition: box-shadow .2s ease, transform .2s ease;
+    }
+
+    a.card {
+        color: var(--navy);
+    }
+
+    a.card:hover {
+        transform: translateY(-4px);
+        border-color: var(--navy) !important;
+        box-shadow: 0 8px 24px rgba(12,34,63,.08) !important;
+    }
+
+    .card h3 {
+        color: var(--navy);
+    }
+
+    .card-header {
+        background: var(--navy) !important;
+        border-color: var(--border) !important;
+        padding: 15px 18px !important;
+    }
+
+    .card-header h2 {
+        color: var(--white) !important;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .card-header h2 i {
+        color: var(--beige);
+    }
+
+    .card-body {
+        color: var(--navy);
+    }
+
+    .hover-lift span {
+        background: var(--beige) !important;
+        border: 1px solid var(--border);
+        color: var(--navy) !important;
+    }
+
+    .hover-lift span i {
+        color: var(--navy);
+    }
+
+    .btn-warning,
+    .btn-primary {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 9px !important;
+        font-weight: 700 !important;
+        transition: all .2s ease;
+    }
+
+    .btn-warning:hover,
+    .btn-primary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+    }
+
+    .btn-outline-warning {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        transition: all .2s ease;
+    }
+
+    .btn-outline-warning:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+    }
+
+    .btn-outline-secondary {
+        color: var(--navy);
+        border-color: var(--border);
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--navy);
+        color: var(--white);
+    }
+
+    .table {
+        color: var(--navy);
+        --bs-table-color: var(--navy);
+        --bs-table-hover-color: var(--navy);
+        --bs-table-hover-bg: var(--beige);
+        --bs-table-border-color: var(--border);
+    }
+
+    .table thead,
+    .table thead.bg-secondary {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+    }
+
+    .table thead th {
+        color: var(--navy) !important;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 13px 10px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .table tbody td {
+        color: var(--navy);
+        font-size: 13px;
+        padding: 13px 10px;
+    }
+
+    .table tbody tr:hover {
+        background: var(--beige);
+    }
+
+    .badge {
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 5px 9px;
+        font-size: 11px;
+    }
+
+    .badge.bg-warning {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1px solid var(--border);
+    }
+
+    .badge.bg-info {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0;
+    }
+
+    .badge.bg-success {
+        background: #ecfdf5 !important;
+        color: #15803d !important;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge.bg-danger {
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca;
+    }
+
+    .badge.bg-secondary {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0;
+    }
+
+    .text-warning {
+        color: var(--navy) !important;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .price-tag {
+        color: var(--navy);
+        font-weight: 800;
+    }
+
+    .empty-state {
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        color: var(--navy);
+    }
+
+    .empty-state h3 {
+        color: var(--navy);
+    }
+
+    .alert-warning {
+        background: var(--beige);
+        border: 1px solid var(--border);
+        color: var(--navy);
+        border-radius: 12px;
+    }
+
+    .alert-warning > i {
+        color: var(--gold);
+    }
+
+    .alert-warning a {
+        color: var(--navy);
+    }
+
+    .alert-warning a:hover {
+        color: var(--navy-light);
+    }
+
+    .border-bottom {
+        border-color: var(--border) !important;
+    }
+
+    .text-danger {
+        color: #dc2626 !important;
+    }
+
+    .text-success {
+        color: #15803d !important;
+    }
+
+    @@media (max-width: 767px) {
+        .page-head {
+            padding: 16px;
+        }
+
+        .page-head-text h1 {
+            font-size: 20px;
+        }
+
+        .page-head-actions {
+            width: 100%;
+        }
+
+        .stat-card {
+            padding: 16px !important;
+        }
+
+        .stat-card h2 {
+            font-size: 20px;
+        }
+    }
+</style>
+
 <!-- Page Header -->
 <div class="page-head mb-4">
     <div class="page-head-icon"><i class="fas fa-store"></i></div>
@@ -56,13 +451,13 @@
         }
         else if (Model.Status == "Pending")
         {
-            <span class="chip" style="background: rgba(245,179,1,.14); border-color: rgba(245,179,1,.4); color: var(--tx-gold-2);">
+            <span class="chip" style="background: rgba(245,179,1,.14); border-color: rgba(245,179,1,.4); color: var(--navy);">
                 <i class="fas fa-hourglass-half"></i> قيد المراجعة
             </span>
         }
         else
         {
-            <span class="chip" style="background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.4); color: #ff9a9a;">
+            <span class="chip" style="background: #fef2f2; border-color: #fecaca; color: #b91c1c;">
                 <i class="fas fa-circle-xmark"></i> مرفوض
             </span>
         }
@@ -279,7 +674,8 @@
                 {
                     foreach (var p in Model.RecentProducts)
                     {
-                        <div class="d-flex align-items-center gap-3 py-2 border-bottom" style="border-color: rgba(15,23,42,.07) !important;">
+                        <div class="d-flex align-items-center gap-3 py-2 border-bottom"
+                             style="border-color: rgba(15,23,42,.07) !important;">
                             @if (!string.IsNullOrEmpty(p.ImageUrl))
                             {
                                 <img src="@p.ImageUrl" alt="@p.Name" class="rounded"

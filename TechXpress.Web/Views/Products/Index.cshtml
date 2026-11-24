@@ -1,33 +1,297 @@
+
 @model ProductListViewModel
 @using TechXpress.Services.Models
 @{
     ViewData["Title"] = "المنتجات - TechXpress";
 }
 
+<style>
+    :root {
+        --primary-navy: #0B1D35;
+        --dark-navy: #071426;
+        --light-navy: #142F50;
+        --beige: #E8DDCA;
+        --beige-hover: #D9CBB4;
+        --page-bg: #F4F6FA;
+        --white: #FFFFFF;
+        --text-dark: #172B45;
+        --text-muted: #718096;
+        --border-color: #E1E7EF;
+    }
+
+    body {
+        background-color: var(--page-bg);
+    }
+
+    /* Page Header */
+    .page-header {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #071426 0%, #0B1D35 55%, #142F50 100%);
+        border-radius: 0 0 22px 22px;
+        padding: 65px 0 !important;
+        isolation: isolate;
+    }
+
+    .page-header::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        background-size: 35px 35px;
+        z-index: -1;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        border-radius: 50%;
+        background: rgba(232, 221, 202, 0.05);
+        filter: blur(65px);
+        top: -180px;
+        right: -100px;
+        z-index: -1;
+    }
+
+    .page-header .badge {
+        background: var(--beige) !important;
+        color: var(--dark-navy) !important;
+        font-size: 13px;
+        letter-spacing: 0.2px;
+        padding: 10px 18px !important;
+        box-shadow: 0 4px 15px rgba(232, 221, 202, 0.15);
+    }
+
+    .page-header h1 {
+        color: var(--white);
+        font-weight: 800;
+        margin-top: 5px;
+    }
+
+    .page-header p {
+        color: #C5D0DF !important;
+        font-size: 15px;
+    }
+
+    /* Filters */
+    .filter-section {
+        background: var(--page-bg);
+    }
+
+    .filter-card {
+        background: var(--white);
+        border: 1px solid var(--border-color) !important;
+        border-radius: 20px;
+        padding: 28px !important;
+        box-shadow: 0 5px 22px rgba(12, 34, 63, 0.055) !important;
+    }
+
+    .filter-card .form-label {
+        color: var(--primary-navy);
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 9px;
+    }
+
+    .text-gold-dark {
+        color: #B9A98E !important;
+    }
+
+    .filter-card .form-control,
+    .filter-card .form-select {
+        min-height: 45px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background-color: #FFFFFF;
+        color: var(--text-dark);
+        font-size: 14px;
+        padding: 10px 13px;
+        transition: all 0.2s ease;
+        box-shadow: none;
+    }
+
+    .filter-card .form-control::placeholder {
+        color: #A0AABA;
+    }
+
+    .filter-card .form-control:focus,
+    .filter-card .form-select:focus {
+        border-color: var(--primary-navy);
+        box-shadow: 0 0 0 3px rgba(11, 29, 53, 0.08);
+        outline: none;
+    }
+
+    /* Dropdown Arrows */
+    .filter-card select.form-select {
+        direction: rtl;
+        text-align: right;
+        padding-right: 13px;
+        padding-left: 42px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%230B1D35' viewBox='0 0 16 16'%3E%3Cpath d='M3.2 5.8a.7.7 0 0 1 1 0L8 9.6l3.8-3.8a.7.7 0 1 1 1 1l-4.3 4.3a.7.7 0 0 1-1 0L3.2 6.8a.7.7 0 0 1 0-1z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 13px center;
+        background-size: 15px;
+        cursor: pointer;
+    }
+
+    .filter-card select.form-select option {
+        direction: rtl;
+        text-align: right;
+        padding: 10px;
+        color: var(--text-dark);
+        background: #FFFFFF;
+    }
+
+    /* Search */
+    .search-field {
+        position: relative;
+    }
+
+    .search-field .form-control {
+        padding-left: 40px;
+    }
+
+    .search-clear {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: #8793A3;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 5px;
+        z-index: 2;
+    }
+
+    .search-clear:hover {
+        color: var(--primary-navy);
+    }
+
+    /* Buttons */
+    .btn-theme-primary,
+    .btn-theme-outline {
+        background: var(--beige);
+        border: 1px solid var(--beige);
+        color: var(--dark-navy);
+        border-radius: 9px;
+        font-weight: 700;
+        padding: 10px 24px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-theme-primary:hover,
+    .btn-theme-outline:hover {
+        background: var(--beige-hover);
+        border-color: var(--beige-hover);
+        color: var(--dark-navy);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(12, 34, 63, 0.08);
+    }
+
+    .btn-theme-primary:focus,
+    .btn-theme-outline:focus {
+        background: var(--beige-hover);
+        border-color: var(--beige-hover);
+        color: var(--dark-navy);
+        box-shadow: 0 0 0 3px rgba(232, 221, 202, 0.4);
+    }
+
+    /* Search Status */
+    #searchStatus {
+        color: var(--text-muted) !important;
+        font-size: 12px;
+    }
+
+    /* Products Results */
+    #productResults {
+        min-height: 150px;
+        transition: opacity 0.2s ease;
+    }
+
+    #productResults.is-loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-header {
+            padding: 45px 15px !important;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .page-header h1 {
+            font-size: 30px;
+        }
+
+        .page-header p {
+            font-size: 13px;
+        }
+
+        .filter-card {
+            padding: 18px !important;
+            border-radius: 15px;
+        }
+
+        .filter-card .btn {
+            flex: 1;
+        }
+
+        #searchStatus {
+            width: 100%;
+            margin-top: 5px;
+        }
+    }
+</style>
+
 <!-- Page Header -->
 <section class="page-header text-center text-white py-5">
     <div class="container">
-        <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill mb-3">
+        <span class="badge fw-bold px-3 py-2 rounded-pill mb-3">
             <i class="fas fa-store me-1"></i>متجر TechXpress
         </span>
+
         <h1 class="display-5 fw-bold mb-2">كل المنتجات</h1>
-        <p class="text-white-50 mb-0">ابحث مباشرة واختر من بين أحدث الأجهزة الإلكترونية</p>
+
+        <p class="mb-0">
+            ابحث مباشرة واختر من بين أحدث الأجهزة الإلكترونية
+        </p>
     </div>
 </section>
 
 <!-- Filters -->
 <section class="py-4 filter-section">
     <div class="container">
-        <form asp-action="Index" method="get" id="filterForm" class="card border-secondary shadow-sm filter-card p-4">
+        <form asp-action="Index" method="get" id="filterForm"
+              class="card shadow-sm filter-card p-4">
+
             <div class="row g-3 align-items-end">
+
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label fw-semibold" for="liveSearchInput">
-                        <i class="fas fa-magnifying-glass me-1 text-gold-dark"></i>البحث باسم المنتج
+                        <i class="fas fa-magnifying-glass me-1 text-gold-dark"></i>
+                        البحث باسم المنتج
                     </label>
+
                     <div class="search-field">
-                        <input type="text" name="search" class="form-control" id="liveSearchInput"
-                               value="@Model.Search" placeholder="اكتب اسم المنتج..." autocomplete="off" />
-                        <button type="button" class="search-clear" id="clearSearch" title="مسح البحث"
+                        <input type="text" name="search" class="form-control"
+                               id="liveSearchInput"
+                               value="@Model.Search"
+                               placeholder="اكتب اسم المنتج..."
+                               autocomplete="off" />
+
+                        <button type="button" class="search-clear"
+                                id="clearSearch" title="مسح البحث"
                                 style="display:@(string.IsNullOrEmpty(Model.Search) ? "none" : "block")">
                             <i class="fas fa-times"></i>
                         </button>
@@ -36,10 +300,13 @@
 
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label fw-semibold" for="categorySelect">
-                        <i class="fas fa-tags me-1 text-gold-dark"></i>الفئة
+                        <i class="fas fa-tags me-1 text-gold-dark"></i>
+                        الفئة
                     </label>
+
                     <select name="categoryId" id="categorySelect" class="form-select">
                         <option value="">كل الفئات</option>
+
                         @foreach (var cat in Model.Categories)
                         {
                             if (Model.CategoryId == cat.Id)
@@ -55,19 +322,32 @@
                 </div>
 
                 <div class="col-lg-2 col-6">
-                    <label class="form-label fw-semibold" for="minPriceInput">السعر من</label>
-                    <input type="number" name="minPrice" id="minPriceInput" class="form-control"
-                           value="@Model.MinPrice" step="0.01" min="0" placeholder="0" />
+                    <label class="form-label fw-semibold" for="minPriceInput">
+                        السعر من
+                    </label>
+
+                    <input type="number" name="minPrice" id="minPriceInput"
+                           class="form-control"
+                           value="@Model.MinPrice"
+                           step="0.01" min="0" placeholder="0" />
                 </div>
 
                 <div class="col-lg-2 col-6">
-                    <label class="form-label fw-semibold" for="maxPriceInput">السعر إلى</label>
-                    <input type="number" name="maxPrice" id="maxPriceInput" class="form-control"
-                           value="@Model.MaxPrice" step="0.01" min="0" placeholder="0" />
+                    <label class="form-label fw-semibold" for="maxPriceInput">
+                        السعر إلى
+                    </label>
+
+                    <input type="number" name="maxPrice" id="maxPriceInput"
+                           class="form-control"
+                           value="@Model.MaxPrice"
+                           step="0.01" min="0" placeholder="0" />
                 </div>
 
                 <div class="col-lg-2 col-md-6">
-                    <label class="form-label fw-semibold" for="sortSelect">الترتيب</label>
+                    <label class="form-label fw-semibold" for="sortSelect">
+                        الترتيب
+                    </label>
+
                     <select name="sort" id="sortSelect" class="form-select">
                         @if (Model.Sort == "newest")
                         {
@@ -77,6 +357,7 @@
                         {
                             <option value="newest">الأحدث</option>
                         }
+
                         @if (Model.Sort == "priceAsc")
                         {
                             <option value="priceAsc" selected>الأرخص</option>
@@ -85,6 +366,7 @@
                         {
                             <option value="priceAsc">الأرخص</option>
                         }
+
                         @if (Model.Sort == "priceDesc")
                         {
                             <option value="priceDesc" selected>الأغلى</option>
@@ -93,6 +375,7 @@
                         {
                             <option value="priceDesc">الأغلى</option>
                         }
+
                         @if (Model.Sort == "nameAsc")
                         {
                             <option value="nameAsc" selected>الاسم</option>
@@ -105,14 +388,21 @@
                 </div>
 
                 <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                    <button type="submit" class="btn btn-warning fw-bold px-4">
-                        <i class="fas fa-filter me-1"></i>تصفية
+                    <button type="submit" class="btn btn-theme-primary">
+                        <i class="fas fa-filter me-1"></i>
+                        تصفية
                     </button>
-                    <button type="button" class="btn btn-outline-secondary px-4" id="resetFilters">
-                        <i class="fas fa-rotate-left me-1"></i>إعادة تعيين
+
+                    <button type="button" class="btn btn-theme-outline"
+                            id="resetFilters">
+                        <i class="fas fa-rotate-left me-1"></i>
+                        إعادة تعيين
                     </button>
-                    <span class="ms-auto align-self-center text-muted small" id="searchStatus"></span>
+
+                    <span class="ms-auto align-self-center small"
+                          id="searchStatus"></span>
                 </div>
+
             </div>
         </form>
     </div>
@@ -129,6 +419,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
         (function () {
             var $results = $("#productResults");
@@ -147,11 +438,12 @@
                 };
             }
 
-            // تحميل النتائج بالبحث الحي بدون إعادة تحميل الصفحة
             function loadResults(pushUrl) {
                 var params = buildParams();
 
-                if (currentRequest) { currentRequest.abort(); }
+                if (currentRequest) {
+                    currentRequest.abort();
+                }
 
                 $results.addClass("is-loading");
                 $status.html('<i class="fas fa-spinner fa-spin me-1"></i>جارٍ البحث...');
@@ -159,15 +451,28 @@
                 currentRequest = $.get("@Url.Action("SearchPartial", "Products")", params)
                     .done(function (html) {
                         $results.html(html);
+
                         if (pushUrl !== false) {
                             var qs = $.param(params);
-                            window.history.replaceState(null, "", "@Url.Action("Index", "Products")?" + qs);
+
+                            window.history.replaceState(
+                                null,
+                                "",
+                                "@Url.Action("Index", "Products")?" + qs
+                            );
                         }
+
                         $status.html('<i class="fas fa-circle-check text-success me-1"></i>تم تحديث النتائج');
-                        setTimeout(function () { $status.text(""); }, 2000);
+
+                        setTimeout(function () {
+                            $status.text("");
+                        }, 2000);
                     })
                     .fail(function (xhr, textStatus) {
-                        if (textStatus === "abort") { return; }
+                        if (textStatus === "abort") {
+                            return;
+                        }
+
                         $status.html('<i class="fas fa-triangle-exclamation text-danger me-1"></i>تعذّر تحميل النتائج');
                     })
                     .always(function () {
@@ -178,7 +483,10 @@
 
             function debouncedLoad(delay) {
                 clearTimeout(timer);
-                timer = setTimeout(function () { loadResults(); }, delay);
+
+                timer = setTimeout(function () {
+                    loadResults();
+                }, delay);
             }
 
             $("#liveSearchInput").on("input", function () {
@@ -186,10 +494,14 @@
                 debouncedLoad(350);
             });
 
-            $("#categorySelect, #sortSelect").on("change", function () { loadResults(); });
-            $("#minPriceInput, #maxPriceInput").on("input", function () { debouncedLoad(550); });
+            $("#categorySelect, #sortSelect").on("change", function () {
+                loadResults();
+            });
 
-            // منع إعادة تحميل الصفحة عند الضغط على "تصفية"
+            $("#minPriceInput, #maxPriceInput").on("input", function () {
+                debouncedLoad(550);
+            });
+
             $("#filterForm").on("submit", function (e) {
                 e.preventDefault();
                 loadResults();
@@ -206,6 +518,7 @@
                 $("#maxPriceInput").val("");
                 $("#sortSelect").val("newest");
                 $("#clearSearch").hide();
+
                 loadResults();
             });
         })();

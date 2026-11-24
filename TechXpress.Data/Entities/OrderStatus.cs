@@ -12,5 +12,8 @@ public enum OrderStatus
     Paid,
     Shipped,
     Delivered,
-    Cancelled
+    Cancelled,
+
+    /// <summary>تم إرجاع الطلب بعد التوصيل واسترداد قيمته كنقاط.</summary>
+    Returned
 }

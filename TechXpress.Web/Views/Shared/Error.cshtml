@@ -1,3 +1,4 @@
+
 @model TechXpress.Web.Models.ErrorViewModel
 @{
     ViewData["Title"] = "حدث خطأ غير متوقع";
@@ -5,11 +6,11 @@
     var hasDetails = ViewBag.ErrorMessage != null;
 }
 
-<div class="container py-5">
+<div class="container py-5 error-page">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="page-head mb-4">
-                <div class="page-head-icon" style="background: linear-gradient(135deg, #f87171, #b91c1c); color: #fff;">
+                <div class="page-head-icon">
                     <i class="fas fa-triangle-exclamation"></i>
                 </div>
                 <div class="page-head-text">
@@ -18,17 +19,17 @@
                 </div>
             </div>
 
-            <div class="card border-secondary shadow-sm">
+            <div class="card error-card shadow-sm">
                 <div class="card-body p-4">
                     @if (hasDetails)
                     {
-                        <div class="alert alert-danger fw-bold text-break">
+                        <div class="alert error-alert error-alert-danger fw-bold text-break">
                             <i class="fas fa-bug me-2"></i>@ViewBag.ErrorMessage
                         </div>
 
                         @if (ViewBag.InnerMessage != null)
                         {
-                            <div class="alert alert-warning text-break text-dark fw-bold">
+                            <div class="alert error-alert error-alert-warning text-break fw-bold">
                                 <strong>التفاصيل الداخلية (Inner Exception):</strong><br />
                                 @ViewBag.InnerMessage
                             </div>
@@ -37,25 +38,25 @@
                         @if (ViewBag.StackTrace != null)
                         {
                             <div class="mt-3">
-                                <h2 class="h6 text-muted">تتبع مسار الخطأ (Stack Trace):</h2>
-                                <pre class="bg-black text-danger p-3 rounded text-start" dir="ltr" style="max-height: 260px; overflow-y: auto; font-size: .85rem;">@ViewBag.StackTrace</pre>
+                                <h2 class="h6 stack-title">تتبع مسار الخطأ (Stack Trace):</h2>
+                                <pre class="stack-trace text-start" dir="ltr">@ViewBag.StackTrace</pre>
                             </div>
                         }
                     }
                     else
                     {
                         <div class="text-center py-4">
-                            <i class="fas fa-plug-circle-xmark fa-4x mb-3" style="color: #c3ccdb;"></i>
-                            <h2 class="h5 fw-bold mb-2">لم تكتمل العملية</h2>
-                            <p class="text-muted mb-4">
+                            <i class="fas fa-plug-circle-xmark fa-4x mb-3 error-main-icon"></i>
+                            <h2 class="h5 fw-bold mb-2 error-title">لم تكتمل العملية</h2>
+                            <p class="error-description mb-4">
                                 قد يكون السبب انقطاعاً مؤقتاً في الاتصال أو محاولة الوصول لصفحة غير متاحة.
                                 برجاء إعادة المحاولة، وإذا استمرت المشكلة تواصل مع الدعم.
                             </p>
                             <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                <a asp-controller="Home" asp-action="Index" class="btn btn-warning fw-bold">
+                                <a asp-controller="Home" asp-action="Index" class="btn error-primary-btn fw-bold">
                                     <i class="fas fa-house me-1"></i>العودة للرئيسة
                                 </a>
-                                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-warning">
+                                <a asp-controller="Products" asp-action="Index" class="btn error-outline-btn">
                                     <i class="fas fa-box me-1"></i>تصفّح المنتجات
                                 </a>
                             </div>
@@ -64,7 +65,7 @@
                 </div>
                 @if (!hasDetails && Model.ShowRequestId)
                 {
-                    <div class="card-footer text-muted small">
+                    <div class="card-footer error-footer small">
                         رقم البلاغ: <code>@Model.RequestId</code>
                     </div>
                 }
@@ -72,3 +73,112 @@
         </div>
     </div>
 </div>
+
+<style>
+    .error-page .page-head-icon {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9;
+    }
+
+    .error-page .page-head-text h1 {
+        color: #0C223F !important;
+    }
+
+    .error-page .page-head-text p {
+        color: #64748b !important;
+    }
+
+    .error-card {
+        background: #FFFFFF !important;
+        border: 1px solid #E3D9C9 !important;
+        border-radius: 14px !important;
+        overflow: hidden;
+    }
+
+    .error-alert {
+        border-radius: 8px !important;
+        padding: 14px 16px !important;
+    }
+
+    .error-alert-danger {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    .error-alert-warning {
+        background: #FFFFFF !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    .stack-title {
+        color: #0C223F !important;
+        font-weight: 700;
+    }
+
+    .stack-trace {
+        background: #071528 !important;
+        color: #FAF7F2 !important;
+        padding: 16px;
+        border-radius: 8px;
+        max-height: 260px;
+        overflow-y: auto;
+        font-size: .85rem;
+        border: 1px solid #153359;
+    }
+
+    .error-main-icon {
+        color: #0C223F !important;
+    }
+
+    .error-title {
+        color: #0C223F !important;
+    }
+
+    .error-description {
+        color: #64748b !important;
+    }
+
+    .error-primary-btn {
+        background: #0C223F !important;
+        color: #FFFFFF !important;
+        border: 1px solid #0C223F !important;
+        border-radius: 8px !important;
+        padding: 9px 16px !important;
+        transition: all .2s ease;
+    }
+
+    .error-primary-btn:hover {
+        background: #153359 !important;
+        border-color: #153359 !important;
+        color: #FFFFFF !important;
+    }
+
+    .error-outline-btn {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9 !important;
+        border-radius: 8px !important;
+        padding: 9px 16px !important;
+        transition: all .2s ease;
+    }
+
+    .error-outline-btn:hover {
+        background: #0C223F !important;
+        color: #FFFFFF !important;
+        border-color: #0C223F !important;
+    }
+
+    .error-footer {
+        background: #FAF7F2 !important;
+        color: #0C223F !important;
+        border-top: 1px solid #E3D9C9 !important;
+    }
+
+    .error-footer code {
+        color: #0C223F !important;
+        font-weight: 700;
+    }
+</style>

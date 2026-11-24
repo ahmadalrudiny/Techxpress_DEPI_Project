@@ -1,15 +1,3 @@
-@if (TempData["SuccessMessage"] != null)
-{
-    <script>
-        toastr.success(@Json.Serialize(TempData["SuccessMessage"]), "نجاح", {
-            timeOut: 5000,
-            positionClass: "toast-top-right",
-            closeButton: true,
-            newestOnTop: true,
-            progressBar: true
-        });
-    </script>
-}
 
 @if (TempData["ErrorMessage"] != null)
 {
@@ -23,3 +11,39 @@
         });
     </script>
 }
+
+<style>
+    #toast-container > .toast {
+        border-radius: 10px !important;
+        box-shadow: 0 4px 15px rgba(12, 34, 63, 0.15) !important;
+        opacity: 1 !important;
+        font-family: inherit;
+        padding: 15px 15px 15px 50px !important;
+    }
+
+    #toast-container > .toast-error {
+        background-color: #FAF7F2 !important;
+        color: #0C223F !important;
+        border: 1px solid #E3D9C9 !important;
+    }
+
+    #toast-container .toast-title {
+        color: inherit !important;
+        font-weight: 800 !important;
+    }
+
+    #toast-container .toast-message {
+        color: inherit !important;
+        font-weight: 500;
+    }
+
+    #toast-container .toast-close-button {
+        color: inherit !important;
+        opacity: 0.8 !important;
+    }
+
+    #toast-container .toast-progress {
+        background-color: #0C223F !important;
+        opacity: 0.7;
+    }
+</style>

@@ -15,4 +15,7 @@ public interface IWalletRepository : IGenericRepository<WalletTransaction>
 
     Task<WalletTransaction?> GetByIdWithVendorAsync(int id);
     Task<bool> HasDepositForOrderDetailAsync(int orderDetailId);
+
+    /// <summary>True when this order detail already has a completed reversal (Refund) entry.</summary>
+    Task<bool> HasRefundForOrderDetailAsync(int orderDetailId);
 }

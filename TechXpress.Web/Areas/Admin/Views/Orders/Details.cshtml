@@ -11,6 +11,7 @@
         OrderStatus.Shipped => "تم الشحن",
         OrderStatus.Delivered => "تم التوصيل",
         OrderStatus.Cancelled => "ملغي",
+        OrderStatus.Returned => "مُرتجع",
         _ => s.ToString()
     };
 
@@ -21,6 +22,7 @@
         OrderStatus.Shipped => "bg-info text-dark",
         OrderStatus.Delivered => "bg-success",
         OrderStatus.Cancelled => "bg-danger",
+        OrderStatus.Returned => "bg-secondary",
         _ => "bg-secondary"
     };
 
@@ -110,8 +112,15 @@
                     <span class="text-muted">الخصم</span>
                     <span class="fw-bold text-success">- $@Model.DiscountAmount.ToString("F2")</span>
                 </div>
+                @if (Model.StoreCreditUsed > 0)
+                {
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">رصيد النقاط المستخدم</span>
+                        <span class="fw-bold text-success">- $@Model.StoreCreditUsed.ToString("F2")</span>
+                    </div>
+                }
                 <div class="d-flex justify-content-between mb-4 pb-3 border-bottom fw-bold fs-5">
-                    <span class="text-dark">المبلغ الإجمالي</span>
+                    <span class="text-dark">@(Model.StoreCreditUsed > 0 ? "المدفوع نقدًا" : "المبلغ الإجمالي")</span>
                     <span class="text-warning">$@Model.TotalAmount.ToString("F2")</span>
                 </div>
 
@@ -122,6 +131,11 @@
                         <select name="newStatus" id="newStatus" class="form-select">
                             @foreach (var status in Enum.GetValues<OrderStatus>())
                             {
+                                if (status == OrderStatus.Returned && Model.Status != OrderStatus.Returned)
+                                {
+                                    continue;
+                                }
+
                                 var isSelected = Model.Status == status;
                                 <option value="@status" selected="@isSelected">@StatusText(status)</option>
                             }
@@ -132,13 +146,23 @@
                     </div>
                 </form>
 
-                @if (Model.Status != OrderStatus.Cancelled && Model.Status != OrderStatus.Delivered)
+                @if (Model.Status != OrderStatus.Cancelled && Model.Status != OrderStatus.Delivered && Model.Status != OrderStatus.Returned)
                 {
                     <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
-                          onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استعادة المخزون.');">
+                          onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟ سيتم استعادة المخزون، وإذا كان مدفوعًا ستُضاف قيمته كنقاط لرصيد العميل.');">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-outline-danger fw-bold">
                             <i class="fas fa-times me-1"></i>إلغاء الطلب
+                        </button>
+                    </form>
+                }
+                @if (Model.Status == OrderStatus.Delivered)
+                {
+                    <form asp-action="Return" asp-route-id="@Model.Id" method="post"
+                          onsubmit="return confirm('هل تريد إرجاع هذا الطلب واسترداد قيمته كنقاط لرصيد العميل؟ سيتم استعادة المخزون وإلغاء أرباح البائع وعمولة الموقع.');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-warning fw-bold">
+                            <i class="fas fa-rotate-left me-1"></i>إرجاع الطلب
                         </button>
                     </form>
                 }

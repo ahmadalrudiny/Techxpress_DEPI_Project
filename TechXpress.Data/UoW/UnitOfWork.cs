@@ -21,6 +21,8 @@ public class UnitOfWork : IUnitOfWork
     public IReviewRepository Reviews { get; }
     public IGenericRepository<ContactMessage> ContactMessages { get; }
     public IPersistentCartRepository PersistentCarts { get; }
+    public IStoreCreditRepository StoreCredits { get; }
+    public IGenericRepository<PlatformEarning> PlatformEarnings { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -36,6 +38,8 @@ public class UnitOfWork : IUnitOfWork
         Reviews = new ReviewRepository(context);
         ContactMessages = new GenericRepository<ContactMessage>(context);
         PersistentCarts = new PersistentCartRepository(context);
+        StoreCredits = new StoreCreditRepository(context);
+        PlatformEarnings = new GenericRepository<PlatformEarning>(context);
     }
 
     public async Task<int> SaveChangesAsync()

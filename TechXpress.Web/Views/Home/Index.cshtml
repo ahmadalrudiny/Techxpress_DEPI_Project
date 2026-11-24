@@ -4,16 +4,573 @@
 @{
     ViewData["Title"] = "TechXpress - متجر الإلكترونيات الأول";
 
-    // أيقونات متناوبة لبطاقات الفئات (الفئة نفسها لا تحمل أيقونة مخزّنة)
     var categoryIcons = new[] { "fa-laptop", "fa-mobile-screen", "fa-camera", "fa-headphones",
                                 "fa-gamepad", "fa-tv", "fa-print", "fa-keyboard" };
-    var categoryColors = new[] { "primary", "success", "info", "warning", "danger", "secondary" };
     var categories = Model.Categories.Take(8).ToList();
     var featured = Model.FeaturedProducts?.ToList() ?? new List<ProductDto>();
     var heroImages = featured.Where(p => !string.IsNullOrWhiteSpace(p.ImageUrl)).Take(2).ToList();
 }
 
-<!-- Hero Section -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #ede6db;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+        --gold: #f59e0b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    body {
+        background-color: var(--cream);
+    }
+
+    .hero-wrap {
+        padding-top: 25px;
+        padding-bottom: 40px;
+    }
+
+    .hero-section {
+        background: linear-gradient(165deg, var(--navy-dark) 0%, var(--navy) 65%, #102d52 100%);
+        border-radius: 24px;
+        padding: 55px 44px;
+        color: var(--white);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(12, 34, 63, 0.12);
+    }
+
+    .hero-section::before {
+        content: "";
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(250, 247, 242, 0.12) 0%, rgba(12, 34, 63, 0) 70%);
+        top: -100px;
+        left: -100px;
+        pointer-events: none;
+    }
+
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(250, 247, 242, 0.12);
+        border: 1px solid rgba(250, 247, 242, 0.2);
+        color: var(--beige);
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 13.5px;
+        font-weight: 600;
+        margin-bottom: 18px;
+        backdrop-filter: blur(6px);
+    }
+
+    .hero-section h1 {
+        font-size: clamp(30px, 3.6vw, 46px);
+        font-weight: 800;
+        line-height: 1.35;
+        margin-bottom: 16px;
+    }
+
+    .text-gradient {
+        color: var(--beige);
+    }
+
+    .hero-section p.lead {
+        color: #dbe4ef;
+        font-size: 15.5px;
+        line-height: 1.85;
+        max-width: 520px;
+    }
+
+    .hero-trust {
+        list-style: none;
+        padding: 0;
+        margin: 28px 0 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .hero-trust li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #f8fafc;
+        font-size: 13.5px;
+        font-weight: 600;
+    }
+
+    .hero-trust li i {
+        color: var(--beige);
+    }
+
+    .hero-visual {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 330px;
+    }
+
+    .hero-visual img {
+        max-width: 72%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 18px;
+        filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.35));
+        transition: transform 0.3s ease;
+    }
+
+    .hero-visual img:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .hero-art {
+        width: 120px;
+        height: 120px;
+        background: rgba(250, 247, 242, 0.08);
+        border: 1.5px solid rgba(250, 247, 242, 0.15);
+        border-radius: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: var(--beige);
+        margin: 10px;
+    }
+
+    .hero-float {
+        position: absolute;
+        bottom: 10px;
+        right: 20px;
+        background: var(--white);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 11px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .hero-float i {
+        font-size: 22px;
+        color: var(--navy);
+    }
+
+    .hero-float strong {
+        display: block;
+        font-size: 13px;
+        line-height: 1.2;
+    }
+
+    .hero-float span {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .hero-stats {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-top: 25px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+    }
+
+    .hero-stat {
+        padding: 22px;
+        text-align: center;
+        border-inline-end: 1px solid var(--border);
+    }
+
+    .hero-stat:last-child {
+        border-inline-end: none;
+    }
+
+    .hero-stat strong {
+        display: block;
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--navy);
+        margin-bottom: 2px;
+    }
+
+    .hero-stat span {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .chip-theme {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--white);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        padding: 5px 14px;
+        font-size: 12.5px;
+        font-weight: 700;
+    }
+
+    .section-title {
+        color: var(--navy);
+        font-size: 24px;
+        font-weight: 800;
+    }
+
+    .category-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px 18px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.03);
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .category-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--navy);
+        box-shadow: 0 8px 24px rgba(12, 34, 63, 0.08);
+    }
+
+    .category-icon-badge {
+        width: 54px;
+        height: 54px;
+        background: var(--beige);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 12px;
+        transition: transform 0.2s ease;
+    }
+
+    .category-card:hover .category-icon-badge {
+        transform: scale(1.08);
+    }
+
+    .category-title {
+        color: var(--navy);
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .category-desc {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-bottom: 12px;
+        min-height: 34px;
+    }
+
+    .category-link {
+        color: var(--navy);
+        font-size: 12.5px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .featured-products .card,
+    .featured-products .product-card {
+        background: var(--white) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 14px !important;
+        overflow: hidden;
+        box-shadow: 0 4px 14px rgba(12, 34, 63, 0.03) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .featured-products .card:hover,
+    .featured-products .product-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--navy) !important;
+        box-shadow: 0 8px 20px rgba(12, 34, 63, 0.07) !important;
+    }
+
+    .featured-products .card-img-top,
+    .featured-products .product-card img,
+    .featured-products .product-image-wrapper img {
+        height: 165px !important;
+        object-fit: contain !important;
+        padding: 10px !important;
+        background: #fbfbfb;
+        transition: transform 0.2s ease;
+    }
+
+    .featured-products .card:hover .card-img-top,
+    .featured-products .product-card:hover img {
+        transform: scale(1.03);
+    }
+
+    .featured-products .card-body {
+        padding: 12px 14px !important;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .featured-products .card-title,
+    .featured-products .product-card h3,
+    .featured-products .product-card h4,
+    .featured-products .product-card h5 {
+        color: var(--navy) !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
+        margin-bottom: 6px !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        height: 38px;
+    }
+
+    .featured-products .card-title a,
+    .featured-products .product-title a {
+        color: var(--navy) !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease;
+    }
+
+    .featured-products .card-title a:hover,
+    .featured-products .product-title a:hover {
+        color: var(--navy-light) !important;
+    }
+
+    .featured-products .price,
+    .featured-products .product-price,
+    .featured-products .price-tag,
+    .featured-products .text-warning.fw-bold {
+        color: var(--navy) !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
+    }
+
+    .featured-products .badge {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 3px 8px !important;
+        border-radius: 6px !important;
+    }
+
+    .featured-products .badge.bg-warning {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .featured-products .badge.bg-info {
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    .featured-products .badge.bg-success {
+        background: #ecfdf5 !important;
+        color: #15803d !important;
+        border: 1px solid #bbf7d0 !important;
+    }
+
+    .featured-products .badge.bg-danger {
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca !important;
+    }
+
+    .featured-products .btn-warning,
+    .featured-products .btn-primary {
+        background: var(--beige) !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 8px !important;
+        padding: 6px 12px !important;
+        font-weight: 700 !important;
+        font-size: 12.5px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .featured-products .btn-warning:hover,
+    .featured-products .btn-primary:hover {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        border-color: var(--navy) !important;
+    }
+
+    .featured-products .btn-outline-danger {
+        border-color: var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        font-size: 13px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .featured-products .btn-outline-danger:hover {
+        background: #fef2f2 !important;
+        border-color: #fca5a5 !important;
+        color: #ef4444 !important;
+    }
+
+    .featured-products .btn-danger {
+        background: #fef2f2 !important;
+        border-color: #fca5a5 !important;
+        color: #ef4444 !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        font-size: 13px !important;
+    }
+
+    .featured-products .btn-secondary,
+    .featured-products .btn.disabled {
+        background: #f1f5f9 !important;
+        color: #94a3b8 !important;
+        border-color: #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 6px 12px !important;
+        font-size: 12.5px !important;
+    }
+
+    .feature-tile {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 26px 20px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.03);
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+
+    .feature-tile:hover {
+        transform: translateY(-4px);
+    }
+
+    .feature-tile .feature-icon {
+        width: 52px;
+        height: 52px;
+        background: var(--beige);
+        color: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+
+    .feature-tile h3 {
+        color: var(--navy);
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .cta-section {
+        background: linear-gradient(165deg, var(--navy-dark) 0%, var(--navy) 65%, #102d52 100%);
+        border-radius: 24px;
+        padding: 50px 28px;
+        color: var(--white);
+        box-shadow: 0 10px 30px rgba(12, 34, 63, 0.1);
+    }
+
+    .btn-theme-primary {
+        background: var(--beige) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 10px !important;
+        padding: 11px 24px;
+        font-weight: 800;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-theme-primary:hover {
+        background: var(--beige-hover) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-theme-outline {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 8px 18px;
+        font-weight: 700;
+        font-size: 13.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-outline:hover {
+        background: var(--beige) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+    }
+
+    .btn-theme-white-outline {
+        background: transparent !important;
+        color: var(--white) !important;
+        border: 1.5px solid rgba(250, 247, 242, 0.35) !important;
+        border-radius: 10px !important;
+        padding: 11px 24px;
+        font-weight: 700;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-white-outline:hover {
+        background: rgba(250, 247, 242, 0.12) !important;
+        border-color: var(--beige) !important;
+        color: var(--white) !important;
+    }
+</style>
+
 <section class="hero-wrap">
     <div class="container">
         <div class="hero-section">
@@ -22,7 +579,7 @@
                     <span class="hero-eyebrow">
                         <i class="fas fa-bolt"></i> أحدث العروض على الأجهزة الإلكترونية
                     </span>
-                    <h1 class="mb-3">
+                    <h1>
                         تسوّق أحدث التقنية<br />
                         <span class="text-gradient">بأسعار تنافسية</span>
                     </h1>
@@ -31,12 +588,11 @@
                         من بائعين معتمدين مع ضمان الجودة والتوصيل السريع.
                     </p>
                     <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
-                        <a asp-area="" asp-controller="Products" asp-action="Index"
-                           class="btn btn-warning btn-lg px-4">
-                            <i class="fas fa-cart-shopping me-2"></i> ابدأ التسوق الآن
+                        <a asp-area="" asp-controller="Products" asp-action="Index" class="btn-theme-primary">
+                            <i class="fas fa-cart-shopping ms-1"></i> ابدأ التسوق الآن
                         </a>
-                        <a href="#categories" class="btn btn-outline-light btn-lg px-4">
-                            <i class="fas fa-layer-group me-2"></i> تصفّح الفئات
+                        <a href="#categories" class="btn-theme-white-outline">
+                            <i class="fas fa-layer-group ms-1"></i> تصفّح الفئات
                         </a>
                     </div>
                     <ul class="hero-trust justify-content-center justify-content-lg-start">
@@ -74,7 +630,6 @@
             </div>
         </div>
 
-        <!-- Stats strip -->
         <div class="hero-stats row g-0">
             <div class="hero-stat col-6 col-md-3">
                 <strong>@Model.TotalProducts.ToString("N0")+</strong>
@@ -98,18 +653,17 @@
 
 @if (categories.Any())
 {
-    <!-- Categories Section -->
-    <section class="categories-section py-5" id="categories">
+    <section class="categories-section py-4" id="categories">
         <div class="container">
             <div class="row align-items-end mb-4">
                 <div class="col-lg-8">
-                    <span class="chip chip-gold mb-2"><i class="fas fa-layer-group"></i> الفئات</span>
-                    <h2 class="fw-bold mb-1">تسوّق حسب الفئة</h2>
+                    <span class="chip-theme mb-2"><i class="fas fa-layer-group"></i> الفئات</span>
+                    <h2 class="section-title mb-1">تسوّق حسب الفئة</h2>
                     <p class="text-muted mb-0">تصفّح منتجاتنا منظّمة حسب الفئة لسهولة العثور على ما تبحث عنه</p>
                 </div>
                 <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    <a asp-area="" asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary px-4">
-                        كل المنتجات <i class="fas fa-arrow-left ms-2"></i>
+                    <a asp-area="" asp-controller="Products" asp-action="Index" class="btn-theme-outline">
+                        كل المنتجات <i class="fas fa-arrow-left ms-1"></i>
                     </a>
                 </div>
             </div>
@@ -118,18 +672,16 @@
                 {
                     var cat = categories[i];
                     var icon = categoryIcons[i % categoryIcons.Length];
-                    var color = categoryColors[i % categoryColors.Length];
                     <div class="col-md-6 col-lg-3">
-                        <a asp-area="" asp-controller="Products" asp-action="Index" asp-route-categoryId="@cat.Id"
-                           class="category-card d-block h-100 text-decoration-none">
-                            <div class="category-icon bg-@color bg-opacity-10 text-@color p-3 rounded-4 mb-3 d-inline-flex">
-                                <i class="fas @icon fa-2x"></i>
+                        <a asp-area="" asp-controller="Products" asp-action="Index" asp-route-categoryId="@cat.Id" class="category-card d-block h-100 text-decoration-none">
+                            <div class="category-icon-badge">
+                                <i class="fas @icon"></i>
                             </div>
-                            <h3 class="h6 fw-bold mb-1">@cat.Name</h3>
-                            <p class="text-muted small mb-3">
+                            <h3 class="category-title">@cat.Name</h3>
+                            <p class="category-desc">
                                 @(string.IsNullOrWhiteSpace(cat.Description) ? "تصفّح منتجات هذه الفئة" : cat.Description)
                             </p>
-                            <span class="small fw-bold text-gold-dark">
+                            <span class="category-link">
                                 تصفّح <i class="fas fa-arrow-left ms-1"></i>
                             </span>
                         </a>
@@ -140,27 +692,26 @@
     </section>
 }
 
-<!-- Featured Products Section -->
 <section class="featured-products py-5" id="featuredProducts">
     <div class="container">
         <div class="row align-items-end mb-4">
             <div class="col-lg-8">
-                <span class="chip chip-gold mb-2"><i class="fas fa-star"></i> مختارة بعناية</span>
-                <h2 class="fw-bold mb-1">أحدث المنتجات</h2>
+                <span class="chip-theme mb-2"><i class="fas fa-star"></i> مختارة بعناية</span>
+                <h2 class="section-title mb-1">أحدث المنتجات</h2>
                 <p class="text-muted mb-0">اختر من بين أحدث الأجهزة الإلكترونية المتاحة في متجرنا</p>
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <a asp-area="" asp-controller="Products" asp-action="Index" class="btn btn-outline-warning px-4">
-                    عرض الكل <i class="fas fa-arrow-left ms-2"></i>
+                <a asp-area="" asp-controller="Products" asp-action="Index" class="btn-theme-outline">
+                    عرض الكل <i class="fas fa-arrow-left ms-1"></i>
                 </a>
             </div>
         </div>
 
         @if (!featured.Any())
         {
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-box-open fa-3x mb-3"></i>
-                <h3 class="h5 fw-bold mb-2">لا توجد منتجات متاحة حالياً</h3>
+            <div class="text-center py-5 bg-white rounded-4 border p-4" style="border-color: var(--border) !important; box-shadow: 0 4px 16px rgba(12, 34, 63, 0.03);">
+                <i class="fas fa-box-open fa-3x mb-3" style="color: var(--navy);"></i>
+                <h3 class="h5 fw-bold mb-2" style="color: var(--navy);">لا توجد منتجات متاحة حالياً</h3>
                 <p class="text-muted mb-0">سيتم إضافة منتجات جديدة قريباً.</p>
             </div>
         }
@@ -171,13 +722,12 @@
     </div>
 </section>
 
-<!-- Why us -->
-<section class="py-5">
+<section class="py-4">
     <div class="container">
         <div class="row justify-content-center mb-4">
             <div class="col-lg-8 text-center">
-                <span class="chip chip-gold mb-2"><i class="fas fa-shield-halved"></i> لماذا نحن</span>
-                <h2 class="fw-bold mb-2">لماذا تختار TechXpress؟</h2>
+                <span class="chip-theme mb-2"><i class="fas fa-shield-halved"></i> لماذا نحن</span>
+                <h2 class="section-title mb-2">لماذا تختار TechXpress؟</h2>
                 <p class="text-muted mb-0">تجربة تسوّق مصمّمة لتمنحك الثقة والراحة من أول نقرة حتى استلام طلبك</p>
             </div>
         </div>
@@ -185,21 +735,21 @@
             <div class="col-md-4">
                 <div class="feature-tile">
                     <span class="feature-icon"><i class="fas fa-shield-halved"></i></span>
-                    <h3 class="h5 fw-bold mb-2">دفع آمن</h3>
+                    <h3>دفع آمن</h3>
                     <p class="text-muted small mb-0">دفع إلكتروني آمن عبر Stripe مع حماية كاملة لبياناتك البنكية.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-tile">
                     <span class="feature-icon"><i class="fas fa-truck-fast"></i></span>
-                    <h3 class="h5 fw-bold mb-2">توصيل سريع</h3>
+                    <h3>توصيل سريع</h3>
                     <p class="text-muted small mb-0">توصيل إلى جميع المحافظات في أسرع وقت مع إمكانية تتبع الطلب.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-tile">
                     <span class="feature-icon"><i class="fas fa-headset"></i></span>
-                    <h3 class="h5 fw-bold mb-2">دعم على مدار الساعة</h3>
+                    <h3>دعم على مدار الساعة</h3>
                     <p class="text-muted small mb-0">فريق دعم فني متاح للإجابة على جميع استفساراتك في أي وقت.</p>
                 </div>
             </div>
@@ -207,21 +757,20 @@
     </div>
 </section>
 
-<!-- Vendor CTA -->
 @if (!(User.IsInRole("Vendor") || User.IsInRole("Admin")))
 {
-    <section class="pb-5">
+    <section class="py-5">
         <div class="container">
             <div class="cta-section text-center">
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
                         <span class="hero-eyebrow mb-3"><i class="fas fa-store"></i> انضم إلينا</span>
-                        <h2 class="fw-bold mb-3">هل أنت بائع إلكترونيات؟</h2>
-                        <p class="opacity-80 mb-4">
-                            اعرض منتجاتك أمام آلاف العملاء، وأدر متجرك ومحفظتك وطلباتك من لوحة تحكم واحدة.
+                        <h2 class="fw-bold mb-3" style="font-size: 28px;">هل أنت بائع إلكترونيات؟</h2>
+                        <p class="opacity-80 mb-4" style="line-height: 1.8; color: #dbe4ef;">
+                            اعرض منتجاتك أمام آلاف العملاء، وأدر متجرك ومحفظتك وطلباتك من لوحة تحكم واحدة متكاملة.
                         </p>
-                        <a asp-area="" asp-controller="VendorApply" asp-action="Apply" class="btn btn-warning btn-lg px-4">
-                            <i class="fas fa-store me-2"></i> قدّم طلب انضمام
+                        <a asp-area="" asp-controller="VendorApply" asp-action="Apply" class="btn-theme-primary">
+                            <i class="fas fa-store ms-1"></i> قدّم طلب انضمام
                         </a>
                     </div>
                 </div>

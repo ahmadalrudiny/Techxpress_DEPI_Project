@@ -4,44 +4,262 @@
     ViewData["Title"] = "إتمام الطلب - TechXpress";
 }
 
-<section class="pb-5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --beige: #FAF7F2;
+        --beige-hover: #ede6db;
+        --cream: #FAF7F2;
+        --navy: #0C223F;
+        --navy-dark: #071528;
+        --navy-light: #153359;
+        --border: #E3D9C9;
+        --white: #FFFFFF;
+        --text-dark: #0C223F;
+        --text-muted: #64748b;
+    }
+
+    * {
+        font-family: 'Cairo', "Segoe UI", sans-serif;
+    }
+
+    .checkout-section {
+        background-color: var(--cream);
+        min-height: 85vh;
+        padding-top: 35px;
+        padding-bottom: 50px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04);
+    }
+
+    .page-head-main {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .page-head-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--navy);
+        color: var(--beige);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .page-head-text h1 {
+        color: var(--navy);
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        margin-bottom: 0;
+    }
+
+    .custom-card {
+        background: var(--white);
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(12, 34, 63, 0.04) !important;
+        overflow: hidden;
+    }
+
+    .custom-card-header {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        padding: 16px 22px !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+
+    .custom-card-header h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .custom-card-header i {
+        color: var(--beige);
+    }
+
+    .form-label {
+        color: var(--navy) !important;
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .checkout-input {
+        background-color: var(--white) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 10px !important;
+        padding: 12px 14px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+    .checkout-input:focus {
+        border-color: var(--navy) !important;
+        box-shadow: 0 0 0 3px rgba(12, 34, 63, 0.1) !important;
+        outline: none;
+    }
+
+    .btn-theme-primary {
+        background: var(--beige) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--navy) !important;
+        border-radius: 10px !important;
+        padding: 13px 20px;
+        font-weight: 800;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(12, 34, 63, 0.08);
+        cursor: pointer;
+    }
+
+    .btn-theme-primary:hover {
+        background: var(--beige-hover) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(12, 34, 63, 0.14);
+    }
+
+    .btn-theme-outline {
+        background: transparent !important;
+        color: var(--navy) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 9px 16px;
+        font-weight: 700;
+        font-size: 13.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-theme-outline:hover {
+        background: var(--beige) !important;
+        border-color: var(--navy) !important;
+        color: var(--navy) !important;
+    }
+
+    .stripe-info-box {
+        background: #faf7f2;
+        border: 1.5px dashed var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 13px;
+        color: var(--navy);
+        line-height: 1.6;
+    }
+
+    .price-total {
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 20px;
+    }
+</style>
+
+<section class="checkout-section">
     <div class="container">
         <div class="page-head mb-4">
-            <div class="page-head-icon"><i class="fas fa-credit-card"></i></div>
-            <div class="page-head-text">
-                <h1>إتمام الطلب</h1>
-                <p>أدخل عنوان الشحن ثم أكمل الدفع بأمان عبر Stripe</p>
+            <div class="page-head-main">
+                <div class="page-head-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="page-head-text">
+                    <h1>إتمام الطلب</h1>
+                    <p>أدخل عنوان الشحن ثم أكمل الدفع بأمان عبر Stripe</p>
+                </div>
             </div>
             <div class="page-head-actions">
-                <a asp-action="Index" asp-controller="Cart" class="btn btn-outline-warning btn-sm fw-bold">
-                    <i class="fas fa-cart-shopping me-1"></i>سلة التسوق
+                <a asp-action="Index" asp-controller="Cart" class="btn-theme-outline">
+                    <i class="fas fa-cart-shopping ms-1"></i> سلة التسوق
                 </a>
             </div>
         </div>
 
         <div class="row g-4">
-            <!-- Shipping Address Form -->
             <div class="col-lg-6">
-                <div class="card border-secondary shadow-sm">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-map-marker-alt me-2 text-warning"></i>عنوان الشحن</h2>
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <h2>
+                            <i class="fas fa-map-location-dot"></i> عنوان الشحن
+                        </h2>
                     </div>
-                    <div class="card-body">
-                        <form asp-action="PlaceOrder" method="post" novalidate>
+                    <div class="p-4">
+                        <form asp-action="PlaceOrder" method="post" novalidate id="checkoutForm">
                             @Html.AntiForgeryToken()
+                            
                             <div class="mb-4">
-                                <label class="form-label fw-semibold text-dark">عنوان الشحن الكامل</label>
-                                <textarea name="ShippingAddress" class="form-control" rows="4" required placeholder="مثال: القاهرة، مصر، شارع النيل، الشقة ٥">@Model.ShippingAddress</textarea>
-                                <span class="text-danger small" asp-validation-for="ShippingAddress"></span>
+                                <label class="form-label">عنوان الشحن الكامل</label>
+                                <textarea name="ShippingAddress" 
+                                          class="checkout-input" 
+                                          rows="4" 
+                                          required 
+                                          placeholder="مثال: القاهرة، مصر، شارع النيل، الشقة ٥"
+                                          data-val="true"
+                                          data-val-required="عنوان الشحن مطلوب">@Model.ShippingAddress</textarea>
+                                <span class="text-danger small mt-1 d-block" asp-validation-for="ShippingAddress"></span>
                             </div>
+
                             <div class="mb-4">
-                                <label class="form-label fw-semibold text-dark">كود الخصم (اختياري)</label>
-                                <input type="text" name="PromoCode" class="form-control" placeholder="مثال: SAVE10" value="@Model.PromoCode" />
-                                <div class="form-text text-muted small">أدخل كود الخصم إذا كان لديك، مثل SAVE10 أو SAVE20</div>
+                                <label class="form-label">كود الخصم (اختياري)</label>
+                                <input type="text" name="PromoCode" class="checkout-input" placeholder="مثال: SAVE10" value="@Model.PromoCode" />
+                                <div class="text-muted small mt-1">أدخل كود الخصم إذا كان لديك، مثل SAVE10 أو SAVE20</div>
                             </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-warning btn-lg fw-bold py-3 shadow-sm">
-                                    <i class="fas fa-credit-card me-2"></i>إتمام الطلب والدفع
+
+                            @if (Model.AvailableCredit > 0)
+                            {
+                                <div class="mb-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                                    <div class="form-check m-0">
+                                        <input class="form-check-input" type="checkbox" name="UseStoreCredit" value="true"
+                                               id="useStoreCredit" @(Model.UseStoreCredit ? "checked" : null) />
+                                        <label class="form-check-label fw-bold" for="useStoreCredit" style="color: #166534;">
+                                            <i class="fas fa-coins ms-1"></i>
+                                            استخدام رصيد النقاط المتاح ($@Model.AvailableCredit.ToString("F2"))
+                                        </label>
+                                    </div>
+                                    <div class="small mt-2" style="color: #15803d;">
+                                        سيُخصم الرصيد من إجمالي الطلب. وإذا غطّى الإجمالي بالكامل فلن تحتاج إلى الدفع عبر Stripe.
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="d-grid pt-2">
+                                <button type="submit" class="btn-theme-primary w-100">
+                                    <i class="fas fa-credit-card ms-1"></i> إتمام الطلب والدفع
                                 </button>
                             </div>
                         </form>
@@ -49,36 +267,48 @@
                 </div>
             </div>
 
-            <!-- Order Summary -->
             <div class="col-lg-6">
-                <div class="card border-secondary shadow-sm sticky-top" style="top: 100px;">
-                    <div class="card-header bg-dark border-secondary py-3">
-                        <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-receipt me-2 text-warning"></i>ملخص الطلب</h2>
+                <div class="custom-card sticky-top" style="top: 30px;">
+                    <div class="custom-card-header">
+                        <h2>
+                            <i class="fas fa-receipt"></i> ملخص الطلب
+                        </h2>
                     </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between mb-3 pb-2 border-bottom" style="border-color: var(--border) !important; font-size: 14.5px;">
                             <span class="text-muted">المجموع الفرعي</span>
-                            <span class="fw-bold">$@Model.Subtotal.ToString("F2")</span>
+                            <span class="fw-bold" style="color: var(--navy);">$@Model.Subtotal.ToString("F2")</span>
                         </div>
+
                         @if (Model.Discount > 0)
                         {
-                            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom text-success">
-                                <span class="text-muted">الخصم (@Model.PromoCode)</span>
+                            <div class="d-flex justify-content-between mb-3 pb-2 border-bottom text-success" style="border-color: var(--border) !important; font-size: 14.5px;">
+                                <span>الخصم (@Model.PromoCode)</span>
                                 <span class="fw-bold">- $@Model.Discount.ToString("F2")</span>
                             </div>
                         }
-                        <div class="d-flex justify-content-between mb-4 fw-bold fs-5">
-                            <span class="text-dark">المبلغ المستحق للدفع</span>
-                            <span class="price-tag">$@Model.Total.ToString("F2")</span>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4 pt-1">
+                            <span class="fw-bold" style="color: var(--navy); font-size: 16px;">المبلغ المستحق للدفع</span>
+                            <span class="price-total" id="amountDue">$@Model.Total.ToString("F2")</span>
                         </div>
 
-                        <div class="alert alert-info mb-4">
-                            <i class="fas fa-circle-info me-2"></i>
-                            ستتم إعادة توجيهك إلى <strong>Stripe</strong> لإتمام عملية الدفع بشكل آمن. لا يتم تخزين بيانات بطاقتك على خوادمنا.
+                        @if (Model.AvailableCredit > 0)
+                        {
+                            <div class="text-muted small mb-3" style="margin-top: -10px;">
+                                رصيد النقاط المتاح: <strong>$@Model.AvailableCredit.ToString("F2")</strong> — يمكنك استخدامه لتقليل المبلغ المستحق.
+                            </div>
+                        }
+
+                        <div class="stripe-info-box mb-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="fas fa-circle-info mt-1" style="color: var(--navy);"></i>
+                                <span>ستتم إعادة توجيهك إلى <strong>Stripe</strong> لإتمام عملية الدفع بشكل آمن ومشفّر. لا يتم تخزين بيانات بطاقتك على خوادمنا.</span>
+                            </div>
                         </div>
 
                         <div class="text-center text-muted small">
-                            <i class="fas fa-shield-halved me-1 text-success"></i>دفع آمن ومشفّر
+                            <i class="fas fa-shield-halved ms-1 text-success"></i> دفع إلكتروني آمن ومشفّر 100%
                         </div>
                     </div>
                 </div>
@@ -89,4 +319,33 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            function translateValidation() {
+                $("span.field-validation-error, span[data-valmsg-for='ShippingAddress']").each(function () {
+                    var text = $(this).text();
+                    if (text.indexOf("ShippingAddress") !== -1 || text.indexOf("The ShippingAddress field is required") !== -1) {
+                        $(this).text("عنوان الشحن مطلوب");
+                    }
+                });
+            }
+
+            translateValidation();
+
+            $("#checkoutForm").on("submit", function () {
+                setTimeout(translateValidation, 40);
+            });
+
+            $("textarea[name='ShippingAddress']").on("input change blur", function () {
+                setTimeout(translateValidation, 40);
+            });
+
+            var total = @Model.Total.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var availableCredit = @Model.AvailableCredit.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            $("#useStoreCredit").on("change", function () {
+                var applied = this.checked ? Math.min(availableCredit, total) : 0;
+                $("#amountDue").text("$" + (total - applied).toFixed(2));
+            }).trigger("change");
+        });
+    </script>
 }
