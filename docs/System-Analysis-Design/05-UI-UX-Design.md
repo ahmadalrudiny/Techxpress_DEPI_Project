@@ -65,7 +65,7 @@ TechXpress is an Arabic-first marketplace for electronics. The interface is desi
 ### 3.3 Admin Layout
 
 - Dark navy sidebar with grouped sections: Overview, Catalog, Operations, Users, Messages.
-- Dashboard uses KPI cards followed by recent orders and pending work queues.
+- Dashboard uses KPI cards followed by financial analytics, best-selling products, purchasing regions, expense entry, and recent orders.
 - Destructive actions are separated visually (outline danger) and confirmed before submission.
 
 ## 4. Component Library
@@ -121,7 +121,7 @@ TechXpress is an Arabic-first marketplace for electronics. The interface is desi
 
 | Screen | Key elements |
 |---|---|
-| Dashboard | Total confirmed sales, platform commission card, product/order/vendor/customer counts, recent orders |
+| Dashboard | Year filter; confirmed sales, platform commission, vendor payable, expenses, net profit; best-selling products; highest/lowest regions; expense entry and history; product/order/vendor/customer counts; recent orders |
 | Orders | DataTable, status dropdown with allowed transitions, cancel, return for delivered orders, details |
 | Order details | Customer, shipping address, items, payment ID, subtotal/discount/credit/cash, status update, return action |
 | Products | DataTable, create/edit, soft delete/restore, category and vendor assignment |

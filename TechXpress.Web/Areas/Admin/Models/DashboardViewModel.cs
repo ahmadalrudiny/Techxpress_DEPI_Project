@@ -23,6 +23,31 @@ public class DashboardViewModel
     /// <summary>عدد الطلبات المؤكدة المستخدمة في حساب إجمالي المبيعات.</summary>
     public int PaidOrders { get; set; }
 
+    /// <summary>السنة المختارة في فلتر المبيعات، أو null لعرض كل السنوات.</summary>
+    public int? SelectedYear { get; set; }
+
+    /// <summary>السنوات المتاحة في الفلتر مع مبيعاتها المؤكدة.</summary>
+    public IReadOnlyList<SalesYearDto> AvailableYears { get; set; } = new List<SalesYearDto>();
+
+    /// <summary>إجمالي قيمة البنود المستحقة للبائعين بعد خصم العمولة.</summary>
+    public decimal VendorPayable { get; set; }
+
+    /// <summary>إجمالي المصروفات التشغيلية المسجلة في الفترة المختارة.</summary>
+    public decimal TotalExpenses { get; set; }
+
+    /// <summary>قيمة الخصومات الممنوحة على الطلبات المؤكدة (تتحملها المنصة).</summary>
+    public decimal Discounts { get; set; }
+
+    /// <summary>صافي الربح = العمولة - المصروفات - الخصومات.</summary>
+    public decimal NetProfit { get; set; }
+
+    public int UnknownRegionOrders { get; set; }
+
+    public IReadOnlyList<BestSellingProductDto> BestSellingProducts { get; set; } = new List<BestSellingProductDto>();
+    public IReadOnlyList<RegionSalesDto> TopRegions { get; set; } = new List<RegionSalesDto>();
+    public IReadOnlyList<RegionSalesDto> BottomRegions { get; set; } = new List<RegionSalesDto>();
+    public IReadOnlyList<PlatformExpenseDto> RecentExpenses { get; set; } = new List<PlatformExpenseDto>();
+
     /// <summary>آخر الطلبات لعرضها في لوحة التحكم.</summary>
     public IEnumerable<OrderDto> RecentOrders { get; set; } = new List<OrderDto>();
 }

@@ -38,6 +38,15 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
             .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
 
+    public async Task<IEnumerable<Order>> GetAllWithDetailsForAnalyticsAsync()
+        => await _dbSet
+            .AsNoTracking()
+            .Include(o => o.User)
+            .Include(o => o.OrderDetails).ThenInclude(d => d.Product)
+            .Include(o => o.OrderDetails).ThenInclude(d => d.Vendor)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
+
     public async Task<IEnumerable<OrderDetail>> GetOrderDetailsByVendorIdAsync(int vendorId)
         => await _dbSet
             .Include(o => o.OrderDetails).ThenInclude(d => d.Product)

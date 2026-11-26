@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TechXpress — العرض التقديمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  :root{
+    --navy:#0b1426; --navy2:#101d35; --navy3:#162641;
+    --gold:#f5b301; --gold2:#ffd45c;
+    --ink:#eef4ff; --muted:#a8b8d4; --line:rgba(255,255,255,.13);
+    --green:#34d399; --blue:#60a5fa; --red:#fb7185; --violet:#a78bfa;
+    --card:rgba(255,255,255,.055); --card2:rgba(255,255,255,.085);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Cairo','Segoe UI',Tahoma,sans-serif;
+    background:#050b16; color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .deck{display:flex;flex-direction:column;align-items:center;gap:26px;padding:26px;}
+  .slide{
+    position:relative; width:1280px; height:720px; overflow:hidden;
+    padding:52px 62px 64px;
+    background:
+      radial-gradient(900px 520px at 94% -10%, rgba(245,179,1,.13), transparent 60%),
+      radial-gradient(780px 520px at 4% 108%, rgba(37,99,235,.17), transparent 62%),
+      linear-gradient(135deg,#0a1222 0%,#0c172b 55%,#08101f 100%);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 28px 70px rgba(0,0,0,.45);
+  }
+  .slide::after{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.06;
+    background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);
+    background-size:44px 44px;
+    mask-image:linear-gradient(to bottom,black,transparent 72%);
+  }
+  .slide > *{position:relative;z-index:2;}
+  .slide-foot{
+    position:absolute; z-index:3; inset-inline:62px; bottom:22px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12.5px; color:#788aa8; letter-spacing:.02em;
+  }
+  .slide-foot b{color:#b9c7de;font-weight:700;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .logo-mark{
+    width:42px;height:42px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,var(--gold2),var(--gold));
+    color:#241a00;font-size:19px;font-weight:900;
+    box-shadow:0 10px 24px rgba(245,179,1,.28);
+  }
+  .brand-name{font-size:22px;font-weight:900;line-height:1;}
+  .brand-sub{font-size:10.5px;color:#8fa2bf;margin-top:4px;}
+  .kicker{font-size:13px;font-weight:800;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;}
+  h2{font-size:39px;line-height:1.24;margin:0 0 10px;font-weight:900;letter-spacing:-.01em;}
+  h2 .thin{color:#9fb1cd;font-weight:600;}
+  .lead{font-size:18px;line-height:1.75;color:var(--muted);max-width:950px;margin:0;}
+  .gold{color:var(--gold);} .green{color:var(--green);} .blue{color:var(--blue);} .red{color:var(--red);}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 13px;border-radius:999px;
+    background:rgba(245,179,1,.12);border:1px solid rgba(245,179,1,.28);
+    color:var(--gold2);font-size:13px;font-weight:700;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:6px 11px;border-radius:9px;background:rgba(255,255,255,.07);
+    border:1px solid var(--line);font-size:12px;color:#c3d0e6;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:20px 22px;
+  }
+  .card h3{margin:0 0 8px;font-size:19px;font-weight:800;}
+  .card p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.7;}
+  .icon-badge{
+    width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    background:rgba(245,179,1,.12);border:1px solid rgba(245,179,1,.26);color:var(--gold);font-size:18px;
+  }
+  ul.clean{margin:0;padding:0;list-style:none;}
+  ul.clean li{position:relative;padding-inline-start:20px;margin:9px 0;color:#c7d4e8;font-size:15px;line-height:1.65;}
+  ul.clean li::before{content:"";position:absolute;inset-inline-start:0;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(245,179,1,.1);}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+
+  /* ===== Cover ===== */
+  .cover{padding:0;}
+  .cover::before{
+    content:"";position:absolute;inset:-8px;
+    background:url('assets/store.png') center 160px/cover no-repeat;
+    filter:blur(2.5px) brightness(.34) saturate(.85);
+    transform:scale(1.02);
+  }
+  .cover::after{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:1;
+    background:
+      linear-gradient(to left,rgba(6,13,26,.985) 0%,rgba(7,15,30,.94) 44%,rgba(7,15,30,.68) 72%,rgba(7,15,30,.38) 100%),
+      linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px);
+    background-size:auto,44px 44px,44px 44px;
+    mask-image:none;
+  }
+  .cover-inner{position:absolute;z-index:3;inset-inline:70px;top:56px;bottom:58px;display:flex;flex-direction:column;}
+  .cover-copy{margin-top:auto;margin-bottom:auto;max-width:720px;}
+  .cover h1{font-size:66px;line-height:1.08;margin:18px 0 16px;font-weight:900;letter-spacing:-.02em;}
+  .cover h1 span{color:var(--gold);}
+  .cover .sub{font-size:22px;line-height:1.7;color:#c4d2e8;max-width:680px;margin:0;}
+  .cover .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+  .cover-meta{margin-top:auto;display:flex;justify-content:space-between;align-items:center;color:#8294b0;font-size:13px;}
+  .cover-meta b{color:#dbe6f7;}
+
+  /* ===== Problem / goals ===== */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px;}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;}
+  .metric .num{font-size:25px;font-weight:900;color:var(--gold);line-height:1.2;}
+  .metric .lbl{font-size:12.5px;color:#9fb1cd;margin-top:3px;}
+  .split-problem{display:grid;grid-template-columns:1.02fr .98fr;gap:26px;margin-top:18px;}
+  .problem-list li{margin:11px 0;font-size:15.5px;}
+  .problem-list li::before{background:var(--red);box-shadow:0 0 0 4px rgba(251,113,133,.1);}
+  .goal{cursor:default;transition:none;}
+
+  /* ===== Roles ===== */
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:22px;}
+  .role-card{position:relative;overflow:hidden;padding:24px 22px 20px;display:flex;flex-direction:column;min-height:318px;}
+  .role-card::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--gold);opacity:.8;}
+  .role-card.vendor::before{background:var(--blue);} .role-card.admin::before{background:var(--green);}
+  .role-card h3{font-size:23px;margin:14px 0 3px;}
+  .role-card .role-en{font-size:11.5px;letter-spacing:.12em;color:#8294b0;text-transform:uppercase;margin-bottom:12px;}
+  .role-card ul li{font-size:14px;margin:7px 0;}
+  .role-card .pill{margin-top:auto;align-self:flex-start;}
+  .permission-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:20px;padding:15px 17px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid var(--line);}
+  .permission-strip .perm{display:flex;align-items:flex-start;gap:10px;}
+  .permission-strip .perm i{color:var(--gold);font-size:15px;margin-top:3px;}
+  .permission-strip .perm b{display:block;font-size:13.5px;}
+  .permission-strip .perm span{display:block;font-size:11.5px;color:#93a6c2;line-height:1.55;margin-top:1px;}
+
+  /* ===== Architecture ===== */
+  .arch-wrap{display:grid;grid-template-columns:1.08fr .92fr;gap:34px;margin-top:16px;}
+  .layer{
+    display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:13px;
+    background:rgba(255,255,255,.06);border:1px solid var(--line);
+  }
+  .layer .n{width:31px;height:31px;border-radius:9px;background:rgba(245,179,1,.14);border:1px solid rgba(245,179,1,.25);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;font-weight:900;flex:0 0 auto;}
+  .layer .t{font-size:15.5px;font-weight:800;}
+  .layer .s{font-size:11.5px;color:#8fa2bf;margin-top:2px;}
+  .arrow{text-align:center;color:rgba(245,179,1,.55);font-size:13px;line-height:1;margin:3px 0;}
+  .arch-note{font-size:13.5px;color:#a8b8d4;line-height:1.8;margin-top:12px;}
+  .arch-note code{color:var(--gold2);background:rgba(245,179,1,.08);padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12px;}
+
+  /* ===== Journey ===== */
+  .journey{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:28px;}
+  .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px 15px;min-height:162px;}
+  .step .step-no{position:absolute;top:12px;inset-inline-end:14px;font-size:11px;font-weight:900;color:#7d90ad;}
+  .step .step-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(245,179,1,.12);border:1px solid rgba(245,179,1,.24);color:var(--gold);font-size:16px;margin-bottom:13px;}
+  .step h3{font-size:16px;margin:0 0 5px;font-weight:800;}
+  .step p{font-size:12.5px;color:#9fb1cd;line-height:1.6;margin:0;}
+  .journey-note{margin-top:19px;display:flex;gap:14px;align-items:center;padding:13px 17px;border-radius:13px;background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.2);font-size:14px;color:#b9e9d7;}
+  .cases-title{margin-top:20px;font-size:13px;font-weight:800;letter-spacing:.08em;color:#8fa2bf;}
+  .cases{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:9px;}
+  .case{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);}
+  .case i{font-size:14px;margin-top:3px;flex:0 0 auto;}
+  .case b{display:block;font-size:12.5px;}
+  .case span{display:block;font-size:10.8px;color:#93a6c2;line-height:1.5;margin-top:1px;}
+
+  /* ===== Credit ===== */
+  .credit-wrap{display:grid;grid-template-columns:.92fr 1.08fr;gap:28px;margin-top:14px;align-items:start;}
+  .rules{display:flex;flex-direction:column;gap:9px;}
+  .rule{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);}
+  .rule .ico{flex:0 0 auto;width:29px;height:29px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(245,179,1,.12);color:var(--gold);font-size:12px;}
+  .rule b{display:block;font-size:14.5px;line-height:1.45;}
+  .rule span{display:block;font-size:12px;color:#99abc7;line-height:1.55;margin-top:2px;}
+  .credit-visual{position:relative;}
+  .credit-visual .shot img{height:404px;object-fit:cover;object-position:top center;}
+  .due-float{position:absolute;inset-inline-start:16px;bottom:52px;padding:11px 15px;border-radius:12px;background:rgba(8,16,31,.94);border:1px solid rgba(245,179,1,.4);box-shadow:0 12px 30px rgba(0,0,0,.4);backdrop-filter:blur(6px);}
+  .due-float span{display:block;font-size:10.5px;color:#9fb1cd;}
+  .due-float b{display:block;font-size:23px;color:var(--gold);line-height:1.25;}
+  .due-float small{display:block;font-size:9.5px;color:#85e1bf;margin-top:1px;}
+  .shot{border-radius:13px;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:#fff;box-shadow:0 14px 30px rgba(0,0,0,.25);}
+  .shot img{display:block;width:100%;height:auto;object-fit:cover;object-position:top center;}
+  .shot figcaption{background:#0f1c32;color:#b6c5dc;font-size:11.5px;padding:7px 9px;}
+
+  /* ===== Commission ===== */
+  .commission{display:grid;grid-template-columns:.92fr 1.08fr;gap:32px;align-items:center;margin-top:6px;}
+  .shot-lg{border-radius:17px;overflow:hidden;border:1px solid rgba(255,255,255,.17);box-shadow:0 24px 50px rgba(0,0,0,.34);background:#0d1728;}
+  .shot-lg img{display:block;width:100%;height:390px;object-fit:cover;object-position:top center;}
+  .formula{margin:18px 0;padding:15px 17px;border-radius:13px;background:rgba(245,179,1,.08);border:1px dashed rgba(245,179,1,.38);color:#ffe9a8;font-size:16px;line-height:1.7;}
+  .formula b{color:var(--gold2);}
+  .stat-row{display:flex;gap:11px;margin-top:14px;}
+  .stat{flex:1;background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:12px;padding:11px 12px;}
+  .stat .num{font-size:20px;font-weight:900;color:var(--gold);}
+  .stat .lbl{font-size:11px;color:#96a9c5;margin-top:2px;}
+
+  /* ===== Orders ===== */
+  .order-shots{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+  .order-shots .shot img{height:296px;}
+  .flowline{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:16px;padding:12px 16px;border-radius:14px;background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.2);}
+  .flowline .fr{font-size:12.5px;color:#c5d8f3;white-space:nowrap;}
+  .flowline .fa{color:rgba(96,165,250,.7);font-size:11px;}
+
+  /* ===== Quality ===== */
+  .quality{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:17px;}
+  .q-card{padding:15px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line);}
+  .q-card .qi{color:var(--gold);font-size:17px;margin-bottom:8px;}
+  .q-card h3{font-size:15px;margin:0 0 4px;}
+  .q-card p{font-size:11.8px;line-height:1.6;color:#94a7c3;margin:0;}
+  .test-strip{display:flex;gap:12px;align-items:center;margin-top:13px;padding:11px 16px;border-radius:12px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);font-size:13px;color:#bfeada;}
+  .test-strip b{color:var(--green);}
+
+  /* ===== Database ===== */
+  .db-wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-top:17px;}
+  .db-group{padding:15px 15px 13px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid var(--line);}
+  .db-group h3{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px;}
+  .db-group h3 i{color:var(--gold);font-size:13px;}
+  .entity{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:rgba(255,255,255,.05);margin:5px 0;font-size:11.5px;color:#c9d6e9;}
+  .entity small{font-size:9.5px;color:#7f93b1;}
+  .db-note{margin-top:13px;display:flex;gap:10px;flex-wrap:wrap;}
+  .db-note span{font-size:11.5px;padding:5px 9px;border-radius:7px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.18);color:#b9d2f2;}
+  .db-why{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:16px;}
+  .db-why .dw{display:flex;gap:10px;align-items:flex-start;padding:12px 13px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);}
+  .db-why .dw i{color:var(--gold);font-size:14px;margin-top:3px;}
+  .db-why .dw b{display:block;font-size:12.5px;}
+  .db-why .dw span{display:block;font-size:10.8px;color:#93a6c2;line-height:1.5;margin-top:1px;}
+
+  /* ===== Tech ===== */
+  .tech-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;margin-top:16px;}
+  .tech-group{margin-bottom:14px;}
+  .tech-group h3{font-size:13px;color:#8fa2bf;margin:0 0 8px;letter-spacing:.04em;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.065);border:1px solid var(--line);font-size:11.5px;color:#c6d4e8;}
+  .chip b{color:var(--gold2);}
+  .deploy{padding:20px;border-radius:16px;background:linear-gradient(150deg,rgba(37,99,235,.16),rgba(255,255,255,.04));border:1px solid rgba(96,165,250,.22);}
+  .deploy h3{font-size:19px;margin:0 0 8px;}
+  .deploy p{font-size:13px;line-height:1.7;color:#b7c8e1;margin:0 0 11px;}
+  .deploy .row{display:flex;gap:8px;align-items:center;font-size:12.5px;color:#c6d4e8;margin:7px 0;}
+  .deploy .row i{color:var(--green);width:14px;}
+
+  /* ===== Closing ===== */
+  .closing{display:grid;grid-template-columns:1.02fr .98fr;gap:32px;margin-top:12px;align-items:start;}
+  .demo-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed rgba(255,255,255,.1);}
+  .demo-step:last-child{border-bottom:none;}
+  .demo-step .time{flex:0 0 46px;font-size:11px;font-weight:900;color:var(--gold);padding-top:2px;}
+  .demo-step b{display:block;font-size:14.5px;}
+  .demo-step span{display:block;font-size:12px;color:#94a7c3;line-height:1.55;margin-top:2px;}
+  .links{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+  .link-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.055);border:1px solid var(--line);font-size:12.5px;color:#d0dcee;direction:ltr;text-align:left;}
+  .link-row i{color:var(--gold);font-size:15px;flex:0 0 auto;}
+  .link-row span{direction:rtl;text-align:right;}
+  .thank{font-size:44px;font-weight:900;margin:0 0 6px;}
+  .thank span{color:var(--gold);}
+
+  @media print{
+    body{background:#fff;}
+    .deck{display:block;padding:0;gap:0;}
+    .slide{margin:0;border:none;box-shadow:none;page-break-after:always;break-after:page;}
+    .slide:last-child{page-break-after:auto;break-after:auto;}
+  }
+  @page{size:13.333in 7.5in;margin:0;}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1 · COVER -->
+  <section class="slide cover">
+    <div class="cover-inner">
+      <div class="brand">
+        <div class="logo-mark">TX</div>
+        <div>
+          <div class="brand-name">TechXpress</div>
+          <div class="brand-sub">متجر الإلكترونيات الأول</div>
+        </div>
+      </div>
+      <div class="cover-copy">
+        <div class="badge"><i class="fa-solid fa-graduation-cap"></i> مشروع تخرج — DEPI 2026</div>
+        <h1>منصة تجارة إلكترونية <span>متكاملة</span></h1>
+        <p class="sub">دفع آمن عبر Stripe، محفظة أرباح للبائعين، عمولة منصة قابلة للتتبع، ونظام نقاط استرداد يُستخدم في أي عملية شراء مستقبلية.</p>
+        <div class="chips">
+          <span class="pill"><i class="fa-brands fa-microsoft gold"></i> ASP.NET Core MVC 8</span>
+          <span class="pill"><i class="fa-solid fa-database gold"></i> EF Core + SQL Server</span>
+          <span class="pill"><i class="fa-solid fa-shield-halved gold"></i> Identity &amp; Roles</span>
+          <span class="pill"><i class="fa-solid fa-credit-card gold"></i> Stripe Test Mode</span>
+        </div>
+      </div>
+      <div class="cover-meta">
+        <div>إعداد: <b>أحمد الروديني</b> — الدفعة الرابعة</div>
+        <div>github.com/ahmadalrudiny/Techxpress_DEPI_Project</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · PROBLEM & GOALS -->
+  <section class="slide">
+    <div class="kicker">01 · المشكلة والفرصة</div>
+    <h2>سوق يحتاج منصة واحدة <span class="thin">تجمع البائع والعميل والثقة</span></h2>
+    <p class="lead">التجارة الإلكترونية المحلية تعاني من تشتت البائعين وضعف أدوات المتابعة، بينما يحتاج العميل إلى دفع آمن وتعويض عادل وسهل عند الإلغاء أو الإرجاع.</p>
+
+    <div class="split-problem">
+      <div class="card">
+        <h3><i class="fa-solid fa-triangle-exclamation red"></i> نقاط الألم</h3>
+        <ul class="clean problem-list">
+          <li>بائعون متعددون بلا متجر موحّد أو محفظة أرباح واضحة.</li>
+          <li>دفع تقليدي بلا بوابة آمنة أو تأكيد فوري للعملية.</li>
+          <li>صعوبة تتبع الطلب على مستوى البائع والعميل والإدارة.</li>
+          <li>تعويض الإلغاء والإرجاع غير مرن ولا يمكن إعادة استخدامه.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><i class="fa-solid fa-bullseye gold"></i> أهداف المشروع</h3>
+        <ul class="clean">
+          <li>متجر واحد للبائعين المعتمدين مع إدارة كاملة للمنتجات والطلبات.</li>
+          <li>دفع Stripe آمن، وتأكيد دفع لا يُنشئ طلبات مكررة.</li>
+          <li>محفظة أرباح للبائع وعمولة منصة محسوبة على كل بند.</li>
+          <li>نقاط استرداد 1:1 بالدولار تُستخدم في أي شراء لاحق.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><div class="num">3</div><div class="lbl">أدوار رئيسية: عميل · بائع · إدارة</div></div>
+      <div class="metric"><div class="num">10%</div><div class="lbl">عمولة منصة على قيمة البنود</div></div>
+      <div class="metric"><div class="num">1:1</div><div class="lbl">نقطة استرداد = دولار أمريكي</div></div>
+      <div class="metric"><div class="num">165</div><div class="lbl">اختبارًا آليًا ناجحًا</div></div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · العرض التقديمي</div><div>02 / 12</div></div>
+  </section>
+
+  <!-- 3 · ROLES -->
+  <section class="slide">
+    <div class="kicker">02 · أصحاب المصلحة</div>
+    <h2>ثلاث تجارب <span class="thin">مصممة حول احتياج كل دور</span></h2>
+    <div class="roles">
+      <div class="card role-card">
+        <div class="icon-badge"><i class="fa-solid fa-user"></i></div>
+        <h3>العميل</h3>
+        <div class="role-en">Customer</div>
+        <ul class="clean">
+          <li>تصفح وبحث وسلة ومفضلة وتقييمات.</li>
+          <li>دفع آمن أو استخدام رصيد النقاط.</li>
+          <li>تتبع الطلب وإلغاؤه أو إرجاعه.</li>
+        </ul>
+        <span class="pill"><i class="fa-solid fa-wallet gold"></i> رصيد نقاط وشفافية كاملة</span>
+      </div>
+      <div class="card role-card vendor">
+        <div class="icon-badge" style="background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.26);color:var(--blue)"><i class="fa-solid fa-store"></i></div>
+        <h3>البائع</h3>
+        <div class="role-en">Vendor</div>
+        <ul class="clean">
+          <li>إدارة منتجاته ومخزونه وطلباته.</li>
+          <li>تحديث شحن كل بند على حدة.</li>
+          <li>متابعة محفظة الأرباح والعمولات.</li>
+        </ul>
+        <span class="pill"><i class="fa-solid fa-truck-fast blue"></i> شحن دقيق لكل OrderDetail</span>
+      </div>
+      <div class="card role-card admin">
+        <div class="icon-badge" style="background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.26);color:var(--green)"><i class="fa-solid fa-user-shield"></i></div>
+        <h3>الإدارة</h3>
+        <div class="role-en">Administrator</div>
+        <ul class="clean">
+          <li>اعتماد البائعين وإدارة المستخدمين والكتالوج.</li>
+          <li>مراجعة الطلبات وحالاتها والمرتجعات.</li>
+          <li>متابعة المبيعات وعمولة المنصة.</li>
+        </ul>
+        <span class="pill"><i class="fa-solid fa-chart-line green"></i> رقابة تشغيلية ومالية</span>
+      </div>
+    </div>
+    <div class="permission-strip">
+      <div class="perm"><i class="fa-solid fa-lock"></i><div><b>عزل الصلاحيات</b><span>كل دور يرى بياناته فقط: العميل طلباته، والبائع بنوده، والإدارة الجميع.</span></div></div>
+      <div class="perm"><i class="fa-solid fa-user-check"></i><div><b>حساب موقوف = لا دخول</b><span>يُمنع تسجيل الدخول بكلمة المرور أو Google، مع رسالة واضحة.</span></div></div>
+      <div class="perm"><i class="fa-solid fa-shield-halved"></i><div><b>تحقق ملكية الموارد</b><span>لا يمكن الوصول لطلب أو منتج بائع آخر عبر تغيير المعرّف.</span></div></div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · تحليل أصحاب المصلحة</div><div>03 / 12</div></div>
+  </section>
+
+  <!-- 4 · ARCHITECTURE -->
+  <section class="slide">
+    <div class="kicker">03 · البنية المعمارية</div>
+    <h2>فصل واضح للمسؤوليات <span class="thin">من الواجهة إلى قاعدة البيانات</span></h2>
+    <div class="arch-wrap">
+      <div>
+        <div class="layer"><div class="n">01</div><div><div class="t">MVC Controllers + Razor Views</div><div class="s">واجهة عربية RTL · Bootstrap · jQuery · Toastr</div></div></div>
+        <div class="arrow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="layer"><div class="n">02</div><div><div class="t">Service Layer</div><div class="s">قواعد العمل · التحقق · إرجاع (Success, Message)</div></div></div>
+        <div class="arrow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="layer"><div class="n">03</div><div><div class="t">Unit of Work</div><div class="s">معاملة واحدة لكل عملية · حفظ منسّق</div></div></div>
+        <div class="arrow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="layer"><div class="n">04</div><div><div class="t">Repositories</div><div class="s">قراءات AsNoTracking · استعلامات معزولة</div></div></div>
+        <div class="arrow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="layer"><div class="n">05</div><div><div class="t">EF Core 8 → SQL Server</div><div class="s">20 كيانًا · علاقات · فهارس فريدة</div></div></div>
+      </div>
+      <div>
+        <div class="card">
+          <h3><i class="fa-solid fa-circle-check green"></i> التزامات معمارية</h3>
+          <ul class="clean">
+            <li>لا وصول مباشر إلى <code style="color:var(--gold2)">DbContext</code> أو UoW من Controllers.</li>
+            <li>جميع القراءات غير المتتبعة تستخدم <code style="color:var(--gold2)">AsNoTracking()</code>.</li>
+            <li>كل POST محمي بـ <code style="color:var(--gold2)">[ValidateAntiForgeryToken]</code>.</li>
+            <li>صلاحيات <code style="color:var(--gold2)">[Authorize(Roles=...)]</code> لكل مسار إداري أو بائع.</li>
+            <li>الأسرار في User Secrets / Azure App Settings فقط.</li>
+          </ul>
+        </div>
+        <div class="arch-note"><i class="fa-solid fa-diagram-project gold"></i> نمط الاعتماد: DI عبر الواجهات، وخدمات غير مترابطة، وقابلية اختبار عالية عبر Moq و SQLite in-memory.</div>
+      </div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Controller → Service → UoW → Repository</div><div>04 / 12</div></div>
+  </section>
+
+  <!-- 5 · JOURNEY -->
+  <section class="slide">
+    <div class="kicker">04 · رحلة العميل</div>
+    <h2>من التصفح إلى ما بعد الشراء <span class="thin">تجربة واحدة متماسكة</span></h2>
+    <div class="journey">
+      <div class="step"><div class="step-no">01</div><div class="step-ico"><i class="fa-solid fa-magnifying-glass"></i></div><h3>تصفح واختيار</h3><p>بحث وفلترة حسب الفئة والسعر، وصفحة منتج غنية بالتقييمات.</p></div>
+      <div class="step"><div class="step-no">02</div><div class="step-ico"><i class="fa-solid fa-cart-shopping"></i></div><h3>سلة ومفضلة</h3><p>تعديل الكميات، كود خصم، وحفظ المنتجات في قائمة الرغبات.</p></div>
+      <div class="step"><div class="step-no">03</div><div class="step-ico"><i class="fa-solid fa-credit-card"></i></div><h3>دفع مرن</h3><p>Stripe للبطاقة، أو خصم رصيد النقاط، أو الجمع بينهما.</p></div>
+      <div class="step"><div class="step-no">04</div><div class="step-ico"><i class="fa-solid fa-receipt"></i></div><h3>تأكيد الطلب</h3><p>تأكيد فوري بعد نجاح الدفع، وتفريغ السلة في هذه المرحلة فقط.</p></div>
+      <div class="step"><div class="step-no">05</div><div class="step-ico"><i class="fa-solid fa-rotate-left"></i></div><h3>تتبع وإرجاع</h3><p>متابعة الشحن، إلغاء أو إرجاع، واسترداد تلقائي كرصيد نقاط.</p></div>
+    </div>
+    <div class="journey-note">
+      <i class="fa-solid fa-lock" style="font-size:18px;color:var(--green)"></i>
+      <span><b>السلة لا تُفرَّغ عند فشل الدفع أو الإلغاء.</b> يتم تفريغها فقط بعد تأكيد Stripe المؤكد، مع صفحة خطأ مخصصة عند تعذر التحويل إلى Stripe.</span>
+    </div>
+    <div class="cases-title">أربع حالات دفع مغطاة في الاختبارات</div>
+    <div class="cases">
+      <div class="case"><i class="fa-solid fa-credit-card green"></i><div><b>بطاقة كاملة</b><span>Stripe Checkout ثم تأكيد فوري</span></div></div>
+      <div class="case"><i class="fa-solid fa-wallet gold"></i><div><b>رصيد فقط</b><span>طلب مدفوع فورًا بلا Stripe</span></div></div>
+      <div class="case"><i class="fa-solid fa-scale-balanced blue"></i><div><b>رصيد + بطاقة</b><span>خصم الرصيد ثم دفع الفرق</span></div></div>
+      <div class="case"><i class="fa-solid fa-rotate-right red"></i><div><b>إعادة المحاولة</b><span>استئناف الجلسة أو تأكيدها</span></div></div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · رحلة الشراء</div><div>05 / 12</div></div>
+  </section>
+
+  <!-- 6 · STORE CREDIT -->
+  <section class="slide">
+    <div class="kicker">05 · الابتكار الأول</div>
+    <h2>نقاط استرداد <span class="thin">تعويض عادل قابل لإعادة الاستخدام</span></h2>
+    <div class="credit-wrap">
+      <div class="rules">
+        <div class="rule"><div class="ico"><i class="fa-solid fa-dollar-sign"></i></div><div><b>1 نقطة = 1 دولار</b><span>رصيد ثابت القيمة، بلا تعقيد أو أسعار صرف.</span></div></div>
+        <div class="rule"><div class="ico"><i class="fa-solid fa-cart-plus"></i></div><div><b>يُستخدم في أي شراء لاحق</b><span>يُخصم تلقائيًا أو عند اختياره في صفحة إتمام الطلب.</span></div></div>
+        <div class="rule"><div class="ico"><i class="fa-solid fa-arrows-rotate"></i></div><div><b>إلغاء طلب قيد الانتظار</b><span>يُعاد الرصيد المحجوز كاملًا، دون خسارة للعميل.</span></div></div>
+        <div class="rule"><div class="ico"><i class="fa-solid fa-rotate-left"></i></div><div><b>إلغاء مدفوع أو إرجاع مُسلّم</b><span>تُعاد كامل القيمة — نقدًا ورصيدًا — كنقاط جديدة.</span></div></div>
+        <div class="rule"><div class="ico"><i class="fa-solid fa-bolt"></i></div><div><b>طلب مغطى بالكامل</b><span>يُسجَّل مدفوعًا فورًا دون فتح جلسة Stripe.</span></div></div>
+      </div>
+      <div class="credit-visual">
+        <figure class="shot">
+          <img src="assets/credit.png" alt="سجل رصيد النقاط"><figcaption><i class="fa-solid fa-clock-rotate-left gold"></i> سجل شفاف: استخدام، استرداد، وتعديل إداري</figcaption>
+        </figure>
+        <div class="due-float"><span>المبلغ المستحق بعد الرصيد</span><b>$0.00</b><small><i class="fa-solid fa-circle-check"></i> خصم كامل من النقاط</small></div>
+      </div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Store Credit &amp; Refunds</div><div>06 / 12</div></div>
+  </section>
+
+  <!-- 7 · COMMISSION -->
+  <section class="slide">
+    <div class="kicker">06 · الابتكار الثاني</div>
+    <h2>عمولة منصة <span class="thin">محسوبة مرة واحدة، وقابلة للعكس بأمان</span></h2>
+    <div class="commission">
+      <div>
+        <p class="lead" style="font-size:16px">تُسجَّل العمولة على مستوى كل <b style="color:#fff">OrderDetail</b>، لا على إجمالي الطلب، لتبقى دقيقة حتى مع تعدد البائعين والبنود والمرتجعات.</p>
+        <div class="formula">العمولة = قيمة البند × <b>10%</b><br><span style="font-size:13px;color:#becee6">Platform:CommissionRate — قابلة للضبط من الإعدادات</span></div>
+        <ul class="clean">
+          <li>تُحتسب فقط على الطلبات المؤكدة (Paid / Shipped / Delivered).</li>
+          <li>عكس idempotent عند الإلغاء أو الإرجاع، بلا ازدواج.</li>
+          <li>لوحة الإدارة تعرض المبيعات، الأكثر مبيعًا، المناطق، المصروفات وصافي الربح.</li>
+        </ul>
+        <div class="stat-row">
+          <div class="stat"><div class="num">$3.51</div><div class="lbl">عمولة معروضة في العرض الحي</div></div>
+          <div class="stat"><div class="num">10.0%</div><div class="lbl">من إجمالي المبيعات المؤكدة</div></div>
+          <div class="stat"><div class="num">0</div><div class="lbl">عمولات مزدوجة أو يتيمة</div></div>
+        </div>
+      </div>
+      <figure class="shot-lg"><img src="assets/admin-dashboard.png" alt="لوحة تحكم الإدارة مع عمولة المنصة"><figcaption style="background:#0f1c32;color:#aebed8;font-size:11.5px;padding:8px 11px"><i class="fa-solid fa-chart-pie gold"></i> لوحة الإدارة: مبيعات حسب السنة، عمولة، مصروفات، صافي ربح، والأكثر مبيعًا</figcaption></figure>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Platform Earnings</div><div>07 / 12</div></div>
+  </section>
+
+  <!-- 8 · ORDERS & SHIPPING -->
+  <section class="slide">
+    <div class="kicker">07 · التشغيل</div>
+    <h2>إدارة الطلبات والشحن <span class="thin">على مستوى البند والطلب معًا</span></h2>
+    <p class="lead" style="font-size:16px">البائع يحدّث شحن كل بند: Pending → Preparing → Shipped → Delivered. تتقدم حالة الطلب تلقائيًا فقط عندما تتقدم جميع بنوده، وتُدار المرتجعات والإلغاءات مركزيًا.</p>
+    <div class="order-shots">
+      <figure class="shot"><img src="assets/admin-orders.png" alt="إدارة الطلبات"><figcaption><i class="fa-solid fa-list-check gold"></i> إدارة الطلبات: حالات، إلغاء، وتحديث فوري</figcaption></figure>
+      <figure class="shot"><img src="assets/admin-order.png" alt="تفاصيل طلب مرتجع"><figcaption><i class="fa-solid fa-rotate-left red"></i> طلب مُرتجع: استرداد كامل القيمة كنقاط</figcaption></figure>
+    </div>
+    <div class="flowline">
+      <span class="fr"><i class="fa-solid fa-box"></i> بند: Pending</span><span class="fa">←</span>
+      <span class="fr">Preparing</span><span class="fa">←</span>
+      <span class="fr">Shipped</span><span class="fa">←</span>
+      <span class="fr">Delivered</span>
+      <span style="margin-inline-start:auto;font-size:11.5px;color:#8fa2bf">حالة الطلب تتقدم عندما تتقدم كل البنود</span>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Vendor Shipping &amp; Returns</div><div>08 / 12</div></div>
+  </section>
+
+  <!-- 9 · QUALITY -->
+  <section class="slide">
+    <div class="kicker">08 · الأمان والجودة</div>
+    <h2>ثقة تُبنى في كل طبقة <span class="thin">من تسجيل الدخول إلى السجل</span></h2>
+    <div class="quality">
+      <div class="q-card"><div class="qi"><i class="fa-solid fa-fingerprint"></i></div><h3>Identity &amp; Roles</h3><p>ثلاثة أدوار، حسابات موقوفة لا تسجل الدخول — بكلمة المرور أو Google.</p></div>
+      <div class="q-card"><div class="qi"><i class="fa-brands fa-google"></i></div><h3>Google OAuth</h3><p>تسجيل عبر Google من الإعدادات فقط، مع تعطيل واضح عند غياب الإعداد.</p></div>
+      <div class="q-card"><div class="qi"><i class="fa-solid fa-shield-halved"></i></div><h3>حماية الطلبات</h3><p>Anti-forgery لكل POST، وتحقق ملكية الموارد، ومنع الوصول غير المصرح.</p></div>
+      <div class="q-card"><div class="qi"><i class="fa-solid fa-key"></i></div><h3>إدارة الأسرار</h3><p>Stripe وGoogle في User Secrets محليًا وAzure App Settings عند النشر.</p></div>
+      <div class="q-card"><div class="qi"><i class="fa-solid fa-file-lines"></i></div><h3>Serilog + Middleware</h3><p>سجلات يومية، Request Logging، وتسجيل الاستثناءات مع الموقع الدقيق.</p></div>
+      <div class="q-card"><div class="qi"><i class="fa-solid fa-vial-circle-check"></i></div><h3>اختبارات موثوقة</h3><p>xUnit + Moq + SQLite in-memory، تغطي الدفع والرصيد والعمولة والإرجاع.</p></div>
+    </div>
+    <div class="test-strip"><i class="fa-solid fa-circle-check"></i> <span><b>165/165</b> اختبارًا ناجحًا · <b>0</b> أخطاء و<b>0</b> تحذيرات في البناء · دفع تجريبي مُختبر يدويًا من البداية للنهاية</span></div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Security &amp; Quality</div><div>09 / 12</div></div>
+  </section>
+
+  <!-- 10 · DATABASE -->
+  <section class="slide">
+    <div class="kicker">09 · قاعدة البيانات</div>
+    <h2>تصميم <span class="thin">يحمي سلامة المال والطلب</span></h2>
+    <div class="db-wrap">
+      <div class="db-group">
+        <h3><i class="fa-solid fa-users"></i> الهوية والوصول</h3>
+        <div class="entity"><span>AspNetUsers</span><small>Identity</small></div>
+        <div class="entity"><span>AspNetRoles</span><small>3 أدوار</small></div>
+        <div class="entity"><span>Vendors</span><small>1:1 مع المستخدم</small></div>
+        <div class="entity"><span>VendorRequests</span><small>طلب اعتماد</small></div>
+        <div class="entity"><span>ContactMessages</span><small>دعم</small></div>
+      </div>
+      <div class="db-group">
+        <h3><i class="fa-solid fa-boxes-stacked"></i> الكتالوج والطلبات</h3>
+        <div class="entity"><span>Categories</span><small>1:N</small></div>
+        <div class="entity"><span>Products</span><small>حذف منطقي</small></div>
+        <div class="entity"><span>Orders</span><small>حالة + دفع</small></div>
+        <div class="entity"><span>OrderDetails</span><small>بند لكل بائع</small></div>
+        <div class="entity"><span>Reviews / Wishlists</span><small>تفاعل العميل</small></div>
+      </div>
+      <div class="db-group">
+        <h3><i class="fa-solid fa-coins"></i> المال والنقاط</h3>
+        <div class="entity"><span>Payments</span><small>Stripe / Credit</small></div>
+        <div class="entity"><span>WalletTransactions</span><small>أرباح البائع</small></div>
+        <div class="entity"><span>PayoutRequests</span><small>سحب</small></div>
+        <div class="entity"><span>StoreCreditTransactions</span><small>سجل الرصيد</small></div>
+        <div class="entity"><span>PlatformEarnings</span><small>عمولة لكل بند</small></div>
+        <div class="entity"><span>PlatformExpenses</span><small>مصروفات تشغيلية</small></div>
+      </div>
+    </div>
+    <div class="db-note">
+      <span><i class="fa-solid fa-link"></i> Order 1 → N OrderDetails</span>
+      <span><i class="fa-solid fa-link"></i> OrderDetail 1 → 1 PlatformEarning</span>
+      <span><i class="fa-solid fa-shield"></i> فهرس فريد للاسترداد لكل بند/طلب</span>
+      <span><i class="fa-solid fa-shield"></i> عكس العمولة مرة واحدة فقط</span>
+    </div>
+    <div class="db-why">
+      <div class="dw"><i class="fa-solid fa-key"></i><div><b>فهارس فريدة</b><span>تمنع تكرار العمولة أو استرداد النقاط لنفس الطلب.</span></div></div>
+      <div class="dw"><i class="fa-solid fa-calculator"></i><div><b>دقة مالية</b><span>Decimal(18,2) لكل المبالغ، ونسبة عمولة Decimal(9,4).</span></div></div>
+      <div class="dw"><i class="fa-solid fa-clock-rotate-left"></i><div><b>تاريخ كامل</b><span>تاريخ الإنشاء والعكس لكل عمولة ومصروف للمراجعة.</span></div></div>
+      <div class="dw"><i class="fa-solid fa-link-slash"></i><div><b>حذف آمن</b><span>Restrict على السجلات المالية، وحذف منطقي للمنتجات.</span></div></div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Database Design</div><div>10 / 12</div></div>
+  </section>
+
+  <!-- 11 · TECH & CONSTRAINTS -->
+  <section class="slide">
+    <div class="kicker">10 · التقنيات والجاهزية</div>
+    <h2>مكدس تقني <span class="thin">ملتزم بالقيود ومهيأ للنشر</span></h2>
+    <div class="tech-wrap">
+      <div>
+        <div class="tech-group"><h3>الواجهة</h3><div class="chips"><span class="chip"><b>Razor</b> MVC</span><span class="chip">Bootstrap 5</span><span class="chip">jQuery</span><span class="chip">DataTables</span><span class="chip">Toastr</span><span class="chip">RTL / عربي</span></div></div>
+        <div class="tech-group"><h3>الخلفية</h3><div class="chips"><span class="chip">ASP.NET Core <b>8</b></span><span class="chip">EF Core 8</span><span class="chip">LINQ</span><span class="chip">async / await</span><span class="chip">DI</span></div></div>
+        <div class="tech-group"><h3>البيانات والدفع</h3><div class="chips"><span class="chip">SQL Server</span><span class="chip">Identity</span><span class="chip">Stripe <b>Test</b></span><span class="chip">HttpClient</span></div></div>
+        <div class="tech-group"><h3>الجودة</h3><div class="chips"><span class="chip">xUnit</span><span class="chip">Moq</span><span class="chip">SQLite in-memory</span><span class="chip">Serilog</span></div></div>
+        <div class="chips" style="margin-top:4px"><span class="pill"><i class="fa-solid fa-ban red"></i> لا SignalR / Redis / Chart.js</span><span class="pill"><i class="fa-solid fa-ban red"></i> لا AutoMapper / MediatR</span></div>
+      </div>
+      <div class="deploy">
+        <div class="icon-badge" style="margin-bottom:12px"><i class="fa-brands fa-microsoft"></i></div>
+        <h3>جاهزية النشر على Azure</h3>
+        <p>التطبيق مهيأ للنشر على Azure App Service مع Azure SQL، ونقل الأسرار إلى App Settings بدل ملفات الإعداد.</p>
+        <div class="row"><i class="fa-solid fa-circle-check"></i> App Service (Windows · .NET 8)</div>
+        <div class="row"><i class="fa-solid fa-circle-check"></i> Azure SQL + Connection String</div>
+        <div class="row"><i class="fa-solid fa-circle-check"></i> Stripe / Google / Commission في App Settings</div>
+        <div class="row"><i class="fa-solid fa-circle-check"></i> سجلات Serilog على الخادم</div>
+        <div class="row" style="margin-top:12px;color:#8fa2bf"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> النشر السحابي يُستكمل عند توفر بيانات الاشتراك.</div>
+      </div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · Stack &amp; Deployment</div><div>11 / 12</div></div>
+  </section>
+
+  <!-- 12 · CLOSING -->
+  <section class="slide">
+    <div class="kicker">11 · العرض الحي والخاتمة</div>
+    <h2>ست دقائق <span class="thin">تُظهر الفكرة كاملة</span></h2>
+    <div class="closing">
+      <div>
+        <div class="demo-step"><div class="time">0:00</div><div><b>تسجيل الدخول كعميل</b><span>إظهار الرصيد المتاح وسجل النقاط.</span></div></div>
+        <div class="demo-step"><div class="time">0:45</div><div><b>تصفح وإضافة للسلة</b><span>بحث وفلترة، ثم الانتقال لإتمام الطلب.</span></div></div>
+        <div class="demo-step"><div class="time">1:30</div><div><b>دفع كامل من النقاط</b><span>المبلغ المستحق $0.00، دون تحويل إلى Stripe.</span></div></div>
+        <div class="demo-step"><div class="time">2:30</div><div><b>تحليلات لوحة الإدارة</b><span>فلتر السنة، الأكثر مبيعًا، المناطق، المصروفات وصافي الربح.</span></div></div>
+        <div class="demo-step"><div class="time">3:45</div><div><b>إلغاء الطلب واسترداد النقاط</b><span>عودة القيمة كاملة إلى رصيد العميل.</span></div></div>
+        <div class="demo-step"><div class="time">5:30</div><div><b>شحن البائع والخلاصة</b><span>تحديث شحن البند ثم ما يميز TechXpress والأسئلة.</span></div></div>
+      </div>
+      <div>
+        <div class="card" style="padding:20px 22px">
+          <h3 style="font-size:17px"><i class="fa-solid fa-link gold"></i> روابط التسليم</h3>
+          <div class="links">
+            <div class="link-row"><i class="fa-brands fa-github"></i><span>github.com/ahmadalrudiny/Techxpress_DEPI_Project</span></div>
+            <div class="link-row"><i class="fa-solid fa-file-pdf"></i><span>docs/TechXpress-Documentation.pdf — 57 صفحة</span></div>
+            <div class="link-row"><i class="fa-solid fa-file-lines"></i><span>docs/TechXpress-Presentation.pdf — 12 شريحة</span></div>
+            <div class="link-row"><i class="fa-solid fa-video"></i><span>فيديو العرض التجريبي — 6 إلى 8 دقائق (مرفق)</span></div>
+          </div>
+        </div>
+        <div style="margin-top:18px;padding:15px 17px;border-radius:13px;background:rgba(245,179,1,.08);border:1px solid rgba(245,179,1,.24);font-size:12.5px;line-height:1.7;color:#e7d9a7">
+          <i class="fa-solid fa-lightbulb gold"></i> <b>الرسالة الأخيرة:</b> TechXpress لا يبيع منتجات فقط؛ بل يبني دورة ثقة كاملة بين العميل والبائع والمنصة — دفع آمن، عمولة عادلة، وتعويض قابل لإعادة الاستخدام.
+        </div>
+        <div class="thank" style="margin-top:20px">شكرًا <span>لكم</span></div>
+        <div style="color:#8fa2bf;font-size:12.5px">أسئلة؟ · TechXpress — DEPI 2026</div>
+      </div>
+    </div>
+    <div class="slide-foot"><div><b>TechXpress</b> · شكرًا</div><div>12 / 12</div></div>
+  </section>
+
+</div>
+</body>
+</html>

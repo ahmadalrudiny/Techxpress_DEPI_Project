@@ -1043,6 +1043,22 @@ body:not(.theme-dark) .table > tbody > tr.table-secondary .text-muted { color: #
 .dataTables_wrapper .dataTables_info,
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter { color: inherit; }
+
+/* RTL: طول الصفحة يمينًا والبحث يسارًا، مع منع التفاف عناصر التحكم */
+.dataTables_wrapper::after { content: ""; display: block; clear: both; }
+body .dataTables_wrapper .dataTables_filter { float: left; text-align: left; }
+body .dataTables_wrapper .dataTables_length { float: right; }
+.dataTables_wrapper .dataTables_filter label,
+.dataTables_wrapper .dataTables_length label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  white-space: nowrap;
+}
+.dataTables_wrapper .dataTables_filter input { margin: 0 !important; width: 220px; max-width: 55vw; }
+#ordersTable_wrapper { padding: 0.6rem 0.75rem 0; }
+#ordersTable_wrapper table { margin-top: 0.55rem; }
 body.theme-dark table.dataTable thead th { background: #131d33; color: #fff; }
 body.theme-dark table.dataTable tbody tr { border-bottom-color: var(--tx-line); }
 
@@ -1054,6 +1070,14 @@ body.theme-dark table.dataTable tbody tr { border-bottom-color: var(--tx-line); 
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+/* قائمة الطلبات: إبقاء أدوات تغيير الحالة بجانب زر التفاصيل */
+#ordersTable td:last-child { white-space: nowrap; }
+#ordersTable .status-select {
+  width: auto;
+  min-width: 130px;
+  display: inline-block;
 }
 
 /* ===== 14. Footer ===== */
@@ -1308,6 +1332,56 @@ body.admin-shell {
   color: var(--tx-ink);
 }
 .admin-layout { display: flex; min-height: 100vh; }
+
+/* Dashboard analytics — sales, expenses, products, regions */
+.dash-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.9rem;margin-bottom:1.4rem;}
+.dash-kpi{position:relative;overflow:hidden;background:linear-gradient(145deg,#101d33,#0b1424);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:1rem 1.1rem;min-height:104px;}
+.dash-kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--gold);opacity:.85;}
+.dash-kpi.kpi-green::before{background:var(--green);} .dash-kpi.kpi-red::before{background:var(--red);} .dash-kpi.kpi-blue::before{background:var(--blue);}
+.dash-kpi .lbl{display:block;font-size:.73rem;font-weight:800;letter-spacing:.04em;color:#93a5c2;}
+.dash-kpi .val{display:block;font-size:1.55rem;font-weight:900;color:#fff;line-height:1.25;margin-top:.25rem;letter-spacing:-.02em;}
+.dash-kpi .sub{display:block;font-size:.7rem;color:#8093b1;margin-top:.25rem;line-height:1.5;}
+.dash-kpi .ico{position:absolute;top:.9rem;inset-inline-end:.9rem;color:rgba(245,179,1,.45);font-size:1rem;}
+.dash-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:1.2rem;margin-bottom:1.4rem;}
+.dash-panel{background:#0c1729;border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.14);}
+.dash-panel-head{padding:.9rem 1.15rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.dash-panel-head h2{font-size:.98rem;font-weight:800;color:#f2f6fd;margin:0;display:flex;align-items:center;gap:.5rem;}
+.dash-panel-head h2 i{color:var(--gold);}
+.dash-panel-head .hint{font-size:.7rem;color:#8497b4;}
+.dash-panel-body{padding:.85rem 1.15rem;}
+.dash-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.dash-table th{font-size:.68rem;font-weight:800;color:#8fa2bf;text-transform:uppercase;letter-spacing:.03em;padding:.45rem .35rem;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;}
+.dash-table td{padding:.55rem .35rem;border-bottom:1px solid rgba(255,255,255,.055);color:#d7e2f3;vertical-align:middle;}
+.dash-table tr:last-child td{border-bottom:none;}
+.dash-table .rank{width:24px;height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(245,179,1,.12);color:var(--gold);font-size:.7rem;font-weight:900;}
+.dash-table .money{font-weight:800;color:#ffd257;white-space:nowrap;}
+.dash-table .units{font-weight:800;color:#e9f1ff;}
+.dash-empty{text-align:center;padding:1.2rem .5rem;color:#8093b1;font-size:.78rem;}
+.region-block{padding:.15rem 0 .55rem;}
+.region-block + .region-block{border-top:1px dashed rgba(255,255,255,.09);margin-top:.5rem;padding-top:.75rem;}
+.region-block h4{font-size:.72rem;font-weight:800;color:#9db0cc;margin:0 0 .45rem;display:flex;align-items:center;gap:.4rem;}
+.region-block h4 .dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+.region-block.bottom h4 .dot{background:var(--red);}
+.region-row{display:flex;align-items:center;gap:.55rem;margin:.38rem 0;font-size:.76rem;color:#c9d6e8;}
+.region-row .name{flex:0 0 84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.region-row .bar{flex:1;height:7px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;}
+.region-row .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#f5b301,#ffd257);}
+.region-block.bottom .region-row .bar span{background:linear-gradient(90deg,#fb7185,#fda4af);}
+.region-row .amt{flex:0 0 66px;text-align:end;font-weight:800;color:#e9f1ff;font-size:.72rem;}
+.expense-layout{display:grid;grid-template-columns:.95fr 1.05fr;gap:1.2rem;margin-bottom:1.4rem;}
+.expense-form{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
+.expense-form .full{grid-column:1/-1;}
+.expense-form label{display:block;font-size:.68rem;font-weight:700;color:#93a5c2;margin-bottom:.2rem;}
+.expense-form .form-control,.expense-form .form-select{background:#0a1424;border:1px solid rgba(255,255,255,.12);color:#eaf2ff;font-size:.78rem;padding:.42rem .55rem;}
+.expense-form .form-control:focus,.expense-form .form-select:focus{border-color:rgba(245,179,1,.6);box-shadow:0 0 0 .15rem rgba(245,179,1,.12);}
+.expense-list{width:100%;border-collapse:collapse;font-size:.76rem;}
+.expense-list td{padding:.45rem .25rem;border-bottom:1px solid rgba(255,255,255,.06);color:#c9d6e8;vertical-align:middle;}
+.expense-list tr:last-child td{border-bottom:none;}
+.expense-list .tag{font-size:.65rem;padding:.15rem .4rem;border-radius:6px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);color:#bcd6f8;white-space:nowrap;}
+.expense-list .amt{font-weight:800;color:#fda4af;white-space:nowrap;}
+@media (max-width:1199.98px){.dash-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media (max-width:991.98px){.dash-grid,.expense-layout{grid-template-columns:1fr;}}
+@media (max-width:575.98px){.dash-kpis{grid-template-columns:1fr 1fr;}.expense-form{grid-template-columns:1fr;}.region-row .name{flex-basis:70px;}}
 
 /* Dashboard revenue card — paid orders only */
 .revenue-card {

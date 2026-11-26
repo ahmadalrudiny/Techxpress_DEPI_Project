@@ -80,7 +80,7 @@
                     </dd>
 
                     <dt class="col-sm-5 text-muted">تاريخ الطلب</dt>
-                    <dd class="col-sm-7 text-dark">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</dd>
+                    <dd class="col-sm-7 text-dark" dir="ltr">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</dd>
 
                     <dt class="col-sm-5 text-muted">الحالة الحالية</dt>
                     <dd class="col-sm-7"><span class="badge @StatusBadge(Model.Status)">@StatusText(Model.Status)</span></dd>
@@ -137,7 +137,14 @@
                                 }
 
                                 var isSelected = Model.Status == status;
-                                <option value="@status" selected="@isSelected">@StatusText(status)</option>
+                                @if (isSelected)
+                                {
+                                    <option value="@status" selected>@StatusText(status)</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@StatusText(status)</option>
+                                }
                             }
                         </select>
                         <button type="submit" class="btn btn-warning fw-bold">

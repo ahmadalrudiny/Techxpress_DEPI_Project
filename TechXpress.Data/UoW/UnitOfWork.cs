@@ -23,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
     public IPersistentCartRepository PersistentCarts { get; }
     public IStoreCreditRepository StoreCredits { get; }
     public IGenericRepository<PlatformEarning> PlatformEarnings { get; }
+    public IGenericRepository<PlatformExpense> PlatformExpenses { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -40,6 +41,7 @@ public class UnitOfWork : IUnitOfWork
         PersistentCarts = new PersistentCartRepository(context);
         StoreCredits = new StoreCreditRepository(context);
         PlatformEarnings = new GenericRepository<PlatformEarning>(context);
+        PlatformExpenses = new GenericRepository<PlatformExpense>(context);
     }
 
     public async Task<int> SaveChangesAsync()

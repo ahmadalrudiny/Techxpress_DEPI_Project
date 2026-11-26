@@ -17,6 +17,7 @@ public interface IUnitOfWork : IDisposable
     IPersistentCartRepository PersistentCarts { get; }
     IStoreCreditRepository StoreCredits { get; }
     IGenericRepository<PlatformEarning> PlatformEarnings { get; }
+    IGenericRepository<PlatformExpense> PlatformExpenses { get; }
 
     Task<int> SaveChangesAsync();
 

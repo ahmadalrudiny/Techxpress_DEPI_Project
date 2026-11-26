@@ -54,7 +54,7 @@
                                 <small class="text-muted">@o.CustomerEmail</small>
                             </td>
                             <td>
-                                <span class="text-muted small">@o.OrderDate.ToString("yyyy/MM/dd HH:mm")</span>
+                                <span class="text-muted small" dir="ltr">@o.OrderDate.ToString("yyyy/MM/dd HH:mm")</span>
                             </td>
                             <td class="text-center fw-bold">$@((o.TotalAmount + o.StoreCreditUsed).ToString("F2"))</td>
                             <td class="text-center">
@@ -106,7 +106,14 @@
                                                 OrderStatus.Returned => "مُرتجع",
                                                 _ => status.ToString()
                                             };
-                                            <option value="@status" selected="@isSelected">@statusLabel</option>
+                                            if (isSelected)
+                                            {
+                                                <option value="@status" selected>@statusLabel</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@status">@statusLabel</option>
+                                            }
                                         }
                                     </select>
                                 </form>

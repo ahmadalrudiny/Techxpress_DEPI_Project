@@ -273,7 +273,7 @@
                             {
                                 var positive = tx.Amount >= 0;
                                 <tr>
-                                    <td class="text-nowrap">@tx.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td class="text-nowrap" dir="ltr">@tx.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
                                     <td>
                                         <span class="credit-type">
                                             <i class="fas @TypeIcon(tx.Type)"></i>@TypeText(tx.Type)

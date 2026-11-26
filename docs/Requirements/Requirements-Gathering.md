@@ -158,6 +158,14 @@
 | FR-44 | The admin panel shall present pending payout requests and allow administrators to approve or reject requests after confirming manual bank/wallet transfers. |
 | FR-45 | Upon payout approval, the system shall deduct the requested amount from the vendor's `WalletBalance` and mark the transaction as `Completed`. |
 
+### 3.9 Admin Analytics, Expenses & Net Profit
+| ID | Requirement |
+|---|---|
+| FR-46 | The admin dashboard shall filter confirmed sales, platform commission, expenses, and analytics by year, with an "all years" option. |
+| FR-47 | The dashboard shall rank the best-selling products by units sold and revenue for the selected period. |
+| FR-48 | The dashboard shall show the highest and lowest purchasing governorates/regions, derived from the shipping address of confirmed orders. |
+| FR-49 | The admin shall record and delete operating expenses (category, amount, date, notes); net profit shall equal platform commission minus expenses and platform-funded discounts. |
+
 ---
 
 ## 4. Non-Functional Requirements

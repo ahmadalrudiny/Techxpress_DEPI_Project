@@ -8,6 +8,7 @@ public interface IOrderRepository : IGenericRepository<Order>
     Task<Order?> GetByIdForUserAsync(int id, string userId);       // للعميل (يمنع رؤية طلب غيره)
     Task<IEnumerable<Order>> GetByUserIdAsync(string userId);      // سجل طلبات عميل
     Task<IEnumerable<Order>> GetAllWithUsersAsync();               // كل الطلبات للأدمن
+    Task<IEnumerable<Order>> GetAllWithDetailsForAnalyticsAsync(); // كل الطلبات مع البنود والمنتجات للتحليلات
     Task<IEnumerable<OrderDetail>> GetOrderDetailsByVendorIdAsync(int vendorId); // طلبات بائع محدد
 
     /// <summary>الطلبات التي تحتوي على منتجات بائع معيّن، مع بنود ذلك البائع فقط.</summary>

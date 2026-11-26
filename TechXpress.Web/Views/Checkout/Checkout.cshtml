@@ -300,7 +300,7 @@
                             </div>
                         }
 
-                        <div class="stripe-info-box mb-4">
+                        <div class="stripe-info-box mb-4" id="stripeNote">
                             <div class="d-flex align-items-start gap-2">
                                 <i class="fas fa-circle-info mt-1" style="color: var(--navy);"></i>
                                 <span>ستتم إعادة توجيهك إلى <strong>Stripe</strong> لإتمام عملية الدفع بشكل آمن ومشفّر. لا يتم تخزين بيانات بطاقتك على خوادمنا.</span>
@@ -344,7 +344,9 @@
             var availableCredit = @Model.AvailableCredit.ToString(System.Globalization.CultureInfo.InvariantCulture);
             $("#useStoreCredit").on("change", function () {
                 var applied = this.checked ? Math.min(availableCredit, total) : 0;
-                $("#amountDue").text("$" + (total - applied).toFixed(2));
+                var remaining = total - applied;
+                $("#amountDue").text("$" + remaining.toFixed(2));
+                $("#stripeNote").toggle(remaining > 0.009);
             }).trigger("change");
         });
     </script>

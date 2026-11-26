@@ -1,12 +1,19 @@
 @model DashboardViewModel
+@using System.Globalization
 @using TechXpress.Web.Areas.Admin.Models
 @using TechXpress.Services.Models
 @{
     ViewData["Title"] = "لوحة التحكم - TechXpress Admin";
     Layout = "_AdminLayout";
-}
 
-@* Dashboard summary *@
+    var maxTopRegion = Model.TopRegions.Any() ? Model.TopRegions.Max(r => r.Sales) : 0m;
+    var maxBottomRegion = Model.BottomRegions.Any() ? Model.BottomRegions.Max(r => r.Sales) : 0m;
+    var netProfitText = Model.NetProfit < 0
+        ? "-$" + Math.Abs(Model.NetProfit).ToString("N2", CultureInfo.InvariantCulture)
+        : "$" + Model.NetProfit.ToString("N2", CultureInfo.InvariantCulture);
+    string BarWidth(decimal value, decimal max)
+        => max <= 0 ? "0" : (value / max * 100m).ToString("0", CultureInfo.InvariantCulture);
+}
 
 <!-- Dashboard Header -->
 <div class="page-head mb-4">
@@ -15,9 +22,20 @@
         <h1>لوحة التحكم</h1>
         <p>مرحباً @(User.Identity?.Name ?? "مدير") — إدارة متجر TechXpress من مكان واحد</p>
     </div>
-    <div class="page-head-actions">
-        <a asp-action="Index" asp-controller="Dashboard" class="btn btn-outline-warning btn-sm fw-bold">
-            <i class="fas fa-sync-alt me-1"></i>تحديث البيانات
+    <div class="page-head-actions d-flex align-items-center gap-2 flex-wrap">
+        <form method="get" asp-action="Index" asp-controller="Dashboard" class="d-flex align-items-center gap-2">
+            <label for="yearFilter" class="small fw-bold mb-0" style="color:#93a5c2;">السنة</label>
+            <select id="yearFilter" name="year" class="form-select form-select-sm" style="min-width:165px;background:#0b1424;color:#eaf2ff;border-color:rgba(245,179,1,.35);" onchange="this.form.submit()">
+                <option value="" selected="@(Model.SelectedYear.HasValue ? null : "selected")">كل السنوات</option>
+                @foreach (var y in Model.AvailableYears)
+                {
+                    <option value="@y.Year" selected="@(Model.SelectedYear == y.Year ? "selected" : null)">@y.Year — $@y.TotalSales.ToString("N2")</option>
+                }
+            </select>
+            <noscript><button type="submit" class="btn btn-sm btn-outline-warning">تطبيق</button></noscript>
+        </form>
+        <a asp-action="Index" asp-controller="Dashboard" asp-route-year="@Model.SelectedYear" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="fas fa-sync-alt me-1"></i>تحديث
         </a>
     </div>
 </div>
@@ -25,39 +43,51 @@
 <!-- Revenue: paid orders only -->
 <div class="revenue-card mb-4">
     <div>
-        <span class="revenue-label">إجمالي المبيعات المؤكدة</span>
+        <span class="revenue-label">إجمالي المبيعات المؤكدة @(Model.SelectedYear.HasValue ? $"خلال {Model.SelectedYear}" : "— كل السنوات")</span>
         <h2 class="revenue-value">$@Model.TotalSales.ToString("N2")</h2>
         <span class="revenue-note">
-            @Model.PaidOrders طلب مدفوع — الطلبات غير المدفوعة (قيد الانتظار) والملغاة لا تُحتسب
+            @Model.PaidOrders طلب مدفوع — الطلبات غير المدفوعة (قيد الانتظار) والملغاة لا تُحتسب.
         </span>
     </div>
     <div class="revenue-icon" aria-hidden="true"><i class="fas fa-sack-dollar"></i></div>
 </div>
 
-<!-- Platform commission -->
-<div class="card border-secondary shadow-sm mb-5" style="background:#0C223F;">
-    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3 p-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="rounded-3 d-flex align-items-center justify-content-center"
-                 style="width:56px;height:56px;background:rgba(250,247,242,.12);border:1px solid rgba(250,247,242,.2);color:#FAF7F2;font-size:22px;">
-                <i class="fas fa-percent"></i>
-            </div>
-            <div>
-                <div class="text-uppercase small fw-bold" style="color:#cbd5e1;letter-spacing:.5px;">عمولة الموقع</div>
-                <div class="fw-bold text-white" style="font-size:26px;">$@Model.PlatformRevenue.ToString("N2")</div>
-                <div class="small" style="color:#94a3b8;">
-                    تُحتسب على الطلبات المؤكدة فقط، وتُلغى تلقائيًا عند إلغاء أو إرجاع الطلب.
-                </div>
-            </div>
-        </div>
-        <span class="badge" style="background:rgba(250,247,242,.16);color:#FAF7F2;font-size:12.5px;padding:8px 14px;">
-            نسبة العمولة الحالية: @((Model.TotalSales > 0 ? (Model.PlatformRevenue / Model.TotalSales * 100m) : 0m).ToString("N1"))%
-        </span>
+<!-- Financial KPIs -->
+<div class="dash-kpis">
+    <div class="dash-kpi">
+        <i class="fas fa-chart-line ico"></i>
+        <span class="lbl">إجمالي المبيعات</span>
+        <strong class="val">$@Model.TotalSales.ToString("N2")</strong>
+        <span class="sub">@Model.PaidOrders طلب مؤكد</span>
+    </div>
+    <div class="dash-kpi kpi-blue">
+        <i class="fas fa-percent ico"></i>
+        <span class="lbl">عمولة المنصة</span>
+        <strong class="val">$@Model.PlatformRevenue.ToString("N2")</strong>
+        <span class="sub">@((Model.TotalSales > 0 ? (Model.PlatformRevenue / Model.TotalSales * 100m) : 0m).ToString("N1"))% من المبيعات</span>
+    </div>
+    <div class="dash-kpi">
+        <i class="fas fa-hand-holding-dollar ico"></i>
+        <span class="lbl">مستحقات البائعين</span>
+        <strong class="val">$@Model.VendorPayable.ToString("N2")</strong>
+        <span class="sub">قيمة البنود قبل التخفيضات بعد العمولة</span>
+    </div>
+    <div class="dash-kpi kpi-red">
+        <i class="fas fa-file-invoice-dollar ico"></i>
+        <span class="lbl">المصروفات</span>
+        <strong class="val">$@Model.TotalExpenses.ToString("N2")</strong>
+        <span class="sub">مصروفات تشغيلية مسجلة</span>
+    </div>
+    <div class="dash-kpi @(Model.NetProfit >= 0 ? "kpi-green" : "kpi-red")">
+        <i class="fas fa-scale-balanced ico"></i>
+        <span class="lbl">صافي الربح</span>
+        <strong class="val @(Model.NetProfit >= 0 ? "text-success" : "text-danger")"><span dir="ltr">@netProfitText</span></strong>
+        <span class="sub">بعد المصروفات والخصومات (<span dir="ltr">$@Model.Discounts.ToString("N2", CultureInfo.InvariantCulture)</span>)</span>
     </div>
 </div>
 
 <!-- Stats Cards -->
-<div class="row g-4 mb-5">
+<div class="row g-4 mb-4">
     <div class="col-md-3 col-lg-3">
         <div class="stat-card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift">
             <div class="d-flex justify-content-between align-items-start">
@@ -112,10 +142,193 @@
     </div>
 </div>
 
+<!-- Best-selling products + regions -->
+<div class="dash-grid">
+    <div class="dash-panel">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-ranking-star"></i> المنتجات الأكثر مبيعًا</h2>
+            <span class="hint">حسب عدد الوحدات في الطلبات المؤكدة</span>
+        </div>
+        <div class="dash-panel-body">
+            @if (Model.BestSellingProducts.Any())
+            {
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px;">#</th>
+                            <th>المنتج</th>
+                            <th style="width:64px;">الوحدات</th>
+                            <th style="width:86px;">الإيراد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var rank = 0; }
+                        @foreach (var product in Model.BestSellingProducts)
+                        {
+                            rank++;
+                            <tr>
+                                <td><span class="rank">@rank</span></td>
+                                <td>@product.ProductName</td>
+                                <td><span class="units">@product.UnitsSold</span></td>
+                                <td><span class="money">$@product.Revenue.ToString("N2")</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="dash-empty"><i class="fas fa-box-open d-block mb-2"></i>لا توجد مبيعات مؤكدة في الفترة المختارة.</div>
+            }
+        </div>
+    </div>
+
+    <div class="dash-panel">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-location-dot"></i> المناطق الأعلى والأقل شراءً</h2>
+            @if (Model.UnknownRegionOrders > 0)
+            {
+                <span class="hint">@Model.UnknownRegionOrders طلب بعنوان غير محدد</span>
+            }
+        </div>
+        <div class="dash-panel-body">
+            <div class="region-block">
+                <h4><span class="dot"></span> الأعلى مبيعًا</h4>
+                @if (Model.TopRegions.Any())
+                {
+                    @foreach (var region in Model.TopRegions)
+                    {
+                        <div class="region-row" title="@region.Region — @region.Orders طلب">
+                            <span class="name">@region.Region</span>
+                            <span class="bar"><span style="width:@BarWidth(region.Sales, maxTopRegion)%;"></span></span>
+                            <span class="amt">$@region.Sales.ToString("N2")</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="dash-empty py-2">لا توجد عناوين شحن معروفة بعد.</div>
+                }
+            </div>
+            <div class="region-block bottom">
+                <h4><span class="dot"></span> الأقل مبيعًا</h4>
+                @if (Model.BottomRegions.Any())
+                {
+                    @foreach (var region in Model.BottomRegions)
+                    {
+                        <div class="region-row" title="@region.Region — @region.Orders طلب">
+                            <span class="name">@region.Region</span>
+                            <span class="bar"><span style="width:@BarWidth(region.Sales, maxBottomRegion)%;"></span></span>
+                            <span class="amt">$@region.Sales.ToString("N2")</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="dash-empty py-2">لا توجد عناوين شحن معروفة بعد.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expenses & net profit -->
+<div class="expense-layout">
+    <div class="dash-panel">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-plus-circle"></i> تسجيل مصروف تشغيلي</h2>
+            <span class="hint">يُخصم من عمولة المنصة</span>
+        </div>
+        <div class="dash-panel-body">
+            <form method="post" asp-action="AddExpense" asp-controller="Dashboard">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="year" value="@Model.SelectedYear" />
+                <div class="expense-form">
+                    <div class="full">
+                        <label for="expenseTitle">عنوان المصروف</label>
+                        <input id="expenseTitle" name="title" class="form-control" maxlength="150" required placeholder="مثال: استضافة الخادم — نوفمبر" />
+                    </div>
+                    <div>
+                        <label for="expenseCategory">التصنيف</label>
+                        <select id="expenseCategory" name="category" class="form-select" required>
+                            <option value="استضافة">استضافة</option>
+                            <option value="تسويق">تسويق</option>
+                            <option value="شحن">شحن</option>
+                            <option value="رواتب">رواتب</option>
+                            <option value="عمولات">عمولات</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="expenseAmount">القيمة ($)</label>
+                        <input id="expenseAmount" name="amount" type="number" min="0.01" step="0.01" class="form-control" required placeholder="0.00" />
+                    </div>
+                    <div>
+                        <label for="expenseDate">التاريخ</label>
+                        <input id="expenseDate" name="expenseDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="full">
+                        <label for="expenseNotes">ملاحظات (اختياري)</label>
+                        <input id="expenseNotes" name="notes" class="form-control" maxlength="500" placeholder="تفاصيل إضافية..." />
+                    </div>
+                    <div class="full">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">
+                            <i class="fas fa-save me-1"></i>تسجيل المصروف
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="dash-panel">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-list-ul"></i> آخر المصروفات</h2>
+            <span class="hint">الإجمالي: $@Model.TotalExpenses.ToString("N2")</span>
+        </div>
+        <div class="dash-panel-body">
+            @if (Model.RecentExpenses.Any())
+            {
+                <table class="expense-list">
+                    <tbody>
+                        @foreach (var expense in Model.RecentExpenses)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold" style="color:#eaf2ff;">@expense.Title</div>
+                                    <div class="small" style="color:#8093b1;">
+                                        <span class="tag">@expense.Category</span>
+                                        <span dir="ltr">@expense.ExpenseDate.ToString("yyyy/MM/dd")</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">$@expense.Amount.ToString("N2")</td>
+                                <td style="width:36px;">
+                                    <form method="post" asp-action="DeleteExpense" asp-controller="Dashboard" onsubmit="return confirm('هل تريد حذف هذا المصروف؟');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@expense.Id" />
+                                        <input type="hidden" name="year" value="@Model.SelectedYear" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف" aria-label="حذف المصروف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="dash-empty"><i class="fas fa-receipt d-block mb-2"></i>لا توجد مصروفات مسجلة في هذه الفترة.</div>
+            }
+        </div>
+    </div>
+</div>
+
 <!-- Quick Actions -->
-<div class="row g-4 mb-5">
+<div class="row g-4 mb-4">
     <div class="col-lg-3 col-md-6">
-        <a asp-action="Index" asp-controller="Products" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
+        <a asp-action="Index" asp-controller="Products" asp-area="Admin" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
             <div class="d-flex align-items-center">
                 <div class="bg-warning text-dark rounded-circle p-3 me-3">
                     <i class="fas fa-box fa-2x"></i>
@@ -128,7 +341,7 @@
         </a>
     </div>
     <div class="col-lg-3 col-md-6">
-        <a asp-action="Index" asp-controller="Categories" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
+        <a asp-action="Index" asp-controller="Categories" asp-area="Admin" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
             <div class="d-flex align-items-center">
                 <div class="bg-info text-dark rounded-circle p-3 me-3">
                     <i class="fas fa-tags fa-2x"></i>
@@ -141,7 +354,7 @@
         </a>
     </div>
     <div class="col-lg-3 col-md-6">
-        <a asp-action="Index" asp-controller="Orders" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
+        <a asp-action="Index" asp-controller="Orders" asp-area="Admin" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
             <div class="d-flex align-items-center">
                 <div class="bg-primary text-white rounded-circle p-3 me-3">
                     <i class="fas fa-shopping-cart fa-2x"></i>
@@ -154,7 +367,7 @@
         </a>
     </div>
     <div class="col-lg-3 col-md-6">
-        <a asp-action="Index" asp-controller="VendorRequests" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
+        <a asp-action="Index" asp-controller="VendorRequests" asp-area="Admin" class="card bg-dark border-secondary p-4 rounded-3 shadow-sm hover-lift text-decoration-none">
             <div class="d-flex align-items-center">
                 <div class="bg-secondary text-white rounded-circle p-3 me-3">
                     <i class="fas fa-user-plus fa-2x"></i>
@@ -170,75 +383,76 @@
 
 <!-- Recent Orders Table -->
 <div class="card border-secondary shadow-sm">
-    <div class="card-header bg-dark border-secondary py-3">
+    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
         <h2 class="h5 fw-bold text-white mb-0"><i class="fas fa-clock me-2"></i>آخر الطلبات</h2>
+        <a asp-action="Index" asp-controller="Orders" asp-area="Admin" class="btn btn-sm btn-outline-warning">كل الطلبات</a>
     </div>
     <div class="card-body p-0">
         @if (Model.RecentOrders != null && Model.RecentOrders.Any())
         {
             <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-secondary text-white">
-                    <tr>
-                        <th>رقم الطلب</th>
-                        <th>العميل</th>
-                        <th>المبلغ</th>
-                        <th>الحالة</th>
-                        <th>التاريخ</th>
-                        <th class="text-end">إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var order in Model.RecentOrders.Take(5))
-                    {
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-secondary text-white">
                         <tr>
-                            <td>
-                                <span class="fw-bold text-dark">#@order.Id</span>
-                            </td>
-                            <td>
-                                <span class="text-dark fw-semibold">@(string.IsNullOrWhiteSpace(order.CustomerName) ? "غير محدد" : order.CustomerName)</span>
-                                <br />
-                                <span class="text-muted small">@(order.CustomerEmail ?? "")</span>
-                            </td>
-                            <td>
-                                <span class="fw-bold">$@((order.TotalAmount + order.StoreCreditUsed).ToString("F2"))</span>
-                            </td>
-                            <td>
-                                @switch (order.Status)
-                                {
-                                    case TechXpress.Data.Entities.OrderStatus.Pending:
-                                        <span class="badge bg-warning text-dark">قيد الانتظار</span>
-                                        break;
-                                    case TechXpress.Data.Entities.OrderStatus.Paid:
-                                        <span class="badge bg-primary">تم الدفع</span>
-                                        break;
-                                    case TechXpress.Data.Entities.OrderStatus.Shipped:
-                                        <span class="badge bg-info">تم الشحن</span>
-                                        break;
-                                    case TechXpress.Data.Entities.OrderStatus.Delivered:
-                                        <span class="badge bg-success">تم التوصيل</span>
-                                        break;
-                                    case TechXpress.Data.Entities.OrderStatus.Cancelled:
-                                        <span class="badge bg-danger">ملغي</span>
-                                        break;
-                                    case TechXpress.Data.Entities.OrderStatus.Returned:
-                                        <span class="badge bg-secondary">مُرتجع</span>
-                                        break;
-                                }
-                            </td>
-                            <td>
-                                <span class="text-muted small">@order.OrderDate.ToString("yyyy/MM/dd")</span>
-                            </td>
-                            <td class="text-end">
-                                <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.Id"
-                                   class="btn btn-sm btn-outline-warning" title="عرض تفاصيل الطلب" aria-label="عرض تفاصيل الطلب">
-                                    <i class="fas fa-eye" aria-hidden="true"></i>
-                                </a>
-                            </td>
+                            <th>رقم الطلب</th>
+                            <th>العميل</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th class="text-end">إجراءات</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.RecentOrders.Take(5))
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark">#@order.Id</span>
+                                </td>
+                                <td>
+                                    <span class="text-dark fw-semibold">@(string.IsNullOrWhiteSpace(order.CustomerName) ? "غير محدد" : order.CustomerName)</span>
+                                    <br />
+                                    <span class="text-muted small">@(order.CustomerEmail ?? "")</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">$@((order.TotalAmount + order.StoreCreditUsed).ToString("F2"))</span>
+                                </td>
+                                <td>
+                                    @switch (order.Status)
+                                    {
+                                        case TechXpress.Data.Entities.OrderStatus.Pending:
+                                            <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                                            break;
+                                        case TechXpress.Data.Entities.OrderStatus.Paid:
+                                            <span class="badge bg-primary">تم الدفع</span>
+                                            break;
+                                        case TechXpress.Data.Entities.OrderStatus.Shipped:
+                                            <span class="badge bg-info">تم الشحن</span>
+                                            break;
+                                        case TechXpress.Data.Entities.OrderStatus.Delivered:
+                                            <span class="badge bg-success">تم التوصيل</span>
+                                            break;
+                                        case TechXpress.Data.Entities.OrderStatus.Cancelled:
+                                            <span class="badge bg-danger">ملغي</span>
+                                            break;
+                                        case TechXpress.Data.Entities.OrderStatus.Returned:
+                                            <span class="badge bg-secondary">مُرتجع</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-muted small" dir="ltr">@order.OrderDate.ToString("yyyy/MM/dd")</span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-controller="Orders" asp-action="Details" asp-area="Admin" asp-route-id="@order.Id"
+                                       class="btn btn-sm btn-outline-warning" title="عرض تفاصيل الطلب" aria-label="عرض تفاصيل الطلب">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         }
         else
@@ -250,4 +464,3 @@
         }
     </div>
 </div>
-

@@ -22,6 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<StoreCreditTransaction> StoreCreditTransactions => Set<StoreCreditTransaction>();
     public DbSet<PlatformEarning> PlatformEarnings => Set<PlatformEarning>();
+    public DbSet<PlatformExpense> PlatformExpenses => Set<PlatformExpense>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -172,6 +173,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             // عمولة واحدة لكل بند طلب
             e.HasIndex(p => p.OrderDetailId).IsUnique();
+        });
+
+        // ----- Platform Expenses (مصروفات المنصة) -----
+        builder.Entity<PlatformExpense>(e =>
+        {
+            e.Property(x => x.Title).HasMaxLength(150).IsRequired();
+            e.Property(x => x.Category).HasMaxLength(60).IsRequired();
+            e.Property(x => x.Amount).HasPrecision(18, 2);
+            e.Property(x => x.Notes).HasMaxLength(500);
+            e.Property(x => x.CreatedByUserId).HasMaxLength(450);
+            e.HasIndex(x => x.ExpenseDate);
         });
     }
 }
