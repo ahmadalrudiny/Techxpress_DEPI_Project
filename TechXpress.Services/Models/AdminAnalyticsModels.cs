@@ -30,6 +30,7 @@ public record AdminDashboardAnalyticsDto(
     int? Year,
     IReadOnlyList<SalesYearDto> AvailableYears,
     decimal TotalSales,
+    decimal GrossItemValue,
     decimal PlatformRevenue,
     decimal VendorPayable,
     decimal TotalExpenses,
@@ -40,4 +41,5 @@ public record AdminDashboardAnalyticsDto(
     IReadOnlyList<BestSellingProductDto> BestSellingProducts,
     IReadOnlyList<RegionSalesDto> TopRegions,
     IReadOnlyList<RegionSalesDto> BottomRegions,
-    IReadOnlyList<PlatformExpenseDto> RecentExpenses);
+    IReadOnlyList<PlatformExpenseDto> RecentExpenses,
+    IReadOnlyList<PlatformExpenseDto> Expenses);

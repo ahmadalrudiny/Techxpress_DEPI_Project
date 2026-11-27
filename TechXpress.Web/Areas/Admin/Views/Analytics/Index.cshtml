@@ -1,0 +1,266 @@
+@model AdminDashboardAnalyticsDto
+@using System.Globalization
+@{
+    ViewData["Title"] = "تحليلات المبيعات - TechXpress Admin";
+
+    var culture = CultureInfo.InvariantCulture;
+    string Money(decimal value) => "$" + value.ToString("N2", culture);
+    var periodLabel = Model.Year.HasValue ? $"خلال {Model.Year}" : "— كل السنوات";
+    var netProfitText = Model.NetProfit < 0
+        ? "-" + Money(Math.Abs(Model.NetProfit))
+        : Money(Model.NetProfit);
+    var profitMargin = Model.TotalSales > 0
+        ? Model.NetProfit / Model.TotalSales * 100m
+        : 0m;
+    var maxProductRevenue = Model.BestSellingProducts.Any()
+        ? Model.BestSellingProducts.Max(p => p.Revenue)
+        : 0m;
+    var maxTopRegion = Model.TopRegions.Any() ? Model.TopRegions.Max(r => r.Sales) : 0m;
+    var maxBottomRegion = Model.BottomRegions.Any() ? Model.BottomRegions.Max(r => r.Sales) : 0m;
+
+    string BarWidth(decimal value, decimal max)
+        => max <= 0 ? "0" : (value / max * 100m).ToString("0", culture);
+    string Share(decimal value, decimal total)
+        => total <= 0 ? "0" : (value / total * 100m).ToString("0.0", culture);
+}
+
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-chart-pie"></i></div>
+    <div class="page-head-text">
+        <h1>تحليلات المبيعات</h1>
+        <p>قراءة تفصيلية للأداء المالي والمنتجات والمناطق — نفس فلتر السنة على كل المؤشرات</p>
+    </div>
+    <div class="page-head-actions">
+        <form method="get" asp-action="Index" asp-controller="Analytics" class="year-filter">
+            <label for="analyticsYear">السنة</label>
+            <select id="analyticsYear" name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="" selected="@(Model.Year.HasValue ? null : "selected")">كل السنوات</option>
+                @foreach (var y in Model.AvailableYears)
+                {
+                    <option value="@y.Year" selected="@(Model.Year == y.Year ? "selected" : null)">@y.Year — @Money(y.TotalSales)</option>
+                }
+            </select>
+            <noscript><button type="submit" class="btn btn-sm btn-outline-warning">تطبيق</button></noscript>
+        </form>
+        <a asp-action="Index" asp-controller="Expenses" asp-route-year="@Model.Year" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="fas fa-file-invoice-dollar me-1"></i>إدارة المصروفات
+        </a>
+    </div>
+</div>
+
+<nav class="analytics-jump" aria-label="أقسام التحليلات">
+    <a href="#best-products"><i class="fas fa-ranking-star"></i> الأكثر مبيعًا</a>
+    <a href="#profit"><i class="fas fa-scale-balanced"></i> معادلة الربح</a>
+    <a href="#regions"><i class="fas fa-location-dot"></i> المناطق</a>
+    <a asp-action="Index" asp-controller="Expenses" asp-route-year="@Model.Year"><i class="fas fa-file-invoice-dollar"></i> المصروفات</a>
+</nav>
+
+<section class="analytics-hero">
+    <div class="analytics-hero-main">
+        <span class="analytics-kicker"><i class="fas fa-circle-check"></i> الطلبات المؤكدة فقط</span>
+        <h2>@Money(Model.TotalSales)</h2>
+        <p>إجمالي المبيعات المؤكدة @periodLabel</p>
+        <div class="analytics-hero-meta">
+            <span><strong>@Model.ConfirmedOrders</strong> طلب مؤكد</span>
+            <span>قيمة البنود <strong>@Money(Model.GrossItemValue)</strong></span>
+            <span><strong>@Model.UnknownRegionOrders</strong> عنوان غير محدد</span>
+            <span>Paid / Shipped / Delivered</span>
+        </div>
+    </div>
+    <div class="analytics-hero-profit @(Model.NetProfit >= 0 ? "is-positive" : "is-negative")">
+        <span>صافي الربح</span>
+        <strong dir="ltr">@netProfitText</strong>
+        <small>هامش <span dir="ltr">@profitMargin.ToString("0.0", culture)%</span> من المبيعات</small>
+    </div>
+    <div class="analytics-hero-foot">
+        <i class="fas fa-scale-balanced"></i>
+        <span>صافي الربح = العمولة − المصروفات − الخصومات</span>
+    </div>
+</section>
+
+<div class="dash-kpis analytics-kpis mb-4">
+    <div class="dash-kpi">
+        <i class="fas fa-sack-dollar ico"></i>
+        <span class="lbl">إجمالي المبيعات</span>
+        <strong class="val">@Money(Model.TotalSales)</strong>
+        <span class="sub">@Model.ConfirmedOrders طلب مؤكد</span>
+    </div>
+    <div class="dash-kpi kpi-blue">
+        <i class="fas fa-percent ico"></i>
+        <span class="lbl">عمولة المنصة</span>
+        <strong class="val">@Money(Model.PlatformRevenue)</strong>
+        <span class="sub">@Share(Model.PlatformRevenue, Model.TotalSales)% من المبيعات</span>
+    </div>
+    <div class="dash-kpi">
+        <i class="fas fa-hand-holding-dollar ico"></i>
+        <span class="lbl">مستحقات البائعين</span>
+        <strong class="val">@Money(Model.VendorPayable)</strong>
+        <span class="sub">قيمة البنود بعد العمولة</span>
+    </div>
+    <div class="dash-kpi kpi-red">
+        <i class="fas fa-file-invoice-dollar ico"></i>
+        <span class="lbl">المصروفات</span>
+        <strong class="val">@Money(Model.TotalExpenses)</strong>
+        <span class="sub">@Model.Expenses.Count مصروف مسجل</span>
+    </div>
+    <div class="dash-kpi kpi-red">
+        <i class="fas fa-tags ico"></i>
+        <span class="lbl">الخصومات</span>
+        <strong class="val">@Money(Model.Discounts)</strong>
+        <span class="sub">تتحملها المنصة</span>
+    </div>
+    <div class="dash-kpi @(Model.NetProfit >= 0 ? "kpi-green" : "kpi-red")">
+        <i class="fas fa-scale-balanced ico"></i>
+        <span class="lbl">صافي الربح</span>
+        <strong class="val @(Model.NetProfit >= 0 ? "text-success" : "text-danger")" dir="ltr">@netProfitText</strong>
+        <span class="sub">بعد المصروفات والخصومات</span>
+    </div>
+</div>
+
+<div class="analytics-split">
+    <section class="dash-panel" id="best-products">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-ranking-star"></i> المنتجات الأكثر مبيعًا</h2>
+            <span class="hint">مرتبة بالوحدات في الطلبات المؤكدة</span>
+        </div>
+        <div class="dash-panel-body">
+            @if (Model.BestSellingProducts.Any())
+            {
+                <table class="dash-table analytics-products">
+                    <thead>
+                        <tr>
+                            <th style="width:34px;">#</th>
+                            <th>المنتج</th>
+                            <th style="width:70px;">الوحدات</th>
+                            <th style="width:100px;">الإيراد</th>
+                            <th style="width:100px;">من قيمة البنود</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var rank = 0; }
+                        @foreach (var product in Model.BestSellingProducts)
+                        {
+                            rank++;
+                            <tr>
+                                <td><span class="rank">@rank</span></td>
+                                <td>
+                                    <span class="product-name">@product.ProductName</span>
+                                    <span class="product-bar"><span style="width:@BarWidth(product.Revenue, maxProductRevenue)%;"></span></span>
+                                </td>
+                                <td><span class="units">@product.UnitsSold</span></td>
+                                <td><span class="money">@Money(product.Revenue)</span></td>
+                                <td><span class="share-pill">@Share(product.Revenue, Model.GrossItemValue)%</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="dash-empty"><i class="fas fa-box-open d-block mb-2"></i>لا توجد مبيعات مؤكدة في الفترة المختارة.</div>
+            }
+        </div>
+    </section>
+
+    <section class="dash-panel" id="profit">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-scale-balanced"></i> معادلة صافي الربح</h2>
+            <span class="hint">@periodLabel</span>
+        </div>
+        <div class="dash-panel-body profit-body">
+            <div class="profit-formula">
+                <div class="profit-line">
+                    <span>عمولة المنصة</span>
+                    <strong class="plus" dir="ltr">+@Money(Model.PlatformRevenue)</strong>
+                </div>
+                <div class="profit-line">
+                    <span>المصروفات التشغيلية</span>
+                    <strong class="minus" dir="ltr">−@Money(Model.TotalExpenses)</strong>
+                </div>
+                <div class="profit-line">
+                    <span>الخصومات التي تتحملها المنصة</span>
+                    <strong class="minus" dir="ltr">−@Money(Model.Discounts)</strong>
+                </div>
+                <div class="profit-line total @(Model.NetProfit >= 0 ? "is-positive" : "is-negative")">
+                    <span>صافي الربح</span>
+                    <strong dir="ltr">@netProfitText</strong>
+                </div>
+            </div>
+            <p class="profit-note">
+                <i class="fas fa-circle-info"></i>
+                العمولة محسوبة على قيمة البنود قبل الخصم، ولا تُحتسب الطلبات الملغاة أو المرتجعة.
+            </p>
+            <div class="profit-margin-track">
+                <div class="profit-margin-head">
+                    <span>هامش الربح من المبيعات</span>
+                    <strong class="@(profitMargin >= 0 ? "text-success" : "text-danger")" dir="ltr">@profitMargin.ToString("0.0", culture)%</strong>
+                </div>
+                <span class="profit-margin-bar"><span style="width:@(Math.Min(Math.Abs(profitMargin), 100m).ToString("0", culture))%;"></span></span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="analytics-regions" id="regions">
+    <section class="dash-panel">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-arrow-trend-up"></i> المناطق الأعلى شراءً</h2>
+            <span class="hint">أعلى 5 محافظات</span>
+        </div>
+        <div class="dash-panel-body">
+            @if (Model.TopRegions.Any())
+            {
+                <div class="region-block">
+                    @foreach (var region in Model.TopRegions)
+                    {
+                        <div class="region-row" title="@region.Region — @region.Orders طلب">
+                            <span class="name">@region.Region</span>
+                            <span class="bar"><span style="width:@BarWidth(region.Sales, maxTopRegion)%;"></span></span>
+                            <span class="region-orders">@region.Orders طلب</span>
+                            <span class="amt">@Money(region.Sales)</span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty py-2">لا توجد عناوين شحن معروفة بعد.</div>
+            }
+        </div>
+    </section>
+
+    <section class="dash-panel">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-arrow-trend-down"></i> المناطق الأقل شراءً</h2>
+            <span class="hint">أقل 5 محافظات</span>
+        </div>
+        <div class="dash-panel-body">
+            @if (Model.BottomRegions.Any())
+            {
+                <div class="region-block bottom">
+                    @foreach (var region in Model.BottomRegions)
+                    {
+                        <div class="region-row" title="@region.Region — @region.Orders طلب">
+                            <span class="name">@region.Region</span>
+                            <span class="bar"><span style="width:@BarWidth(region.Sales, maxBottomRegion)%;"></span></span>
+                            <span class="region-orders">@region.Orders طلب</span>
+                            <span class="amt">@Money(region.Sales)</span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty py-2">لا توجد عناوين شحن معروفة بعد.</div>
+            }
+        </div>
+    </section>
+</div>
+
+@if (Model.UnknownRegionOrders > 0)
+{
+    <div class="analytics-note">
+        <i class="fas fa-location-dot"></i>
+        <span>يوجد @Model.UnknownRegionOrders طلبًا بعنوان شحن غير مطابق لأي محافظة معروفة، وتم استبعاده من ترتيب المناطق.</span>
+    </div>
+}

@@ -147,7 +147,9 @@
     <div class="dash-panel">
         <div class="dash-panel-head">
             <h2><i class="fas fa-ranking-star"></i> المنتجات الأكثر مبيعًا</h2>
-            <span class="hint">حسب عدد الوحدات في الطلبات المؤكدة</span>
+            <a class="dash-panel-link" asp-action="Index" asp-controller="Analytics" asp-route-year="@Model.SelectedYear">
+                كل التحليلات <i class="fas fa-arrow-left"></i>
+            </a>
         </div>
         <div class="dash-panel-body">
             @if (Model.BestSellingProducts.Any())
@@ -284,7 +286,12 @@
     <div class="dash-panel">
         <div class="dash-panel-head">
             <h2><i class="fas fa-list-ul"></i> آخر المصروفات</h2>
-            <span class="hint">الإجمالي: $@Model.TotalExpenses.ToString("N2")</span>
+            <div class="dash-panel-tools">
+                <span class="hint">الإجمالي: $@Model.TotalExpenses.ToString("N2")</span>
+                <a class="dash-panel-link" asp-action="Index" asp-controller="Expenses" asp-route-year="@Model.SelectedYear">
+                    إدارة المصروفات <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
         </div>
         <div class="dash-panel-body">
             @if (Model.RecentExpenses.Any())

@@ -32,6 +32,11 @@ public class AdminAnalyticsService : IAdminAnalyticsService
     public async Task<AdminDashboardAnalyticsDto> GetDashboardAnalyticsAsync(int? year)
     {
         var orders = (await _unitOfWork.Orders.GetAllWithDetailsForAnalyticsAsync()).ToList();
+        var allExpenses = await _unitOfWork.PlatformExpenses.Query()
+            .AsNoTracking()
+            .OrderByDescending(e => e.ExpenseDate)
+            .ThenByDescending(e => e.Id)
+            .ToListAsync();
 
         var availableYears = orders
             .GroupBy(o => o.OrderDate.Year)
@@ -39,9 +44,18 @@ public class AdminAnalyticsService : IAdminAnalyticsService
                 g.Key,
                 g.Where(o => ConfirmedStatuses.Contains(o.Status))
                     .Sum(o => o.TotalAmount + o.StoreCreditUsed)))
-            .OrderByDescending(y => y.Year)
             .ToList();
 
+        // السنة قد تحتوي مصروفات فقط، لذلك يجب أن تظهر في الفلتر أيضًا.
+        foreach (var expenseYear in allExpenses.Select(e => e.ExpenseDate.Year).Distinct())
+        {
+            if (!availableYears.Any(y => y.Year == expenseYear))
+            {
+                availableYears.Add(new SalesYearDto(expenseYear, 0m));
+            }
+        }
+
+        availableYears = availableYears.OrderByDescending(y => y.Year).ToList();
         if (availableYears.Count == 0)
         {
             availableYears.Add(new SalesYearDto(DateTime.UtcNow.Year, 0m));
@@ -76,19 +90,17 @@ public class AdminAnalyticsService : IAdminAnalyticsService
         var platformRevenue = earnings.Sum(e => e.Amount);
         var vendorPayable = Math.Max(0m, grossItemValue - platformRevenue);
 
-        var expensesQuery = _unitOfWork.PlatformExpenses.Query().AsNoTracking();
-        if (selectedYear.HasValue)
-        {
-            expensesQuery = expensesQuery.Where(e => e.ExpenseDate.Year == selectedYear.Value);
-        }
-
-        var expenses = await expensesQuery
-            .OrderByDescending(e => e.ExpenseDate)
-            .ThenByDescending(e => e.Id)
-            .ToListAsync();
+        var expenses = selectedYear.HasValue
+            ? allExpenses.Where(e => e.ExpenseDate.Year == selectedYear.Value).ToList()
+            : allExpenses;
 
         var totalExpenses = expenses.Sum(e => e.Amount);
         var netProfit = platformRevenue - totalExpenses - discounts;
+
+        var expenseDtos = expenses
+            .Select(e => new PlatformExpenseDto(
+                e.Id, e.Title, e.Category, e.Amount, e.ExpenseDate, e.Notes))
+            .ToList();
 
         var bestSellingProducts = confirmedOrders
             .SelectMany(o => o.OrderDetails)
@@ -135,6 +147,7 @@ public class AdminAnalyticsService : IAdminAnalyticsService
             selectedYear,
             availableYears,
             totalSales,
+            grossItemValue,
             platformRevenue,
             vendorPayable,
             totalExpenses,
@@ -145,8 +158,8 @@ public class AdminAnalyticsService : IAdminAnalyticsService
             bestSellingProducts,
             topRegions,
             bottomRegions,
-            expenses.Take(8).Select(e => new PlatformExpenseDto(
-                e.Id, e.Title, e.Category, e.Amount, e.ExpenseDate, e.Notes)).ToList());
+            expenseDtos.Take(8).ToList(),
+            expenseDtos);
     }
 
     public async Task<(bool Success, string Message)> AddExpenseAsync(

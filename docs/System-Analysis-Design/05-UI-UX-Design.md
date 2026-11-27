@@ -64,8 +64,11 @@ TechXpress is an Arabic-first marketplace for electronics. The interface is desi
 
 ### 3.3 Admin Layout
 
-- Dark navy sidebar with grouped sections: Overview, Catalog, Operations, Users, Messages.
-- Dashboard uses KPI cards followed by financial analytics, best-selling products, purchasing regions, expense entry, and recent orders.
+- Dark navy sidebar with grouped sections: Overview, Reports & Finance, Catalog, Operations, Users, Messages.
+- The Reports & Finance group exposes **Sales Analytics** and **Operating Expenses** as first-class pages, with the dashboard kept as a summary and quick-entry surface.
+- Dashboard uses KPI cards followed by best-selling products, purchasing regions, expense entry, and recent orders; the financial hero highlights confirmed sales, net profit, and profit margin.
+- Sales Analytics adds a financial summary, product contribution bars, a net-profit formula panel, and separate highest/lowest region rankings.
+- Operating Expenses adds period totals, average expense, top category, a full filterable expense ledger, and category-distribution bars.
 - Destructive actions are separated visually (outline danger) and confirmed before submission.
 
 ## 4. Component Library
@@ -122,6 +125,8 @@ TechXpress is an Arabic-first marketplace for electronics. The interface is desi
 | Screen | Key elements |
 |---|---|
 | Dashboard | Year filter; confirmed sales, platform commission, vendor payable, expenses, net profit; best-selling products; highest/lowest regions; expense entry and history; product/order/vendor/customer counts; recent orders |
+| Sales Analytics | Year filter, financial hero, six KPI cards, product contribution table, net-profit formula, highest/lowest regions, jump navigation |
+| Operating Expenses | Year filter, total/average/top-category/net-profit cards, expense entry form, full expense ledger with delete, category distribution |
 | Orders | DataTable, status dropdown with allowed transitions, cancel, return for delivered orders, details |
 | Order details | Customer, shipping address, items, payment ID, subtotal/discount/credit/cash, status update, return action |
 | Products | DataTable, create/edit, soft delete/restore, category and vendor assignment |

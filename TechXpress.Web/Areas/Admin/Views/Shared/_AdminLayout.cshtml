@@ -43,6 +43,14 @@
                     <i class="fas fa-gauge-high"></i><span>لوحة التحكم</span>
                 </a>
 
+                <span class="admin-nav-label">التقارير والمالية</span>
+                <a class="admin-nav-link @Active("Analytics")" asp-area="Admin" asp-controller="Analytics" asp-action="Index">
+                    <i class="fas fa-chart-pie"></i><span>تحليلات المبيعات</span><span class="nav-badge">جديد</span>
+                </a>
+                <a class="admin-nav-link @Active("Expenses")" asp-area="Admin" asp-controller="Expenses" asp-action="Index">
+                    <i class="fas fa-file-invoice-dollar"></i><span>المصروفات التشغيلية</span>
+                </a>
+
                 <span class="admin-nav-label">الكتالوج</span>
                 <a class="admin-nav-link @Active("Products")" asp-area="Admin" asp-controller="Products" asp-action="Index">
                     <i class="fas fa-box"></i><span>المنتجات</span>

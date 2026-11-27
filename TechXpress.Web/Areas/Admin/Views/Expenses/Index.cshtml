@@ -1,0 +1,221 @@
+@model AdminDashboardAnalyticsDto
+@using System.Globalization
+@{
+    ViewData["Title"] = "المصروفات التشغيلية - TechXpress Admin";
+
+    var culture = CultureInfo.InvariantCulture;
+    string Money(decimal value) => "$" + value.ToString("N2", culture);
+    var periodLabel = Model.Year.HasValue ? $"خلال {Model.Year}" : "— كل السنوات";
+    var expenses = Model.Expenses;
+    var averageExpense = expenses.Count > 0 ? expenses.Average(e => e.Amount) : 0m;
+    var categoryBreakdown = expenses
+        .GroupBy(e => e.Category)
+        .Select(g => new { Category = g.Key, Count = g.Count(), Total = g.Sum(e => e.Amount) })
+        .OrderByDescending(c => c.Total)
+        .ToList();
+    var topCategory = categoryBreakdown.FirstOrDefault();
+    var maxCategoryTotal = categoryBreakdown.Any() ? categoryBreakdown.Max(c => c.Total) : 0m;
+
+    string BarWidth(decimal value, decimal max)
+        => max <= 0 ? "0" : (value / max * 100m).ToString("0", culture);
+}
+
+<div class="page-head mb-4">
+    <div class="page-head-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+    <div class="page-head-text">
+        <h1>المصروفات التشغيلية</h1>
+        <p>سجّل مصروفات المنصة وراجع أثرها المباشر على صافي الربح — @periodLabel</p>
+    </div>
+    <div class="page-head-actions">
+        <form method="get" asp-action="Index" asp-controller="Expenses" class="year-filter">
+            <label for="expensesYear">السنة</label>
+            <select id="expensesYear" name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="" selected="@(Model.Year.HasValue ? null : "selected")">كل السنوات</option>
+                @foreach (var y in Model.AvailableYears)
+                {
+                    <option value="@y.Year" selected="@(Model.Year == y.Year ? "selected" : null)">@y.Year</option>
+                }
+            </select>
+            <noscript><button type="submit" class="btn btn-sm btn-outline-warning">تطبيق</button></noscript>
+        </form>
+        <a asp-action="Index" asp-controller="Analytics" asp-route-year="@Model.Year" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="fas fa-chart-pie me-1"></i>تحليلات المبيعات
+        </a>
+    </div>
+</div>
+
+<div class="expense-summary-grid">
+    <div class="expense-summary-card">
+        <span class="expense-summary-icon red"><i class="fas fa-wallet"></i></span>
+        <div>
+            <span class="lbl">إجمالي المصروفات</span>
+            <strong class="val" dir="ltr">@Money(Model.TotalExpenses)</strong>
+            <small>@expenses.Count مصروف مسجل</small>
+        </div>
+    </div>
+    <div class="expense-summary-card">
+        <span class="expense-summary-icon blue"><i class="fas fa-calculator"></i></span>
+        <div>
+            <span class="lbl">متوسط المصروف</span>
+            <strong class="val" dir="ltr">@Money(averageExpense)</strong>
+            <small>لكل عملية مسجلة</small>
+        </div>
+    </div>
+    <div class="expense-summary-card">
+        <span class="expense-summary-icon gold"><i class="fas fa-layer-group"></i></span>
+        <div>
+            <span class="lbl">التصنيف الأكبر</span>
+            <strong class="val category-val">@(topCategory?.Category ?? "لا يوجد")</strong>
+            <small>@(topCategory != null ? Money(topCategory.Total) : "$0.00")</small>
+        </div>
+    </div>
+    <div class="expense-summary-card">
+        <span class="expense-summary-icon green"><i class="fas fa-scale-balanced"></i></span>
+        <div>
+            <span class="lbl">صافي الربح الحالي</span>
+            <strong class="val @(Model.NetProfit >= 0 ? "text-success" : "text-danger")" dir="ltr">@(Model.NetProfit < 0 ? "-" + Money(Math.Abs(Model.NetProfit)) : Money(Model.NetProfit))</strong>
+            <small>بعد مصروفات الفترة</small>
+        </div>
+    </div>
+</div>
+
+<div class="expense-page-grid">
+    <section class="dash-panel expense-form-card">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-plus-circle"></i> تسجيل مصروف جديد</h2>
+            <span class="hint">يُخصم من عمولة المنصة</span>
+        </div>
+        <div class="dash-panel-body">
+            <form method="post" asp-action="AddExpense" asp-controller="Expenses">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="year" value="@Model.Year" />
+                <div class="expense-form">
+                    <div class="full">
+                        <label for="expenseTitle">عنوان المصروف</label>
+                        <input id="expenseTitle" name="title" class="form-control" maxlength="150" required placeholder="مثال: استضافة الخادم — نوفمبر" />
+                    </div>
+                    <div>
+                        <label for="expenseCategory">التصنيف</label>
+                        <select id="expenseCategory" name="category" class="form-select" required>
+                            <option value="استضافة">استضافة</option>
+                            <option value="تسويق">تسويق</option>
+                            <option value="شحن">شحن</option>
+                            <option value="رواتب">رواتب</option>
+                            <option value="عمولات">عمولات</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="expenseAmount">القيمة ($)</label>
+                        <input id="expenseAmount" name="amount" type="number" min="0.01" step="0.01" class="form-control" required placeholder="0.00" />
+                    </div>
+                    <div>
+                        <label for="expenseDate">التاريخ</label>
+                        <input id="expenseDate" name="expenseDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="full">
+                        <label for="expenseNotes">ملاحظات (اختياري)</label>
+                        <textarea id="expenseNotes" name="notes" class="form-control" maxlength="500" rows="3" placeholder="تفاصيل إضافية عن المصروف..."></textarea>
+                    </div>
+                    <div class="full">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">
+                            <i class="fas fa-save me-1"></i>تسجيل المصروف
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div class="expense-form-hint">
+                <i class="fas fa-lightbulb"></i>
+                <span>سجّل المصروفات أولًا بأول؛ كل مصروف جديد ينعكس فورًا على بطاقة صافي الربح في لوحة التحكم.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="dash-panel" id="expense-history">
+        <div class="dash-panel-head">
+            <h2><i class="fas fa-list-ul"></i> سجل المصروفات</h2>
+            <span class="hint">الإجمالي: <span dir="ltr">@Money(Model.TotalExpenses)</span></span>
+        </div>
+        <div class="dash-panel-body">
+            @if (expenses.Any())
+            {
+                <div class="expense-table-wrap">
+                    <table class="expense-table">
+                        <thead>
+                            <tr>
+                                <th>المصروف</th>
+                                <th>التصنيف</th>
+                                <th>التاريخ</th>
+                                <th>القيمة</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var expense in expenses)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="expense-title">@expense.Title</div>
+                                        @if (!string.IsNullOrWhiteSpace(expense.Notes))
+                                        {
+                                            <div class="expense-note">@expense.Notes</div>
+                                        }
+                                    </td>
+                                    <td><span class="expense-tag">@expense.Category</span></td>
+                                    <td><span class="expense-date" dir="ltr">@expense.ExpenseDate.ToString("yyyy/MM/dd")</span></td>
+                                    <td><span class="expense-amount" dir="ltr">@Money(expense.Amount)</span></td>
+                                    <td class="text-end">
+                                        <form method="post" asp-action="DeleteExpense" asp-controller="Expenses" onsubmit="return confirm('هل تريد حذف هذا المصروف؟');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@expense.Id" />
+                                            <input type="hidden" name="year" value="@Model.Year" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف" aria-label="حذف المصروف">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty expense-empty">
+                    <i class="fas fa-receipt d-block mb-2"></i>
+                    لا توجد مصروفات مسجلة في هذه الفترة.
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+<section class="dash-panel category-panel">
+    <div class="dash-panel-head">
+        <h2><i class="fas fa-chart-simple"></i> توزيع المصروفات حسب التصنيف</h2>
+        <span class="hint">@categoryBreakdown.Count تصنيف</span>
+    </div>
+    <div class="dash-panel-body">
+        @if (categoryBreakdown.Any())
+        {
+            <div class="category-grid">
+                @foreach (var category in categoryBreakdown)
+                {
+                    <div class="category-row">
+                        <div class="category-row-head">
+                            <span class="category-name">@category.Category</span>
+                            <span class="category-count">@category.Count مصروف</span>
+                            <span class="category-total" dir="ltr">@Money(category.Total)</span>
+                        </div>
+                        <span class="category-bar"><span style="width:@BarWidth(category.Total, maxCategoryTotal)%;"></span></span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="dash-empty py-2">أضف أول مصروف ليظهر توزيع التصنيفات هنا.</div>
+        }
+    </div>
+</section>

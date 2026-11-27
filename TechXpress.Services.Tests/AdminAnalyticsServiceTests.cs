@@ -180,12 +180,15 @@ public class AdminAnalyticsServiceTests : IDisposable
 
         Assert.Equal(2026, result.Year);
         Assert.Equal(125m, result.TotalSales);
+        Assert.Equal(140m, result.GrossItemValue);
         Assert.Equal(14m, result.PlatformRevenue);
         Assert.Equal(126m, result.VendorPayable);
         Assert.Equal(2m, result.TotalExpenses);
         Assert.Equal(10m, result.Discounts);
         Assert.Equal(2m, result.NetProfit);
         Assert.Equal(2, result.ConfirmedOrders);
+        Assert.Single(result.Expenses);
+        Assert.Equal("Hosting 2026", result.Expenses[0].Title);
         Assert.Equal(new[] { 2026, 2025 }, result.AvailableYears.Select(y => y.Year));
 
         Assert.Collection(result.BestSellingProducts,
@@ -216,11 +219,37 @@ public class AdminAnalyticsServiceTests : IDisposable
 
         Assert.Null(result.Year);
         Assert.Equal(175m, result.TotalSales);
+        Assert.Equal(190m, result.GrossItemValue);
         Assert.Equal(19m, result.PlatformRevenue);
         Assert.Equal(3m, result.TotalExpenses);
         Assert.Equal(6m, result.NetProfit);
         Assert.Equal(3, result.ConfirmedOrders);
+        Assert.Equal(2, result.Expenses.Count);
         Assert.Equal(2, result.AvailableYears.Count);
+    }
+
+    [Fact]
+    public async Task GetDashboardAnalyticsAsync_ExpenseOnlyYear_IsAvailableAndFiltersExpenses()
+    {
+        _context.PlatformExpenses.Add(new PlatformExpense
+        {
+            Title = "Expense only 2023",
+            Category = "أخرى",
+            Amount = 3m,
+            ExpenseDate = new DateTime(2023, 4, 1)
+        });
+        await _context.SaveChangesAsync();
+
+        var all = await _service.GetDashboardAnalyticsAsync(null);
+        Assert.Contains(all.AvailableYears, y => y.Year == 2023);
+
+        var result = await _service.GetDashboardAnalyticsAsync(2023);
+
+        Assert.Equal(2023, result.Year);
+        Assert.Equal(0m, result.TotalSales);
+        Assert.Equal(3m, result.TotalExpenses);
+        Assert.Single(result.Expenses);
+        Assert.Equal("Expense only 2023", result.Expenses[0].Title);
     }
 
     [Fact]
